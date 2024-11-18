@@ -4,103 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>get png alpha</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            background-color: #1e1e1e;
-            color: #f0f0f0;
-        }
-        .container {
-            text-align: center;
-            background: #2a2a2a;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-            width: 90%;
-            max-width: 500px;
-        }
-        h1 {
-            font-size: 1.8em;
-            color: #ffffff;
-            margin-bottom: 20px;
-        }
-        input[type="file"] {
-            display: none;
-        }
-        label {
-            display: inline-block;
-            padding: 12px 20px;
-            margin-top: 15px;
-            font-size: 1em;
-            color: #ffffff;
-            background-color: #4a90e2;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        label:hover {
-            background-color: #357ab8;
-        }
-        #processButton {
-            display: inline-block;
-            padding: 12px 20px;
-            margin-top: 15px;
-            font-size: 1em;
-            color: #ffffff;
-            background-color: #5cb85c;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        #processButton:hover {
-            background-color: #4e9c4e;
-        }
-        #outputMessage {
-            margin-top: 20px;
-            font-size: 1em;
-            color: #5cb85c;
-        }
-        .preview-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-            margin-top: 20px;
-        }
-        .preview-row {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-        }
-        .preview {
-            text-align: center;
-            max-width: 150px;
-        }
-        .preview img {
-            max-width: 100%;
-            border: 2px solid #333;
-            border-radius: 5px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-        }
-    </style>
+    <link rel="stylesheet" href="styles/styles.css">
 </head>
 <body>
+    <video class="background-video" autoplay muted loop>
+        <source src="background.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
     <div class="container">
+        <img src="title-image.png" alt="Title Image" class="title-image">
         <h1>get png alpha</h1>
         <input type="file" id="fileInput" accept="image/png" multiple onchange="showPreviews()">
-        <label for="fileInput">choose png(s)</label>
+        <label for="fileInput" class="button">choose png(s)</label>
         <div style="margin-top: 15px;">
             <input type="checkbox" id="invertAlpha" onchange="showPreviews()">
-            Invert Alpha
+            <label for="invertAlpha" class="button">Invert Alpha</label>
         </div>
-        <button id="processButton" onclick="downloadAllAlphas()">get all alphas</button>
+        <button id="processButton" class="button" onclick="downloadAllAlphas()">get all alphas</button>
         <h2 id="outputMessage"></h2>
         <div class="preview-container" id="previewContainer"></div>
     </div>
