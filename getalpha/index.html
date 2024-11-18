@@ -1,25 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>get png alpha</title>
     <link rel="stylesheet" href="../styles/styles.css">
 </head>
+
 <body>
     <video class="background-video" autoplay muted loop>
-        <source src="background.mp4" type="video/mp4">
-        Your browser does not support the video tag.
+        <source
+            src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/items/1653970/b3fdd1a60ce544cd7fc629d7e7c72680b3c0c86c.webm"
+            type="video/webm">
     </video>
-    <div class="container">
-        <img src="title-image.png" alt="Title Image" class="title-image">
+    <div class="container" style="width: 25%;">
         <h1>get png alpha</h1>
-        <input type="file" id="fileInput" accept="image/png" multiple onchange="showPreviews()">
+        <br>
+        <input type="file" id="fileInput" accept="image/png" multiple style="display: none;" onchange="showPreviews()">
         <label for="fileInput" class="button">choose png(s)</label>
         <div style="margin-top: 15px;">
             <input type="checkbox" id="invertAlpha" onchange="showPreviews()">
-            <label for="invertAlpha" class="button">Invert Alpha</label>
+            <label for="invertAlpha">Invert Alpha</label>
         </div>
+        <br>
         <button id="processButton" class="button" onclick="downloadAllAlphas()">get all alphas</button>
         <h2 id="outputMessage"></h2>
         <div class="preview-container" id="previewContainer"></div>
@@ -81,16 +85,14 @@
                         const originalDiv = document.createElement("div");
                         originalDiv.classList.add("preview");
                         originalDiv.innerHTML = `
-                            <p>Original - ${file.name}</p>
-                            <img src="${originalPreview}" alt="original">
-                        `;
+                                                    <img src="${originalPreview}" alt="original">
+                                                `;
 
                         const alphaDiv = document.createElement("div");
                         alphaDiv.classList.add("preview");
-                        alphaDiv.innerHTML = `
-                            <p>Alpha - ${file.name}</p>
-                            <img src="${alphaPreview}" alt="alpha">
-                        `;
+                        alphaDiv.innerHTML =    `
+                                                    <img src="${alphaPreview}" alt="alpha">
+                                                `;
 
                         previewRow.appendChild(originalDiv);
                         previewRow.appendChild(alphaDiv);
@@ -197,4 +199,5 @@
         }
     </script>
 </body>
+
 </html>
