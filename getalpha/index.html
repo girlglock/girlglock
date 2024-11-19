@@ -232,7 +232,6 @@
             const zipBlob = await zip.generateAsync({ type: "blob" });
             const link = document.createElement("a");
             link.href = URL.createObjectURL(zipBlob);
-            //add current unix timestamp to file name
             link.download = `girlglock-getalpha-${Date.now()}.zip`;
             link.click();
         }
