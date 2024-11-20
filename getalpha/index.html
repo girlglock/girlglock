@@ -26,11 +26,11 @@
         <label for="fileInput" class="button">choose png(s)</label>
         <div style="margin-top: 15px;">
             <input type="checkbox" id="invertAlpha" class="styled-checkbox" onchange="showPreviews()">
-            <label for="invertAlpha">Invert Alpha</label>
+            <label for="invertAlpha">invert alpha</label>
         </div>
         <div style="margin-top: 15px;">
             <input type="checkbox" id="resizeToPowerOfTwo" class="styled-checkbox" onchange="showPreviews()">
-            <label for="resizeToPowerOfTwo">Resize to Power of Two (Square)</label>
+            <label for="resizeToPowerOfTwo">make square (2ⁿ)</label>
         </div>
         <br>
         <button id="processButton" class="button" onclick="downloadAllAlphas()">get all alphas</button>
@@ -49,216 +49,51 @@
             const invertAlpha = document.getElementById('invertAlpha').checked;
             const resizeToPowerOfTwo = document.getElementById('resizeToPowerOfTwo').checked;
             const loadingOverlay = document.getElementById('loadingOverlay');
-    
+
             previewContainer.innerHTML = "";
             loadingOverlay.style.display = 'flex';
-    
-            const imagePromises = [];
-    
-            for (const file of files) {
-                if (file.type !== "image/png") {
-                    alert(`${file.name} is not a png file... naur`);
-                    continue;
-                }
-    
-                const img = new Image();
-                const canvas = document.getElementById('canvas');
-                const ctx = canvas.getContext('2d');
-    
-                const reader = new FileReader();
-    
-                const imagePromise = new Promise((resolve) => {
-                    reader.onload = (e) => {
-                        img.src = e.target.result;
-                    };
-                    reader.readAsDataURL(file);
-    
-                    img.onload = () => {
-                        let width = img.width;
-                        let height = img.height;
-    
-                        if (resizeToPowerOfTwo) {
-                            const maxDimension = Math.max(width, height);
-                            const squareSize = Math.min(2048, nextPowerOfTwo(maxDimension));
-    
-                            canvas.width = squareSize;
-                            canvas.height = squareSize;
-                            ctx.clearRect(0, 0, squareSize, squareSize);
-    
-                            const scale = Math.min(squareSize / width, squareSize / height);
-                            const scaledWidth = Math.round(width * scale);
-                            const scaledHeight = Math.round(height * scale);
-    
-                            const offsetX = Math.round((squareSize - scaledWidth) / 2);
-                            const offsetY = Math.round((squareSize - scaledHeight) / 2);
-    
-                            ctx.drawImage(img, offsetX, offsetY, scaledWidth, scaledHeight);
-                        } else {
-                            canvas.width = width;
-                            canvas.height = height;
-                            ctx.clearRect(0, 0, width, height);
-                            ctx.drawImage(img, 0, 0);
-                        }
-    
-                        const originalImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                        const colorData = ctx.createImageData(canvas.width, canvas.height);
-    
-                        for (let i = 0; i < originalImageData.data.length; i += 4) {
-                            const r = originalImageData.data[i];
-                            const g = originalImageData.data[i + 1];
-                            const b = originalImageData.data[i + 2];
-                            const alpha = originalImageData.data[i + 3];
-    
-                            colorData.data[i] = r;
-                            colorData.data[i + 1] = g;
-                            colorData.data[i + 2] = b;
-                            colorData.data[i + 3] = 255;
-                        }
-    
-                        ctx.putImageData(colorData, 0, 0);
-                        const originalPreview = canvas.toDataURL("image/png");
-    
-                        const alphaData = ctx.createImageData(canvas.width, canvas.height);
-    
-                        for (let i = 0; i < originalImageData.data.length; i += 4) {
-                            let alpha = originalImageData.data[i + 3];
-    
-                            if (invertAlpha) {
-                                alpha = 255 - alpha;
-                            }
-    
-                            alphaData.data[i] = alpha;
-                            alphaData.data[i + 1] = alpha;
-                            alphaData.data[i + 2] = alpha;
-                            alphaData.data[i + 3] = 255;
-                        }
-    
-                        ctx.putImageData(alphaData, 0, 0);
-                        const alphaPreview = canvas.toDataURL("image/png");
-    
-                        const previewRow = document.createElement("div");
-                        previewRow.classList.add("preview-row");
-    
-                        const originalDiv = document.createElement("div");
-                        originalDiv.classList.add("preview");
-                        originalDiv.innerHTML = `<img src="${originalPreview}" alt="original">`;
-    
-                        const alphaDiv = document.createElement("div");
-                        alphaDiv.classList.add("preview");
-                        alphaDiv.innerHTML = `<img src="${alphaPreview}" alt="alpha">`;
-    
-                        previewRow.appendChild(originalDiv);
-                        previewRow.appendChild(alphaDiv);
-                        previewContainer.appendChild(previewRow);
-    
-                        resolve();
-                    };
-                });
-    
-                imagePromises.push(imagePromise);
-            }
-    
+
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+
+            const imagePromises = Array.from(files).map((file) => processImage(file, ctx, canvas, resizeToPowerOfTwo, invertAlpha, previewContainer));
+
             await Promise.all(imagePromises);
             loadingOverlay.style.display = 'none';
         }
-    
+
         async function downloadAllAlphas() {
             const fileInput = document.getElementById('fileInput');
             const files = fileInput.files;
             const invertAlpha = document.getElementById('invertAlpha').checked;
             const resizeToPowerOfTwo = document.getElementById('resizeToPowerOfTwo').checked;
+
             const canvas = document.getElementById('canvas');
             const ctx = canvas.getContext('2d');
-    
+
             document.getElementById('loadingOverlay').style.display = 'flex';
             document.getElementById('processButton').disabled = true;
-    
+
             const zip = new JSZip();
-    
+
             try {
                 for (const file of files) {
                     if (file.type !== "image/png") continue;
-    
-                    const img = new Image();
-                    const reader = new FileReader();
-    
-                    await new Promise((resolve, reject) => {
-                        reader.onload = (e) => {
-                            img.src = e.target.result;
-                        };
-                        reader.readAsDataURL(file);
-    
-                        img.onload = () => {
-                            let width = img.width;
-                            let height = img.height;
-    
-                            if (resizeToPowerOfTwo) {
-                                const maxDimension = Math.max(width, height);
-                                const squareSize = Math.min(2048, nextPowerOfTwo(maxDimension));
-    
-                                canvas.width = squareSize;
-                                canvas.height = squareSize;
-                                ctx.clearRect(0, 0, squareSize, squareSize);
-    
-                                const scale = Math.min(squareSize / width, squareSize / height);
-                                const scaledWidth = Math.round(width * scale);
-                                const scaledHeight = Math.round(height * scale);
-    
-                                const offsetX = Math.round((squareSize - scaledWidth) / 2);
-                                const offsetY = Math.round((squareSize - scaledHeight) / 2);
-    
-                                ctx.drawImage(img, offsetX, offsetY, scaledWidth, scaledHeight);
-                            } else {
-                                canvas.width = width;
-                                canvas.height = height;
-                                ctx.clearRect(0, 0, width, height);
-                                ctx.drawImage(img, 0, 0);
-                            }
-    
-                            const originalImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                            const colorData = ctx.createImageData(canvas.width, canvas.height);
-    
-                            for (let i = 0; i < originalImageData.data.length; i += 4) {
-                                const r = originalImageData.data[i];
-                                const g = originalImageData.data[i + 1];
-                                const b = originalImageData.data[i + 2];
-                                colorData.data[i] = r;
-                                colorData.data[i + 1] = g;
-                                colorData.data[i + 2] = b;
-                                colorData.data[i + 3] = 255;
-                            }
-    
-                            ctx.putImageData(colorData, 0, 0);
-                            const colorImage = canvas.toDataURL("image/png");
-                            const base64Color = colorImage.split(',')[1];
-                            zip.file(`${file.name.replace(/\.png$/, '')}-color.png`, base64Color, { base64: true });
-    
-                            const alphaData = ctx.createImageData(canvas.width, canvas.height);
-                            for (let i = 0; i < originalImageData.data.length; i += 4) {
-                                let alpha = originalImageData.data[i + 3];
-                                if (invertAlpha) {
-                                    alpha = 255 - alpha;
-                                }
-                                alphaData.data[i] = alpha;
-                                alphaData.data[i + 1] = alpha;
-                                alphaData.data[i + 2] = alpha;
-                                alphaData.data[i + 3] = 255;
-                            }
-    
-                            ctx.putImageData(alphaData, 0, 0);
-                            const alphaImage = canvas.toDataURL("image/png");
-                            const base64Alpha = alphaImage.split(',')[1];
-                            zip.file(`${file.name.replace(/\.png$/, '')}-alpha.png`, base64Alpha, { base64: true });
-    
-                            resolve();
-                        };
-                    });
+
+                    const { colorImage, alphaImage } = await processImageData(file, ctx, canvas, resizeToPowerOfTwo, invertAlpha);
+
+                    const base64Color = colorImage.split(',')[1];
+                    const base64Alpha = alphaImage.split(',')[1];
+
+                    const fileNameBase = file.name.replace(/\.png$/, '');
+                    zip.file(`${fileNameBase}-color.png`, base64Color, { base64: true });
+                    zip.file(`${fileNameBase}-alpha.png`, base64Alpha, { base64: true });
                 }
-    
+
                 const zipBlob = await zip.generateAsync({ type: "blob" });
                 const link = document.createElement("a");
                 link.href = URL.createObjectURL(zipBlob);
-                link.download = `girlglock-getalpha-${Date.now()}.zip`;
+                link.download = `girlglock-${Date.now()}.zip`;
                 link.click();
             } catch (error) {
                 console.error('Error processing images:', error);
@@ -267,9 +102,112 @@
                 document.getElementById('processButton').disabled = false;
             }
         }
-    
+
         function nextPowerOfTwo(value) {
             return Math.pow(2, Math.ceil(Math.log(value) / Math.log(2)));
+        }
+
+        function drawImageToCanvas(img, ctx, canvas, resizeToPowerOfTwo) {
+            let { width, height } = img;
+
+            if (resizeToPowerOfTwo) {
+                const maxDimension = Math.max(width, height);
+                const squareSize = Math.min(2048, nextPowerOfTwo(maxDimension));
+
+                canvas.width = squareSize;
+                canvas.height = squareSize;
+
+                const scale = Math.min(squareSize / width, squareSize / height);
+                const scaledWidth = Math.round(width * scale);
+                const scaledHeight = Math.round(height * scale);
+
+                const offsetX = Math.round((squareSize - scaledWidth) / 2);
+                const offsetY = Math.round((squareSize - scaledHeight) / 2);
+
+                ctx.clearRect(0, 0, squareSize, squareSize);
+                ctx.drawImage(img, offsetX, offsetY, scaledWidth, scaledHeight);
+            } else {
+                canvas.width = width;
+                canvas.height = height;
+                ctx.clearRect(0, 0, width, height);
+                ctx.drawImage(img, 0, 0);
+            }
+        }
+
+        function extractColorAndAlphaData(originalImageData, invertAlpha) {
+            const { width, height, data } = originalImageData;
+            const colorData = new Uint8ClampedArray(data.length);
+            const alphaData = new Uint8ClampedArray(data.length);
+
+            for (let i = 0; i < data.length; i += 4) {
+                const [r, g, b, a] = data.slice(i, i + 4);
+                const alpha = invertAlpha ? 255 - a : a;
+
+                colorData.set([r, g, b, 255], i);
+                alphaData.set([alpha, alpha, alpha, 255], i);
+            }
+
+            return { colorData, alphaData };
+        }
+
+        async function processImage(file, ctx, canvas, resizeToPowerOfTwo, invertAlpha, previewContainer) {
+            if (file.type !== "image/png") {
+                alert(`${file.name} is not a PNG file.`);
+                return;
+            }
+
+            const img = await loadImage(file);
+            drawImageToCanvas(img, ctx, canvas, resizeToPowerOfTwo);
+
+            const originalImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const { colorData, alphaData } = extractColorAndAlphaData(originalImageData, invertAlpha);
+
+            ctx.putImageData(new ImageData(colorData, canvas.width, canvas.height), 0, 0);
+            const colorPreview = canvas.toDataURL("image/png");
+
+            ctx.putImageData(new ImageData(alphaData, canvas.width, canvas.height), 0, 0);
+            const alphaPreview = canvas.toDataURL("image/png");
+
+            const previewRow = document.createElement("div");
+            previewRow.classList.add("preview-row");
+
+            const originalDiv = document.createElement("div");
+            originalDiv.classList.add("preview");
+            originalDiv.innerHTML = `<img src="${colorPreview}" alt="Color">`;
+
+            const alphaDiv = document.createElement("div");
+            alphaDiv.classList.add("preview");
+            alphaDiv.innerHTML = `<img src="${alphaPreview}" alt="Alpha">`;
+
+            previewRow.appendChild(originalDiv);
+            previewRow.appendChild(alphaDiv);
+            previewContainer.appendChild(previewRow);
+        }
+
+        async function processImageData(file, ctx, canvas, resizeToPowerOfTwo, invertAlpha) {
+            const img = await loadImage(file);
+            drawImageToCanvas(img, ctx, canvas, resizeToPowerOfTwo);
+
+            const originalImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const { colorData, alphaData } = extractColorAndAlphaData(originalImageData, invertAlpha);
+
+            ctx.putImageData(new ImageData(colorData, canvas.width, canvas.height), 0, 0);
+            const colorImage = canvas.toDataURL("image/png");
+
+            ctx.putImageData(new ImageData(alphaData, canvas.width, canvas.height), 0, 0);
+            const alphaImage = canvas.toDataURL("image/png");
+
+            return { colorImage, alphaImage };
+        }
+
+        async function loadImage(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                const img = new Image();
+                reader.onload = (e) => (img.src = e.target.result);
+                img.onload = () => resolve(img);
+                reader.readAsDataURL(file);
+            });
         }
     </script>
 </body>
