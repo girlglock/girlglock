@@ -3,20 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Gexout">
-
-    <meta property="og:url" content="https://girlglock.com">
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="Gexout">
-    <meta property="og:description" content="Gexout">
-    <meta property="og:image" content="https://cdn.7tv.app/emote/01HRSNE9A800023V9PPCX847RG/4x.gif">
-
-    <meta name="twitter:card" content="summary_large_image">
-    <meta property="twitter:domain" content="girlglock.com">
-    <meta property="twitter:url" content="https://girlglock.com">
-    <meta name="twitter:title" content="Gexout">
-    <meta name="twitter:description" content="Gexout ૮ ˶ᵔ ᵕ ᵔ˶ ა">
-    <meta name="twitter:image" content="https://cdn.7tv.app/emote/01HRSNE9A800023V9PPCX847RG/4x.gif">
     <title>Gexout</title>
     <link rel="stylesheet" href="../styles/styles.css">
     <style>
@@ -62,12 +48,12 @@
         const paddleHeight = 10;
         const paddleWidth = 150;
         let paddleX = (canvas.width - paddleWidth) / 2;
-        const ballRadius = 10;
+        const ballRadius = 15;
         let x = canvas.width / 2;
         let y = canvas.height - 30;
         let dx = 2;
         let dy = -2;
-        const brickRowCount = 20;
+        const brickRowCount = 15;
         const brickColumnCount = Math.floor(canvas.width / (75 + 10));
         const brickWidth = canvas.width / brickColumnCount - 10;
         const brickHeight = 20;
@@ -78,8 +64,21 @@
         brickImage.src = "https://files.catbox.moe/qr5oal.png";
         const elonImage = new Image();
         elonImage.src = "https://cdn.7tv.app/emote/01JBCX1P4VV85WEAQQRD64B9PG/4x.png";
-        const ballImage = new Image();
-        ballImage.src = "https://cdn.7tv.app/emote/01HRSNE9A800023V9PPCX847RG/4x.gif";
+        const ballSpriteSheet = new Image();
+        ballSpriteSheet.src = "https://i.imgur.com/7LELPS1.png";
+
+        const ballFrameWidth = 256;
+        const ballFrameHeight = 128;
+        const totalFrames = 66;
+
+        const bounceSound = new Audio('https://www.soundjay.com/buttons/button-33a.wav');
+        bounceSound.volume = 0.3;
+
+        const brickSound = new Audio('https://www.soundjay.com/buttons/button-11.wav');
+        brickSound.volume = 0.3;
+
+        const winSound = new Audio('https://www.soundjay.com/buttons/button-33a.wav');
+        winSound.volume = 0.3;
 
         let bricks = [];
         for (let c = 0; c < brickColumnCount; c++) {
@@ -102,22 +101,27 @@
         let score = 0;
         let lives = 2;
         let gameOver = false;
+        let gameWon = false;
+        let currentFrame = 0;
+        let frameCount = 0;
+        let frameDelay = 5;
+
         document.addEventListener("keydown", keyDownHandler);
         document.addEventListener("keyup", keyUpHandler);
         document.addEventListener("keydown", restartGameHandler);
-        
+
         function keyDownHandler(e) {
             if (e.key === "d" || e.key === "D") rightPressed = true;
             if (e.key === "a" || e.key === "A") leftPressed = true;
         }
-        
+
         function keyUpHandler(e) {
             if (e.key === "d" || e.key === "D") rightPressed = false;
             if (e.key === "a" || e.key === "A") leftPressed = false;
         }
-        
+
         function restartGameHandler(e) {
-            if (gameOver && e.key) {
+            if ((gameOver || gameWon) && e.key === " " ) {
                 document.location.reload();
             }
         }
@@ -136,6 +140,7 @@
                             dy = -dy;
                             b.status = 0;
                             score++;
+                            brickSound.play();
                         }
                     }
                 }
@@ -145,13 +150,28 @@
                     dy = -dy;
                     elon.status = 0;
                     score += 5;
-                    gameOver = true;
+                    gameWon = true;
+                    winSound.play();
                 }
             }
         }
 
         function drawBall() {
-            ctx.drawImage(ballImage, x - ballRadius, y - ballRadius, ballRadius * 2, ballRadius * 2);
+            const ballX = x - ballRadius;
+            const ballY = y - ballRadius;
+            const frameX = currentFrame * ballFrameWidth;
+
+            ctx.drawImage(
+                ballSpriteSheet,
+                frameX, 0, ballFrameWidth, ballFrameHeight,
+                ballX, ballY, ballFrameWidth / 4, ballFrameHeight / 4
+            );
+
+            frameCount++;
+            if (frameCount >= frameDelay) {
+                currentFrame = (currentFrame + 1) % totalFrames;
+                frameCount = 0;
+            }
         }
 
         function drawPaddle() {
@@ -197,27 +217,41 @@
             ctx.fillStyle = "#ff69b4";
             ctx.textAlign = "center";
             ctx.fillText("saou you lost :( score: " + score, canvas.width / 2, canvas.height / 2);
-            ctx.fillText("press a key to restart", canvas.width / 2, canvas.height / 2 + 40);
+            ctx.fillText("press space to restart", canvas.width / 2, canvas.height / 2 + 40);
         }
 
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            if (gameOver) {
-                drawGameOver();
-                return;
-            }
-            drawBricks();
-            drawBall();
-            drawPaddle();
-            drawScore();
-            drawLives();
+        function drawGameWon() {
+            ctx.font = "24px Daydream";
+            ctx.fillStyle = "#ff69b4";
+            ctx.textAlign = "center";
+            ctx.fillText("Congratulations, you won! score: " + score, canvas.width / 2, canvas.height / 2);
+            ctx.fillText("press space to restart", canvas.width / 2, canvas.height / 2 + 40);
+        }
+
+        function updateGame() {
+            if (gameOver || gameWon) return;
+
             collisionDetection();
 
-            if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) dx = -dx;
-            if (y + dy < ballRadius) dy = -dy;
-            else if (y + dy > canvas.height - ballRadius) {
-                if (x > paddleX && x < paddleX + paddleWidth) dy = -dy;
-                else {
+            const ballWidth = ballFrameWidth / 4;
+            const ballHeight = ballFrameHeight / 4;
+
+            if (x + dx > canvas.width - ballWidth || x + dx < ballWidth) {
+                dx = -dx;
+                bounceSound.play();
+            }
+            if (y + dy < ballHeight) {
+                dy = -dy;
+                bounceSound.play();
+            }
+            else if (y + dy > canvas.height - ballHeight) {
+                if (x > paddleX && x < paddleX + paddleWidth) {
+                    let hitPosition = (x - (paddleX + paddleWidth / 2)) / (paddleWidth / 2);
+                    let angle = hitPosition * Math.PI / 4;
+                    dx = (2 * Math.sin(angle)) * 4;
+                    dy = -Math.abs(2 * Math.cos(angle));
+                    bounceSound.play();
+                } else {
                     lives--;
                     if (!lives) {
                         gameOver = true;
@@ -237,10 +271,31 @@
 
             x += dx;
             y += dy;
-            requestAnimationFrame(draw);
         }
 
-        draw();
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (gameOver) {
+                drawGameOver();
+                return;
+            }
+            if (gameWon) {
+                drawGameWon();
+                return;
+            }
+            drawBricks();
+            drawBall();
+            drawPaddle();
+            drawScore();
+            drawLives();
+        }
+
+        function gameLoop() {
+            updateGame();
+            draw();
+        }
+
+        setInterval(gameLoop, 1000 / 150);
     </script>
 </body>
 </html>
