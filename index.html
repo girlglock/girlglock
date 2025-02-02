@@ -1,38 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="GIRLGLOCK ૮ ˶ᵔ ᵕ ᵔ˶ ა">
-
-  <meta property="og:url" content="https://girlglock.com">
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="GIRLGLOCK">
-  <meta property="og:description" content="GIRLGLOCK ૮ ˶ᵔ ᵕ ᵔ˶ ა">
-  <meta property="og:image" content="https://cdn.7tv.app/emote/01H9D5QNVR0005XNK7Z4N9D90F/4x.gif">
-
-  <meta name="twitter:card" content="summary_large_image">
-  <meta property="twitter:domain" content="girlglock.com">
-  <meta property="twitter:url" content="https://girlglock.com">
-  <meta name="twitter:title" content="GIRLGLOCK">
-  <meta name="twitter:description" content="GIRLGLOCK ૮ ˶ᵔ ᵕ ᵔ˶ ა">
-  <meta name="twitter:image" content="https://cdn.7tv.app/emote/01H9D5QNVR0005XNK7Z4N9D90F/4x.gif">
-  <title>GIRLGLOCK</title>
-  <link rel="stylesheet" href="styles/styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
-  <video class="background-video" autoplay loop muted>
-    <source src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/items/1653970/b3fdd1a60ce544cd7fc629d7e7c72680b3c0c86c.webm" type="video/webm">
-  </video>
-  <img src="https://i.imgur.com/5f8Vyq3.png" alt="GIRLGLOCK" class="title-image">
-  <div class="container">
-    <div class="links">
-      <a href="https://bsky.app/profile/girlglock.com" target="_blank" class="button">BlueSky</a>
-      <a href="https://x.com/girlglock_" target="_blank" class="button">TWITTER</a>
-      <a href="https://github.com/girlglock" target="_blank" class="button">GITHUB</a>
-      <a href="https://www.youtube.com/@dea_bb" target="_blank" class="button">YOUTUBE</a>
-      <a href="https://steamcommunity.com/id/source_ts/" target="_blank" class="button">STEAM</a>
+    <img id="mouth-image" src="silent.png">
+    <div id="debug-stats">
+        <p>loudness: <span id="amplitude">0</span></p>
+        <p>freq: <span id="frequency">0</span> Hz</p>
+        <p>state: <span id="state">silent</span></p>
     </div>
-  </div>
+
+    <script>
+        const images = {
+            silent: "silent.png",
+            speaking: "speaking.png",
+            a: "a.png",
+            e: "e.png",
+            i: "i.png",
+            o: "o.png",
+            u: "u.png" 
+        };
+
+        const vowelFrequencies = {
+            'a': [600, 750],
+            'e': [400, 2300],
+            'i': [100, 300],
+            'o': [400, 600],
+            'u': [280, 380]
+        };
+
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then((stream) => {
+                const audioContext = new AudioContext();
+                const analyser = audioContext.createAnalyser();
+                const microphone = audioContext.createMediaStreamSource(stream);
+                microphone.connect(analyser);
+
+                analyser.fftSize = 128;
+                const bufferLength = analyser.frequencyBinCount;
+                const dataArray = new Uint8Array(bufferLength);
+
+                const detectVowel = () => {
+                    analyser.getByteFrequencyData(dataArray);
+
+                    const totalAmplitude = dataArray.reduce((sum, value) => sum + value, 0);
+
+                    let maxAmplitude = 0;
+                    let dominantFrequency = 0;
+                    for (let i = 0; i < bufferLength; i++) {
+                        if (dataArray[i] > maxAmplitude) {
+                            maxAmplitude = dataArray[i];
+                            dominantFrequency = i * (audioContext.sampleRate / analyser.fftSize);
+                        }
+                    }
+
+                    let state = 'silent';
+                    if (totalAmplitude >= 1000) {
+                        state = 'speaking';
+                        for (const [vowel, [low, high]] of Object.entries(vowelFrequencies)) {
+                            if (dominantFrequency >= low && dominantFrequency <= high) {
+                                state = vowel;
+                                break;
+                            }
+                        }
+                    }
+
+                    return { state, totalAmplitude, dominantFrequency };
+                };
+
+                const mouthImage = document.getElementById('mouth-image');
+                const amplitudeElement = document.getElementById('amplitude');
+                const frequencyElement = document.getElementById('frequency');
+                const stateElement = document.getElementById('state');
+
+                const update = () => {
+                    const { state, totalAmplitude, dominantFrequency } = detectVowel();
+                    mouthImage.src = images[state] || images.silent;
+
+                    amplitudeElement.textContent = totalAmplitude.toFixed(2);
+                    frequencyElement.textContent = dominantFrequency.toFixed(2);
+                    stateElement.textContent = state;
+
+                    requestAnimationFrame(update);
+                };
+
+                update();
+            })
+    </script>
 </body>
 </html>
