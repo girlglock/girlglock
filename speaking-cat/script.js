@@ -121,6 +121,7 @@ navigator.mediaDevices.getUserMedia({ audio: true })
             return { state, totalAmplitude, dominantFrequency };
         };
 
+        const folderPath = urlParams.get("folderPath") ? decodeURIComponent(urlParams.get("folderPath")) : "images";
         const update = () => {
             const { state, totalAmplitude, dominantFrequency } = detectVowel();
 
@@ -128,11 +129,12 @@ navigator.mediaDevices.getUserMedia({ audio: true })
             if (isInit) {
                 ampElement.textContent = totalAmplitude.toFixed(2);
                 freqElement.textContent = dominantFrequency.toFixed(2);
-                mouthImage.src = `images/${state}.png`;
+                mouthImage.src = `${folderPath}/${state}.png`;
             }
-            else
-                mouthImage.src = `images/loading.png`;
-
+            else {
+                mouthImage.src = `${folderPath}/loading.png`;
+            }
+            
             requestAnimationFrame(update);
         };
 
