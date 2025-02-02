@@ -1,3 +1,4 @@
+ 
 const initTimestamp = Date.now();
 const urlParams = new URLSearchParams(window.location.search);
 
