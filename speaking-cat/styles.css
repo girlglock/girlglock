@@ -1,0 +1,138 @@
+body {
+    font-family: Arial, sans-serif;
+}
+
+#status {
+    font-size: 18px;
+    color: #333;
+}
+
+#mouth-image {
+    margin-bottom: 20px;
+}
+
+#debug-stats {
+    margin-bottom: 20px;
+}
+
+#debug-stats p {
+    margin: 5px 0;
+    font-size: 14px;
+    color: #555;
+}
+
+#toggleSettings {
+    background-color: #ff0077;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+#toggleSettings:hover {
+    background-color: #c9015e;
+}
+
+#settings {
+    display: none;
+    margin-bottom: 20px;
+}
+
+#settings label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 14px;
+    color: #333;
+}
+
+#settings input[type="text"],
+#settings input[type="number"] {
+    width: 30%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+/* surely one of these can change the color */
+.slider-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.slider {
+    width: 15%;
+    margin: 0 10px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    position: relative;
+}
+
+.slider::-webkit-slider-runnable-track {
+    background: #ff0077;
+    height: 5px;
+    border-radius: 5px;
+}
+
+.slider::-moz-range-track {
+    background: #ff0077;
+    height: 5px;
+    border-radius: 5px;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 15px;
+    height: 15px;
+    background: #ff0077;
+    border-radius: 50%;
+    cursor: pointer;
+    margin-top: -5px;
+}
+
+.slider::-moz-range-thumb {
+    width: 15px;
+    height: 15px;
+    background: #ff0077;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.slider-range {
+    position: absolute;
+    background: rgba(255, 0, 119, 0.2);
+    height: 5px;
+    pointer-events: none;
+    border-radius: 5px;
+}
+
+#generated-url {
+    width: 30%;
+    padding: 8px;
+    margin-top: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    resize: none;
+}
+
+#settings button {
+    background-color: #ff0077;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+#settings button:hover {
+    background-color: #c9015e;
+}
