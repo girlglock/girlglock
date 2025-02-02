@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+    <p id="status">waiting for mic permissions...</p>
+
+    <script>
+        const initTimestamp = Date.now();
+
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then((stream) => {
+                document.body.innerHTML = `
+                    <img id="mouth-image" src="silent.png">
+                    <div id="debug-stats">
+                        <p>state: <span id="state">initializing...</span></p>
+                        <p>loudness: <span id="amplitude">0</span></p>
+                        <p>freq: <span id="frequency">0</span> Hz</p>
+                    </div>
+                `;
+
+                const images = {
+                    loading: "loading.png",
+                    silent: "silent.png",
+                    speaking: "speaking.png",
+                    a: "a.png",
+                    e: "e.png",
+                    i: "i.png",
+                    o: "o.png",
+                    u: "u.png"
+                };
+
+                const vowelFreq = {
+                    'a': [600, 750],
+                    'e': [400, 2300],
+                    'i': [100, 300],
+                    'o': [400, 600],
+                    'u': [280, 380]
+                };
+
+                const mouthImage = document.getElementById('mouth-image');
+                const ampElement = document.getElementById('amplitude');
+                const freqElement = document.getElementById('frequency');
+                const stateElement = document.getElementById('state');
+
+                const audioContext = new AudioContext();
+                const anal = audioContext.createAnalyser();
+                const mic = audioContext.createMediaStreamSource(stream);
+                mic.connect(anal);
+
+                anal.fftSize = 1024;
+                const bufferLength = anal.frequencyBinCount;
+                const dataArray = new Uint8Array(bufferLength);
+
+                let isInit = false;
+
+                const detectVowel = () => {
+                    anal.getByteFrequencyData(dataArray);
+
+                    const totalAmplitude = dataArray.reduce((sum, value) => sum + value, 0);
+
+                    let maxAmplitude = 0;
+                    let dominantFrequency = 0;
+                    for (let i = 0; i < bufferLength; i++) {
+                        if (dataArray[i] > maxAmplitude) {
+                            maxAmplitude = dataArray[i];
+                            dominantFrequency = i * (audioContext.sampleRate / anal.fftSize);
+                        }
+                    }
+
+                    let state = 'silent';
+                    if (totalAmplitude >= 1000) {
+                        state = 'speaking';
+                        for (const [vowel, [low, high]] of Object.entries(vowelFreq)) {
+                            if (dominantFrequency >= low && dominantFrequency <= high) {
+                                state = vowel;
+                                if (initTimestamp + 25000 < Date.now()) isInit = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    return { state, totalAmplitude, dominantFrequency };
+                };
+
+                const update = () => {
+                    const { state, totalAmplitude, dominantFrequency } = detectVowel();
+
+                    stateElement.textContent = isInit ? state : "initializing...";
+                    if (isInit) {
+                        ampElement.textContent = totalAmplitude.toFixed(2);
+                        freqElement.textContent = dominantFrequency.toFixed(2);
+                        mouthImage.src = images[state] || images.silent;
+                    }
+                    else
+                        mouthImage.src = images.loading;
+
+                    requestAnimationFrame(update);
+                };
+
+                update();
+            })
+            .catch(() => {
+                document.getElementById("status").textContent = "mic access denied";
+            });
+    </script>
+</body>
+</html>
