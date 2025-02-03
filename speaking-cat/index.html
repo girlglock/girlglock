@@ -1,14 +1,99 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="styles.css">
-    <title>silly talking png kitty</title>
-</head>
+    <!DOCTYPE html>
+    <html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="styles.css">
+        <title>silly talking png kitty</title>
+    </head>
+
 <body>
     <p id="status">waiting for mic permissions...</p>
 
+    <div id="image-container">
+        <img id="silent-image" src="" style="opacity: 0">
+        <img id="speaking-image" src="" style="opacity: 0">
+        <img id="a-image" src="" style="opacity: 0">
+        <img id="e-image" src="" style="opacity: 0">
+        <img id="i-image" src="" style="opacity: 0">
+        <img id="o-image" src="" style="opacity: 0">
+        <img id="u-image" src="" style="opacity: 0">
+        <img id="loading-image" src="" style="opacity: 1">
+    </div>
+
+    <div id="debug-stats">
+        <p>state: <span id="state">initializing...</span></p>
+        <p>amp: <span id="amplitude">0</span></p>
+        <p>freq: <span id="frequency">0</span> Hz</p>
+    </div>
+
+    <button id="toggleSettings">settings</button>
+
+    <div id="settings">
+        <label class="toggle-container">
+            <input type="checkbox" id="hideUI"> hide all UI elements
+            <span class="checkmark"></span>
+        </label>
+        <br>
+        <br>
+        <label>overwrite assets repository url:</label>
+        <input type="text" id="folder-path" placeholder="https://github.com/girlglock/speaking-cat-assets">
+        <p><em>required files: silent.png, a.png, e.png, i.png, o.png, u.png, speaking.png, loading.png</em></p>
+        <br>
+
+        <label>"a" freq range:</label>
+        <div class="slider-container">
+            <input type="range" id="aFreqLow" min="0" max="2000" class="slider">
+            <input type="range" id="aFreqHigh" min="0" max="2000" class="slider">
+            <span id="aFreqRangeText"></span>
+        </div>
+
+        <label>"e" freq range:</label>
+        <div class="slider-container">
+            <input type="range" id="eFreqLow" min="0" max="3000" class="slider">
+            <input type="range" id="eFreqHigh" min="0" max="3000" class="slider">
+            <span id="eFreqRangeText"></span>
+        </div>
+
+        <label>"i" freq range:</label>
+        <div class="slider-container">
+            <input type="range" id="iFreqLow" min="0" max="1000" class="slider">
+            <input type="range" id="iFreqHigh" min="0" max="1000" class="slider">
+            <span id="iFreqRangeText"></span>
+        </div>
+
+        <label>"o" freq range:</label>
+        <div class="slider-container">
+            <input type="range" id="oFreqLow" min="0" max="2000" class="slider">
+            <input type="range" id="oFreqHigh" min="0" max="2000" class="slider">
+            <span id="oFreqRangeText"></span>
+        </div>
+
+        <label>"u" freq range:</label>
+        <div class="slider-container">
+            <input type="range" id="uFreqLow" min="0" max="1000" class="slider">
+            <input type="range" id="uFreqHigh" min="0" max="1000" class="slider">
+            <span id="uFreqRangeText"></span>
+        </div>
+
+        <br>
+        <label>amp threshold:</label>
+        <input type="number" id="threshold">
+
+        <br><br>
+        <button type="button" onclick="generateURL()">get url</button><br>
+        <textarea id="generated-url" readonly rows="2"></textarea>
+        <p><em>add <code>--enable-media-stream</code> to your OBS launch parameters in order to let browser sources access your mic</em></p>
+    </div>
+
     <script src="script.js"></script>
 </body>
+
 </html>

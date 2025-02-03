@@ -1,18 +1,35 @@
 body {
     font-family: Arial, sans-serif;
+    margin: 20px;
 }
 
 #status {
     font-size: 18px;
     color: #333;
+    margin-bottom: 20px;
 }
 
-#mouth-image {
-    margin-bottom: 20px;
+#image-container {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    margin: 0 auto 20px;
+}
+
+#image-container img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
 }
 
 #debug-stats {
     margin-bottom: 20px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 #debug-stats p {
@@ -30,6 +47,10 @@ body {
     font-size: 14px;
     border-radius: 5px;
     margin-bottom: 20px;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
 }
 
 #toggleSettings:hover {
@@ -39,6 +60,15 @@ body {
 #settings {
     display: none;
     margin-bottom: 20px;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    top: 60px;
+    right: 20px;
+    width: 400px;
+    z-index: 1000;
 }
 
 #settings label {
@@ -50,7 +80,7 @@ body {
 
 #settings input[type="text"],
 #settings input[type="number"] {
-    width: 30%;
+    width: 100%;
     padding: 8px;
     margin-bottom: 10px;
     border: 1px solid #ccc;
@@ -58,7 +88,6 @@ body {
     font-size: 14px;
 }
 
-/* surely one of these can change the color */
 .slider-container {
     display: flex;
     align-items: center;
@@ -66,7 +95,7 @@ body {
 }
 
 .slider {
-    width: 15%;
+    width: 45%;
     margin: 0 10px;
     -webkit-appearance: none;
     appearance: none;
@@ -104,16 +133,8 @@ body {
     cursor: pointer;
 }
 
-.slider-range {
-    position: absolute;
-    background: rgba(255, 0, 119, 0.2);
-    height: 5px;
-    pointer-events: none;
-    border-radius: 5px;
-}
-
 #generated-url {
-    width: 30%;
+    width: 100%;
     padding: 8px;
     margin-top: 10px;
     border: 1px solid #ccc;
@@ -135,4 +156,75 @@ body {
 
 #settings button:hover {
     background-color: #c9015e;
+}
+
+#debug-stats {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+}
+
+.toggle-container {
+    display: block;
+    position: relative;
+    padding-left: 35px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    font-size: 14px;
+    user-select: none;
+}
+
+.toggle-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 20px;
+    width: 35px;
+    background-color: #ccc;
+    border-radius: 20px;
+    transition: background-color 0.3s;
+}
+
+.checkmark:after {
+    content: "";
+    position: absolute;
+    left: 3px;
+    top: 3px;
+    width: 14px;
+    height: 14px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.3s;
+}
+
+.toggle-container input:checked ~ .checkmark {
+    background-color: #ff0077;
+}
+
+.toggle-container input:checked ~ .checkmark:after {
+    transform: translateX(15px);
+}
+
+@keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(2px) rotate(0.5deg); }
+    50% { transform: translateX(-2px) rotate(-0.5deg); }
+    75% { transform: translateX(1px) rotate(0.3deg); }
+    100% { transform: translateX(0); }
+}
+
+.shaking {
+    animation: shake 0.15s infinite;
+}
+
+#image-container {
+    transition: transform 1s;
 }
