@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GIRLGLOCK</title>
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/ekmas/cs16.css@main/css/cs16.min.css">
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-image: url('https://files.catbox.moe/likszt.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+        }
+
+        .centered {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            width: 100%;
+        }
+
+        .cs-dialog {
+            position: relative;
+            display: inline-block;
+        }
+
+        .heading {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="centered">
+        <div class="cs-dialog">
+            <div class="heading">
+                <div class="wrapper">
+                    <div class="icon"></div>
+                    <p class="text">GIRLGLOCK</p>
+                </div>
+                <button class="cs-btn close" onclick="location.reload()"></button>
+            </div>
+
+            <header id="header">
+                <div class="top">
+                    <div class="converter-section">
+                        <div class="cs-form-group" style="margin: 35px 0">
+                            <h2>sens cumverter</h2>
+                            <br>
+                            <hr class="cs-hr" />
+                            <br>
+                            <h3 style="display: flex; gap: 10px; margin: 0 23px;">
+                                <span style="width: 150px; text-align: left;">Game</span>
+                                <span style="width: 150px; text-align: left;">DPI</span>
+                                <span style="width: 150px; text-align: left;">Sens</span>
+                            </h3>
+                            <div>
+                                <div>
+                                    <select class="cs-select" id="sourceGame" style="width: 150px; margin-bottom: 5px;">
+                                        <option value="cs2">CS2</option>
+                                        <option value="valorant">Valorant</option>
+                                        <option value="overwatch">Overwatch</option>
+                                        <option value="cyberpunk">Cyberpunk</option>
+                                        <option value="deadlock">Deadlock</option>
+                                        <option value="fortnite">Fortnite</option>
+                                        <option value="marvel">Marvel</option>
+                                        <option value="minecraft">Minecraft</option>
+                                        <option value="rust">Rust</option>
+                                    </select>
+                                    <input type="number" class="cs-input" id="sourceDpi" value="400" step="25"
+                                        style="width: 150px; height: 27px">
+                                    <input type="number" class="cs-input" id="sourceSens" value="1" step="0.01"
+                                        style="width: 150px; height: 27px">
+                                </div>
+                                <div>
+                                    <select class="cs-select" id="targetGame" style="width: 150px; margin: 5px 0;">
+                                        <option value="valorant">Valorant</option>
+                                        <option value="cs2">CS2</option>
+                                        <option value="overwatch">Overwatch</option>
+                                        <option value="cyberpunk">Cyberpunk</option>
+                                        <option value="deadlock">Deadlock</option>
+                                        <option value="fortnite">Fortnite</option>
+                                        <option value="marvel">Marvel</option>
+                                        <option value="minecraft">Minecraft</option>
+                                        <option value="rust">Rust</option>
+                                    </select>
+                                    <input type="number" class="cs-input" id="targetDpi" value="400" step="1"
+                                        style="width: 150px; height: 27px">
+                                    <input type="text" class="cs-input" id="result" readonly value="new sens" step="1"
+                                        style="width: 150px; height: 27px">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <br>
+                </div>
+                <menu class="footer-btns" style="position:relative;">
+                    <button class="cs-btn" onclick="convert()">OK</button>
+                    <button class="cs-btn" onclick="location.reload()">Cancel</button>
+                </menu>
+            </header>
+        </div>
+    </div>
+
+    <script>
+        const baseRates = {
+            'cs2': 1,
+            'valorant': 0.314,
+            'overwatch': 3.3333333,
+            'cyberpunk': 2.200,
+            'deadlock': 0.500,
+            'fortnite': 3.960,
+            'marvel': 1.257,
+            'minecraft': 21.227,
+            'rust': 0.196
+        };
+
+        function setCookie(name, value, days) {
+            let expires = "";
+            if (days) {
+                let date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = name + "=" + value + expires + "; path=/";
+        }
+
+        function getCookie(name) {
+            let nameEQ = name + "=";
+            let cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                let cookie = cookies[i].trim();
+                if (cookie.indexOf(nameEQ) == 0) return cookie.substring(nameEQ.length);
+            }
+            return null;
+        }
+
+        function saveSettings() {
+            let sourceGame = document.getElementById('sourceGame').value;
+            let sourceDpi = document.getElementById('sourceDpi').value;
+            let sourceSens = document.getElementById('sourceSens').value;
+            let targetGame = document.getElementById('targetGame').value;
+            let targetDpi = document.getElementById('targetDpi').value;
+
+            setCookie("sourceGame", sourceGame, 30);
+            setCookie("sourceDpi", sourceDpi, 30);
+            setCookie("sourceSens", sourceSens, 30);
+            setCookie("targetGame", targetGame, 30);
+            setCookie("targetDpi", targetDpi, 30);
+        }
+
+        function loadSettings() {
+            let sourceGame = getCookie("sourceGame");
+            let sourceDpi = getCookie("sourceDpi");
+            let sourceSens = getCookie("sourceSens");
+            let targetGame = getCookie("targetGame");
+            let targetDpi = getCookie("targetDpi");
+
+            if (sourceGame) document.getElementById('sourceGame').value = sourceGame;
+            if (sourceDpi) document.getElementById('sourceDpi').value = sourceDpi;
+            if (sourceSens) document.getElementById('sourceSens').value = sourceSens;
+            if (targetGame) document.getElementById('targetGame').value = targetGame;
+            if (targetDpi) document.getElementById('targetDpi').value = targetDpi;
+        }
+
+        function convert() {
+            const sourceSens = parseFloat(document.getElementById('sourceSens').value);
+            const sourceDpi = parseFloat(document.getElementById('sourceDpi').value);
+            const targetDpi = parseFloat(document.getElementById('targetDpi').value);
+            const sourceGame = document.getElementById('sourceGame').value;
+            const targetGame = document.getElementById('targetGame').value;
+
+            if (isNaN(sourceSens)) {
+                alert("cum");
+                return;
+            }
+
+            const sourceToCS2 = sourceSens / baseRates[sourceGame];
+            const dpiAdjusted = (sourceToCS2 * sourceDpi) / targetDpi;
+            const result = dpiAdjusted * baseRates[targetGame];
+
+            document.getElementById('result').value = result.toFixed(4);
+
+            saveSettings(); // Save settings after conversion
+        }
+
+        document.addEventListener("DOMContentLoaded", loadSettings);
+    </script>
+</body>
+
+</html>
