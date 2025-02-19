@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GIRLGLOCK</title>
+    <title>sens cumverter</title>
 
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/ekmas/cs16.css@main/css/cs16.min.css">
 
@@ -94,8 +93,8 @@
                                 </div>
                                 <div>
                                     <select class="cs-select" id="targetGame" style="width: 150px; margin: 5px 0;">
-                                        <option value="valorant">Valorant</option>
                                         <option value="cs2">CS2</option>
+                                        <option value="valorant">Valorant</option>
                                         <option value="overwatch">Overwatch</option>
                                         <option value="cyberpunk">Cyberpunk</option>
                                         <option value="deadlock">Deadlock</option>
@@ -135,77 +134,28 @@
             'rust': 0.196
         };
 
-        function setCookie(name, value, days) {
-            let expires = "";
-            if (days) {
-                let date = new Date();
-                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-                expires = "; expires=" + date.toUTCString();
-            }
-            document.cookie = name + "=" + value + expires + "; path=/";
-        }
-
-        function getCookie(name) {
-            let nameEQ = name + "=";
-            let cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                let cookie = cookies[i].trim();
-                if (cookie.indexOf(nameEQ) == 0) return cookie.substring(nameEQ.length);
-            }
-            return null;
-        }
-
         function saveSettings() {
-            let sourceGame = document.getElementById('sourceGame').value;
-            let sourceDpi = document.getElementById('sourceDpi').value;
-            let sourceSens = document.getElementById('sourceSens').value;
-            let targetGame = document.getElementById('targetGame').value;
-            let targetDpi = document.getElementById('targetDpi').value;
-
-            setCookie("sourceGame", sourceGame, 30);
-            setCookie("sourceDpi", sourceDpi, 30);
-            setCookie("sourceSens", sourceSens, 30);
-            setCookie("targetGame", targetGame, 30);
-            setCookie("targetDpi", targetDpi, 30);
+            const settings = {
+                sourceGame: sourceGame.value, sourceDpi: sourceDpi.value,
+                sourceSens: sourceSens.value, targetGame: targetGame.value, targetDpi: targetDpi.value
+            };
+            localStorage.setItem("sensSettings", JSON.stringify(settings));
         }
 
         function loadSettings() {
-            let sourceGame = getCookie("sourceGame");
-            let sourceDpi = getCookie("sourceDpi");
-            let sourceSens = getCookie("sourceSens");
-            let targetGame = getCookie("targetGame");
-            let targetDpi = getCookie("targetDpi");
-
-            if (sourceGame) document.getElementById('sourceGame').value = sourceGame;
-            if (sourceDpi) document.getElementById('sourceDpi').value = sourceDpi;
-            if (sourceSens) document.getElementById('sourceSens').value = sourceSens;
-            if (targetGame) document.getElementById('targetGame').value = targetGame;
-            if (targetDpi) document.getElementById('targetDpi').value = targetDpi;
+            const saved = JSON.parse(localStorage.getItem("sensSettings"));
+            if (!saved) return;
+            Object.entries(saved).forEach(([key, val]) => document.getElementById(key).value = val);
         }
 
         function convert() {
-            const sourceSens = parseFloat(document.getElementById('sourceSens').value);
-            const sourceDpi = parseFloat(document.getElementById('sourceDpi').value);
-            const targetDpi = parseFloat(document.getElementById('targetDpi').value);
-            const sourceGame = document.getElementById('sourceGame').value;
-            const targetGame = document.getElementById('targetGame').value;
-
-            if (isNaN(sourceSens)) {
-                alert("cum");
-                return;
-            }
-
-            const sourceToCS2 = sourceSens / baseRates[sourceGame];
-            const dpiAdjusted = (sourceToCS2 * sourceDpi) / targetDpi;
-            const result = dpiAdjusted * baseRates[targetGame];
-
+            if (isNaN(sourceSens.value)) return alert("cum");
+            const result = ((sourceSens.value / baseRates[sourceGame.value]) * sourceDpi.value / targetDpi.value) * baseRates[targetGame.value];
             document.getElementById('result').value = result.toFixed(4);
-
-            saveSettings(); // Save settings after conversion
+            saveSettings();
         }
 
         document.addEventListener("DOMContentLoaded", loadSettings);
     </script>
 </body>
-
 </html>
