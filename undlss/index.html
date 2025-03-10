@@ -63,7 +63,7 @@
         }
 
         .file-input-container input[type="file"] {
-            display: none; /* Hide the default file input */
+            display: none;
         }
 
         .file-name {
@@ -163,9 +163,9 @@
                                     compressTo1KB();
                                 }, 'image/jpeg', quality);
                             } else {
-                                if (width > 100 || height > 100) {
-                                    width *= 0.9;
-                                    height *= 0.9;
+                                if (width > 50 || height > 50) {
+                                    width *= 0.8;
+                                    height *= 0.8;
                                     compressTo1KB();
                                 } else {
                                     alert('it pooped :c');
