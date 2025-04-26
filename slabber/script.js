@@ -2,12 +2,12 @@ let scene, camera, renderer;
 let game = {
     render: {
         lastFrameTime: 0,
-        frameInterval: 1000 / 30
+        frameInterval: 1000 / 60
     },
     stack: [],
     currentLayer: null,
     direction: new THREE.Vector3(1, 0, 0),
-    speed: 0.3,
+    speed: 0.15,
     boxHeight: 1,
     gameEnded: false,
     score: 0,
@@ -63,7 +63,10 @@ function init() {
     });
 
     if (isMobile.mobile()) {
-        renderer.setPixelRatio(window.devicePixelRatio * 0.5);
+        renderer.setPixelRatio(Math.min(0.25, window.devicePixelRatio));
+        game.transitionDuration = 0.15;
+    } else {
+        renderer.setPixelRatio(window.devicePixelRatio);
     }
 
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -83,6 +86,42 @@ function init() {
     game.gameOverHint.style.display = 'none';
 
     addSlab();
+
+    initInputHandlers();
+
+    window.addEventListener('resize', onWindowResize);
+}
+
+function initInputHandlers() {
+    window.removeEventListener('click', tryPlace);
+    window.removeEventListener('touchstart', handleTouch);
+    window.removeEventListener('keydown', handleKeydown);
+
+    function handleTouch(e) {
+        e.preventDefault();
+        tryPlace();
+    }
+
+    function handleKeydown(e) {
+        if (e.code === 'Space') {
+            e.preventDefault();
+            tryPlace();
+        }
+    }
+
+    if ('ontouchstart' in window) {
+        window.addEventListener('touchstart', handleTouch, { passive: false });
+    } else {
+        window.addEventListener('click', tryPlace);
+    }
+
+    window.addEventListener('keydown', handleKeydown);
+}
+
+function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
 function createSlab(x, y, width, depth) {
@@ -207,16 +246,18 @@ function placeSlab() {
     game.cameraTargetY = camera.position.y + game.boxHeight;
     game.transitionStartTime = Date.now();
 
+    renderer.render(scene, camera);
+
     addSlab();
 }
 
 function animate(currentTime) {
     requestAnimationFrame(animate);
-    
+
     if (currentTime - game.render.lastFrameTime < game.render.frameInterval) return;
-    
+
     game.render.lastFrameTime = currentTime;
-    
+
     if (game.currentLayer && game.currentLayer.moving && !game.gameEnded) {
         game.currentLayer.position.add(game.direction.clone().multiplyScalar(game.speed));
         const axisPos = game.direction.x !== 0 ? game.currentLayer.position.x : game.currentLayer.position.z;
@@ -243,19 +284,27 @@ function gameOver() {
     playSound('gameover');
     updatePB();
     addMostPerfs();
+
+    renderer.render(scene, camera);
 }
 
 function tryPlace() {
-    if (game.gameEnded) { restartGame(); return; }
+    if (game.gameEnded) {
+        restartGame();
+        return;
+    }
     if (!game.currentLayer) return;
+
     placeSlab();
 }
 
 function restartGame() {
     if (game.currentLayer) scene.remove(game.currentLayer);
+
     while (game.stack.length) scene.remove(game.stack.pop());
+
     game.currentLayer = null;
-    game.speed = 0.3;
+    game.speed = 0.15;
     game.gameEnded = false;
     game.score = 0;
     game.perfectCombos = 0;
@@ -265,13 +314,20 @@ function restartGame() {
     game.scoreHint.style.display = 'block';
     game.startHint.style.display = 'block';
     game.gameOverHint.style.display = 'none';
+
     const base = createSlab(0, 0, 5, 5);
     scene.add(base);
     game.stack.push(base);
+
     camera.position.set(15, 13, 15);
     camera.lookAt(0, 0, 0);
+
     addSlab();
     addTimesPlayed();
+
+    initInputHandlers();
+
+    renderer.render(scene, camera);
 }
 
 function loadGameStats() {
@@ -315,7 +371,14 @@ function addMostPerfs() {
     }
 }
 
-window.addEventListener('click', tryPlace);
-window.addEventListener('keydown', (e) => {
-    if (e.code === 'Space') { e.preventDefault(); tryPlace(); }
-});
+function handleTouch(e) {
+    e.preventDefault();
+    tryPlace();
+}
+
+function handleKeydown(e) {
+    if (e.code === 'Space') {
+        e.preventDefault();
+        tryPlace();
+    }
+}
