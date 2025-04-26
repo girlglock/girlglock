@@ -1,9 +1,13 @@
 let scene, camera, renderer;
 let game = {
+    render: {
+        lastFrameTime: 0,
+        frameInterval: 1000 / 30
+    },
     stack: [],
     currentLayer: null,
     direction: new THREE.Vector3(1, 0, 0),
-    speed: 0.05,
+    speed: 0.3,
     boxHeight: 1,
     gameEnded: false,
     score: 0,
@@ -43,7 +47,7 @@ animate();
 function init() {
     loadGameStats();
 
-    const isMobile = new MobileDetect(window.navigator.userAgent);
+    var isMobile = new MobileDetect(window.navigator.userAgent);
 
     scene = new THREE.Scene();
 
@@ -115,7 +119,7 @@ function addSlab() {
         : new THREE.Vector3(1, 0, 0);
 
     game.axisToggle = !game.axisToggle;
-    game.speed += 0.001;
+    game.speed += 0.005;
 
     if (game.stack.length > 1) game.startHint.style.display = "none";
 }
@@ -206,9 +210,13 @@ function placeSlab() {
     addSlab();
 }
 
-function animate() {
+function animate(currentTime) {
     requestAnimationFrame(animate);
-
+    
+    if (currentTime - game.render.lastFrameTime < game.render.frameInterval) return;
+    
+    game.render.lastFrameTime = currentTime;
+    
     if (game.currentLayer && game.currentLayer.moving && !game.gameEnded) {
         game.currentLayer.position.add(game.direction.clone().multiplyScalar(game.speed));
         const axisPos = game.direction.x !== 0 ? game.currentLayer.position.x : game.currentLayer.position.z;
