@@ -43,7 +43,7 @@ animate();
 function init() {
     loadGameStats();
 
-    const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+    const isMobile = new MobileDetect(window.navigator.userAgent);
 
     scene = new THREE.Scene();
 
@@ -52,13 +52,13 @@ function init() {
     camera.lookAt(0, 0, 0);
 
     renderer = new THREE.WebGLRenderer({
-        antialias: !isMobile,
-        alpha: true,
+        antialias: !isMobile.mobile(),
+        alpha: !isMobile.mobile(),
         powerPreference: 'low-power',
-        precision: isMobile ? 'lowp' : 'highp'
+        precision: isMobile.mobile() ? 'lowp' : 'highp'
     });
 
-    if (isMobile) {
+    if (isMobile.mobile()) {
         renderer.setPixelRatio(window.devicePixelRatio * 0.5);
     }
 
@@ -115,7 +115,7 @@ function addSlab() {
         : new THREE.Vector3(1, 0, 0);
 
     game.axisToggle = !game.axisToggle;
-    game.speed += 0.005;
+    game.speed += 0.001;
 
     if (game.stack.length > 1) game.startHint.style.display = "none";
 }
@@ -145,7 +145,7 @@ function placeSlab() {
     const incomingArea = currentSize.x * currentSize.z;
     const overlapArea = overlapX * overlapZ;
     const overhangVolume = (incomingArea - overlapArea) * game.boxHeight;
-    const perfectVolumeThreshold = 0.5;
+    const perfectVolumeThreshold = 0.25;
     let wasPerfect = false;
 
     if (overhangVolume <= perfectVolumeThreshold) {
