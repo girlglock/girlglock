@@ -53,14 +53,13 @@ function init() {
 
     renderer = new THREE.WebGLRenderer({
         antialias: !isMobile,
-        alpha: true,
+        alpha: !isMobile,
         powerPreference: 'low-power',
-        precision: isMobile ? 'mediump' : 'highp'
+        precision: isMobile ? 'lowp' : 'highp'
     });
 
     if (isMobile) {
         renderer.setPixelRatio(window.devicePixelRatio * 0.5);
-        game.speed = 0.035;
     }
 
     renderer.setSize(window.innerWidth, window.innerHeight);
