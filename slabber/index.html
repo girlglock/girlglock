@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
     <meta charset="UTF-8">
@@ -54,6 +54,18 @@
             bottom: 80px;
             top: auto;
         }
+
+        @keyframes tapEffect {
+            0% {
+                transform: translate(-50%, -50%) scale(0.5);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(-50%, -50%) scale(1.5);
+                opacity: 0;
+            }
+        }
     </style>
 </head>
 
@@ -68,10 +80,16 @@
         <p>Times Played: <span id="timesPlayed">0</span></p>
         <p>Most Perfs in sequence: <span id="mostPerfectsInARow">0</span></p>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/postprocessing/ShaderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/shaders/CopyShader.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/20.0.0/tween.umd.js"></script>
-    <script src="mobile-detect.js"></script>
-    <script src="script.js"></script>
+    <script src="scripts/mobile-detect.js"></script>
+
+    <script src="scripts/script.js"></script>
 </body>
 
 </html>
