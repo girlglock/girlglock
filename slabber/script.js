@@ -268,7 +268,7 @@ function restartGame() {
     const base = createSlab(0, 0, 5, 5);
     scene.add(base);
     game.stack.push(base);
-    camera.position.set(15, 15, 15);
+    camera.position.set(15, 13, 15);
     camera.lookAt(0, 0, 0);
     addSlab();
     addTimesPlayed();
