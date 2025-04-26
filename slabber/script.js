@@ -53,7 +53,7 @@ function init() {
 
     renderer = new THREE.WebGLRenderer({
         antialias: !isMobile,
-        alpha: !isMobile,
+        alpha: true,
         powerPreference: 'low-power',
         precision: isMobile ? 'lowp' : 'highp'
     });
@@ -145,7 +145,7 @@ function placeSlab() {
     const incomingArea = currentSize.x * currentSize.z;
     const overlapArea = overlapX * overlapZ;
     const overhangVolume = (incomingArea - overlapArea) * game.boxHeight;
-    const perfectVolumeThreshold = 1;
+    const perfectVolumeThreshold = 0.5;
     let wasPerfect = false;
 
     if (overhangVolume <= perfectVolumeThreshold) {
