@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Slabber</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        #bg {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            z-index: -1;
+        }
+
+        #scoreHint {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 28px;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 8px;
+            color: #fff;
+            display: block;
+        }
+
+        .gameHint {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 32px;
+            padding: 20px 40px;
+            border-radius: 12px;
+            color: #fff;
+            display: none;
+            text-align: center;
+        }
+
+        #startHint {
+            bottom: 80px;
+            top: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="bg"></div>
+    <div id="scoreHint">Score: 0</div>
+    <div id="startHint" class="gameHint">[Mouse1] / [Space]<br>to start</div>
+    <div id="gameOverHint" class="gameHint" style="bottom: 80px">you lost lol</div>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
