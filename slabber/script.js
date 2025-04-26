@@ -255,7 +255,7 @@ function restartGame() {
     if (game.currentLayer) scene.remove(game.currentLayer);
     while (game.stack.length) scene.remove(game.stack.pop());
     game.currentLayer = null;
-    game.speed = 0.05;
+    game.speed = 0.3;
     game.gameEnded = false;
     game.score = 0;
     game.perfectCombos = 0;
