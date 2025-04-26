@@ -12,11 +12,15 @@
             font-family: 'Poppins', sans-serif;
         }
 
+        canvas {
+            display: block;
+        }
+
         #bg {
             position: fixed;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            background: linear-gradient(to top, #1b0018, #38001a);
             z-index: -1;
         }
 
@@ -58,7 +62,14 @@
     <div id="scoreHint">Score: 0</div>
     <div id="startHint" class="gameHint">[Mouse1] / [Space]<br>to start</div>
     <div id="gameOverHint" class="gameHint" style="bottom: 80px">you lost lol</div>
+    <div id="gameStats"
+        style="position: absolute; bottom: 10px; left: 10px; color: white; font-size: 16px; z-index: 10;">
+        <p>Best Score: <span id="bestScore">0</span></p>
+        <p>Times Played: <span id="timesPlayed">0</span></p>
+        <p>Most Perfs in sequence: <span id="mostPerfectsInARow">0</span></p>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/20.0.0/tween.umd.js"></script>
     <script src="script.js"></script>
 </body>
 
