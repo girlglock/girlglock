@@ -1,63 +1,164 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>glockpaste</title>
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/ekmas/cs16.css@main/css/cs16.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+    <style>
+        body,
+        textarea,
+        pre,
+        code {
+            font-family: 'ArialPixel', monospace;
+        }
+
+        .centered {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            width: 100%;
+        }
+
+        .code-block {
+            overflow-x: hidden;
+        }
+
+        .code-block .inner {
+            position: relative;
+        }
+
+        .code-block .inner .cs-btn {
+            position: absolute;
+            right: 1px;
+            top: 1px;
+            z-index: 5;
+        }
+
+        .code-block .inner pre {
+            background-color: #3e4637;
+            border: 1px solid;
+            border-color: #292c21 #8c9284 #8c9284 #292c21;
+            padding: 5px;
+        }
+
+        .code-block .inner pre code {
+            white-space: pre-wrap;
+        }
+
+        .code-block .inner pre code::selection {
+            background-color: #958831;
+            color: #fff;
+        }
+
+        .hljs {
+            color: #e0e0e0;
+            background: #3e4637;
+        }
+
+        .hljs-keyword {
+            color: #ffb347;
+        }
+
+        .hljs-string {
+            color: #90ee90;
+        }
+
+        .hljs-comment {
+            color: #888888;
+            font-style: italic;
+        }
+
+        .hljs-number {
+            color: #87cefa;
+        }
+
+        .hljs-function {
+            color: #f28bff;
+        }
+
+        .hljs-title {
+            color: #ffd700;
+        }
+
+        .highlight-wrapper {
+            position: relative;
+            width: 700px;
+            height: 500px;
+            resize: both;
+            overflow: hidden;
+            min-width: 300px;
+            min-height: 200px;
+            max-width: 1200px;
+            max-height: 800px;
+            border: 1px solid;
+            border-color: #292c21 #8c9284 #8c9284 #292c21;
+            background: #3e4637;
+        }
+
+        #highlighted-output {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #3e4637;
+            border: none;
+            padding: 10px;
+            margin: 0;
+            white-space: pre-wrap;
+            overflow: auto;
+            color: white;
+            pointer-events: none;
+            font-size: 14px;
+            line-height: 1.4;
+            font-family: 'ArialPixel', monospace;
+            box-sizing: border-box;
+        }
+
+        #text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: 10px;
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.4;
+            background: transparent;
+            color: transparent;
+            caret-color: white;
+            border: none;
+            overflow: auto;
+            resize: none;
+            box-sizing: border-box;
+            font-family: 'ArialPixel', monospace;
+            outline: none;
+        }
+
+        #text::selection {
+            background: rgba(149, 136, 49, 0.4);
+        }
+    </style>
 </head>
-<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/ekmas/cs16.css@main/css/cs16.min.css">
-<style>
-    .centered {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        height: 100%;
-        width: 100%;
-    }
-
-    .code-block {
-        overflow-x: hidden;
-    }
-
-    .code-block .inner {
-        position: relative;
-    }
-
-    .code-block .inner .cs-btn {
-        position: absolute;
-        right: 1px;
-        top: 1px;
-        z-index: 5;
-    }
-
-    .code-block .inner pre {
-        background-color: #3e4637;
-        border: 1px solid;
-        border-color: #292c21 #8c9284 #8c9284 #292c21;
-        position: relative;
-        font-family: Courier New, Courier, monospace;
-        padding: 5px;
-    }
-
-    .code-block .inner pre code {
-        white-space: pre-wrap;
-    }
-
-    .code-block .inner pre code::selection {
-        background-color: #958831;
-        color: #fff;
-    }
-</style>
 
 <body>
     <div class="centered">
         <h1>glockpaste</h1>
         <div id="paste-form">
-            <textarea id="text" class="cs-input"
-                style="margin-top: 10px; width: 100%; resize: both; min-width: 700px; min-height: 500px; max-height: 700px;"
-                placeholder="put your glock here"></textarea>
-            <div class="flex-wrapper" style="display: flex; align-items: center; gap: 10px;">
+            <div class="highlight-wrapper" id="highlight-wrapper">
+                <pre><code id="highlighted-output"></code></pre>
+                <textarea id="text" class="cs-input" placeholder="put your glock here" spellcheck="false"></textarea>
+            </div>
+
+            <div class="flex-wrapper" style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
                 <div class="code-block" style="width: 85%;">
                     <div class="inner">
                         <button class="cs-btn" id="copy-button">Copy</button>
@@ -70,22 +171,45 @@
     </div>
 
     <script>
+        const textarea = document.getElementById('text');
+        const highlighted = document.getElementById('highlighted-output');
+
+        function updateHighlight() {
+            const code = textarea.value;
+            if (code.trim() === '') {
+                highlighted.innerHTML = '';
+                return;
+            }
+            const result = hljs.highlightAuto(code);
+            highlighted.innerHTML = result.value;
+        }
+
+        function syncScroll() {
+            highlighted.scrollTop = textarea.scrollTop;
+            highlighted.scrollLeft = textarea.scrollLeft;
+        }
+
+        textarea.addEventListener('input', updateHighlight);
+        textarea.addEventListener('scroll', syncScroll);
+
+        if (window.ResizeObserver) {
+            const resizeObserver = new ResizeObserver(entries => {
+            });
+            resizeObserver.observe(document.getElementById('highlight-wrapper'));
+        }
+
         window.onload = function () {
             const urlParams = new URLSearchParams(window.location.search);
             const pasteId = urlParams.get('id');
-
-            if (pasteId) {
-                fetchPaste(pasteId);
-            }
+            if (pasteId) fetchPaste(pasteId);
+            updateHighlight();
         };
 
         async function uploadText() {
-            const text = document.getElementById('text').value;
+            const text = textarea.value;
             const generatedUrl = document.getElementById('generated-url');
 
-            if (!text) {
-                return;
-            }
+            if (!text) return;
 
             const formData = new FormData();
             formData.append('reqtype', 'fileupload');
@@ -101,7 +225,6 @@
                     const pasteId = await response.text().then(text => text.trim().split('/').pop().replace('.txt', ''));
                     const pasteUrl = `${window.location.origin}${window.location.pathname}?id=${pasteId}`;
                     generatedUrl.textContent = pasteUrl;
-
                 } else {
                     generatedUrl.textContent = 'an error occurred';
                 }
@@ -111,19 +234,17 @@
         }
 
         async function fetchPaste(pasteId) {
-            const textArea = document.getElementById('text');
-
             try {
                 const response = await fetch(`https://corsproxy.io/?url=https://files.catbox.moe/${pasteId}.txt`);
-
                 if (response.ok) {
                     const text = await response.text();
-                    textArea.textContent = text;
+                    textarea.value = text;
+                    updateHighlight();
                 } else {
-                    textArea.textContent = 'glock not found';
+                    textarea.value = 'glock not found';
                 }
             } catch (error) {
-                textArea.textContent = 'error: ' + error.message;
+                textarea.value = 'error: ' + error.message;
             }
         }
 
@@ -140,4 +261,5 @@
         });
     </script>
 </body>
+
 </html>
