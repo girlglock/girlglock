@@ -216,7 +216,7 @@
             formData.append('fileToUpload', new Blob([text], { type: 'text/plain' }), 'paste.txt');
 
             try {
-                const response = await fetch('https://corsproxy.io/?url=https://catbox.moe/user/api.php', {
+                const response = await fetch('https://api.cors.lol/?url=https://catbox.moe/user/api.php', {
                     method: 'POST',
                     body: formData
                 });
@@ -235,7 +235,7 @@
 
         async function fetchPaste(pasteId) {
             try {
-                const response = await fetch(`https://corsproxy.io/?url=https://files.catbox.moe/${pasteId}.txt`);
+                const response = await fetch(`https://api.cors.lol/?url=https://files.catbox.moe/${pasteId}.txt`);
                 if (response.ok) {
                     const text = await response.text();
                     textarea.value = text;
