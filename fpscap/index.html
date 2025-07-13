@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fpscap calc</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/ekmas/cs16.css@main/css/cs16.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-image: url('https://files.catbox.moe/likszt.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+        }
+
+        .centered {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            width: 100%;
+        }
+
+        .cs-dialog {
+            position: relative;
+            display: inline-block;
+        }
+
+        .heading {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-container {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid;
+            border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+        }
+
+        table {
+            width: 100%;
+            background: var(--secondary-bg);
+            table-layout: fixed;
+        }
+
+        thead {
+            position: sticky;
+            top: 0;
+            background: var(--secondary-bg);
+            z-index: 1;
+        }
+
+        th,
+        td {
+            padding: 8px 6px;
+            text-align: center;
+            font-size: 16px;
+            line-height: 15px;
+            width: 33.33%;
+        }
+
+        th:last-child,
+        td:last-child {
+            border-right: none;
+        }
+
+        td {
+            padding: 6px;
+            color: var(--secondary-text);
+            user-select: text;
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .silly-row td:first-child {
+            color: var(--accent);
+        }
+
+        .oto-row td:first-child {
+            color: white;
+        }
+
+        .ato-row td:first-child {
+            color: #87CEEB;
+        }
+
+        .empty-state {
+            color: var(--accent);
+            font-style: italic;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .empty-state img {
+            width: 28px;
+            height: 28px;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        .converter-section {
+            margin: 35px 0;
+        }
+
+        .footer-btns {
+            position: relative;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="centered">
+        <div class="cs-dialog">
+            <div class="heading">
+                <div class="wrapper">
+                    <div class="icon"></div>
+                    <p class="text">GIRLGLOCK</p>
+                </div>
+                <button class="cs-btn close" onclick="location.reload()"></button>
+            </div>
+
+            <header id="header">
+                <div class="top">
+                    <div class="converter-section">
+                        <h2>fpscap calc</h2>
+                        <br>
+                        <hr class="cs-hr" />
+                        <br>
+                        <p>monitor hz:</p>
+                        <input type="number" id="hzInput" class="cs-input" placeholder="enter hz" value="240" />
+                        <br><br>
+                        <div class="table-container">
+                            <table id="hzTable">
+                                <thead>
+                                    <tr>
+                                        <th>fps</th>
+                                        <th>type</th>
+                                        <th>frames : hz</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="hzTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <br>
+                </div>
+                <menu class="footer-btns">
+                    <button class="cs-btn" onclick="calculateCaps()">Send</button>
+                    <button class="cs-btn" onclick="location.reload()">Cancel</button>
+                </menu>
+            </header>
+        </div>
+    </div>
+
+    <script>
+        function calculateCaps() {
+            const hz = parseFloat(document.getElementById('hzInput').value);
+            const tableBody = document.getElementById('hzTableBody');
+            tableBody.innerHTML = '';
+
+            if (isNaN(hz) || hz <= 0) {
+                tableBody.innerHTML = '<tr><td colspan="3" class="empty-state"><img src="https://cdn.7tv.app/emote/01HDJKRTF00000ZC4XYEEBH35A/2x.avif" alt="catAsk">can you make the number be positive.</td></tr>';
+                return;
+            }
+
+            const shown = new Set();
+            const rows = [];
+
+            for (let i = 1; i <= hz; i++) {
+                if (hz % i === 0) {
+                    const ratio = hz / i;
+                    shown.add(i);
+                    rows.push({
+                        fps: i,
+                        type: 'divisor',
+                        timing: ratio === 1 ? '1 : 1' : `1 : ${ratio}`,
+                        isOneToOne: ratio === 1
+                    });
+                }
+            }
+
+            for (let i = 2; i <= 10; i++) {
+                const fps = hz * i;
+                if (!shown.has(fps)) {
+                    rows.push({
+                        fps: fps,
+                        type: 'multiple',
+                        timing: `${i} : 1`,
+                        isOneToOne: false
+                    });
+                }
+            }
+
+            rows.sort((a, b) => a.fps - b.fps);
+            const oneToOneIndex = rows.findIndex(row => row.isOneToOne);
+
+            rows.forEach((row, index) => {
+                let rowClass = 'silly-row';
+                if (row.isOneToOne)
+                    rowClass = 'oto-row';
+                else if (oneToOneIndex !== -1 && (index === oneToOneIndex - 1 || index === oneToOneIndex + 1))
+                    rowClass = 'ato-row';
+
+                tableBody.innerHTML += `
+                    <tr class="${rowClass}" id="row-${index}">
+                        <td>${row.fps} fps</td>
+                        <td>${row.type}</td>
+                        <td>${row.timing}</td>
+                    </tr>
+                `;
+            });
+
+            if (oneToOneIndex !== -1) {
+                const oneToOneRow = document.getElementById(`row-${oneToOneIndex}`);
+                if (oneToOneRow)
+                    oneToOneRow.scrollIntoView({ behavior: 'instant', block: 'center' });
+            }
+        }
+
+        document.getElementById('hzInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter')
+                calculateCaps();
+        });
+
+        window.addEventListener('load', function () {
+            calculateCaps();
+        });
+    </script>
+</body>
+
+</html>
