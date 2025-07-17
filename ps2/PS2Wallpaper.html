@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="GIRLGLOCK ૮ ˶ᵔ ᵕ ᵔ˶ ა">
+
+    <meta property="og:url" content="https://girlglock.com/ps2">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="PS2 Wallpaper">
+    <meta property="og:description" content="૮ ˶ᵔ ᵕ ᵔ˶ ა">
+    <meta property="og:image" content="https://cdn.7tv.app/emote/01HA1F8K1R0006NBQ5F58JXQMV/4x.avif">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta property="twitter:domain" content="girlglock.com">
+    <meta property="twitter:url" content="https://girlglock.com/ps2">
+    <meta name="twitter:title" content="PS2 Wallpaper">
+    <meta name="twitter:description" content="૮ ˶ᵔ ᵕ ᵔ˶ ა">
+    <meta name="twitter:image" content="https://cdn.7tv.app/emote/01HA1F8K1R0006NBQ5F58JXQMV/4x.avif">
+    <title>PS2 Wallpaper | GIRLGLOCK.COM</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <canvas id="dotsCanvas"></canvas>
+    <div class="menu-container">
+        <div class="menu-item" id="current-time">--:--:--</div>
+        <div class="menu-item" id="current-date">----, ---- -, ----</div>
+        <div class="menu-item weather-item" id="weather-display">
+            <span class="weather-temp">--°</span>
+            <span class="weather-condition">loading...</span>
+        </div>
+    </div>
+    <div class="location-modal" id="location-modal">
+        <div class="modal-content">
+            <input type="text" id="location-input" placeholder="enter city name" readonly>
+            <div class="on-screen-keyboard" id="keyboard">
+                <div class="key" data-key="q">Q</div>
+                <div class="key" data-key="w">W</div>
+                <div class="key" data-key="e">E</div>
+                <div class="key" data-key="r">R</div>
+                <div class="key" data-key="t">T</div>
+                <div class="key" data-key="y">Y</div>
+                <div class="key" data-key="u">U</div>
+                <div class="key" data-key="i">I</div>
+                <div class="key" data-key="o">O</div>
+                <div class="key" data-key="p">P</div>
+                <div class="key" data-key="a">A</div>
+                <div class="key" data-key="s">S</div>
+                <div class="key" data-key="d">D</div>
+                <div class="key" data-key="f">F</div>
+                <div class="key" data-key="g">G</div>
+                <div class="key" data-key="h">H</div>
+                <div class="key" data-key="j">J</div>
+                <div class="key" data-key="k">K</div>
+                <div class="key" data-key="l">L</div>
+                <div class="key backspace" data-key="backspace">⌫</div>
+                <div class="key" data-key="z">Z</div>
+                <div class="key" data-key="x">X</div>
+                <div class="key" data-key="c">C</div>
+                <div class="key" data-key="v">V</div>
+                <div class="key" data-key="b">B</div>
+                <div class="key" data-key="n">N</div>
+                <div class="key" data-key="m">M</div>
+                <div class="key" data-key=",">,</div>
+                <div class="key" data-key=".">.</div>
+                <div class="key clear" data-key="clear">CLEAR</div>
+                <div class="key space" data-key=" ">SPACE</div>
+                <div class="key" data-key="1">1</div>
+                <div class="key" data-key="2">2</div>
+                <div class="key" data-key="3">3</div>
+                <div class="key" data-key="4">4</div>
+                <div class="key" data-key="5">5</div>
+                <div class="key" data-key="6">6</div>
+                <div class="key" data-key="7">7</div>
+                <div class="key" data-key="8">8</div>
+                <div class="key" data-key="9">9</div>
+                <div class="key" data-key="0">0</div>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-button" id="cancel-button">
+                    <img src="Images/Triangle.png" class="icon-img" alt="Cancel" /> Back
+                </button>
+                <button class="modal-button" id="save-button">
+                    <img src="Images/X.png" class="icon-img" alt="Confirm" /> Confirm
+                </button>
+            </div>
+            <div class="error-message" id="error-message"></div>
+        </div>
+    </div>
+    <script src="scripts/soundManager.js"></script>
+    <script src="scripts/timeManager.js"></script>
+    <script src="scripts/weatherManager.js"></script>
+    <script src="scripts/onScreenKeyboard.js"></script>
+    <script src="scripts/sillyDots.js"></script>
+    <script src="scripts/main.js"></script>
+</body>
+
+</html>
