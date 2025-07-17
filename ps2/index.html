@@ -291,7 +291,7 @@
             loadSounds() {
                 const soundNames = ['hover', 'select'];
                 soundNames.forEach(name => {
-                    const audio = new Audio(`sounds/${name}.wav`);
+                    const audio = new Audio(`Sounds/${name}.wav`);
                     audio.volume = 0.1;
                     audio.preload = 'auto';
                     this.sounds[name] = audio;
