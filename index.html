@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GIRLGLOCK.COM</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: black;
+            overflow: hidden;
+            font-family: 'Helvetica', Arial, sans-serif;
+        }
+
+        canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .menu-container {
+            position: absolute;
+            top: 50%;
+            right: 35%;
+            transform: translateY(-50%);
+            z-index: 100;
+        }
+
+        .menu-item {
+            display: block;
+            color: #6b6a6f;
+            font-size: 3.5vw;
+            text-decoration: none;
+            margin-bottom: 1vh;
+            transition: color 0.2s ease;
+            text-align: center;
+            text-shadow:
+                -2px -2px 0 black,
+                2px -2px 0 black,
+                -2px 2px 0 black,
+                2px 2px 0 black;
+        }
+
+        .menu-item:hover {
+            color: #6398c2;
+        }
+
+        .action-buttons {
+            position: absolute;
+            bottom: 50px;
+            right: 50px;
+            z-index: 100;
+        }
+
+        .action-button {
+            color: #e6e6e6;
+            font-size: 28px;
+            text-decoration: none;
+            margin-left: 30px;
+            transition: color 0.2s ease;
+        }
+
+        .action-button:hover {
+            color: #6398c2;
+        }
+
+        @media (max-width: 768px) {
+            .menu-item {
+                font-size: 6vw;
+                margin-bottom: 3vh;
+            }
+
+            .menu-container {
+                right: 20%;
+            }
+
+            .action-buttons {
+                bottom: 30px;
+                right: 30px;
+            }
+
+            .action-button {
+                font-size: 20px;
+                margin-left: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="dotsCanvas"></canvas>
+
+    <div class="menu-container">
+        <a href="https://twitter.com/girlglock_" target="_blank" class="menu-item">Twitter</a>
+        <a href="https://github.com/girlglock" target="_blank" class="menu-item">Github</a>
+        <a href="https://steamcommunity.com/id/source_ts" target="_blank" class="menu-item">Steam</a>
+        <a href="https://youtube.com/@girIglock" target="_blank" class="menu-item">YouTube</a>
+        <a href="https://bsky.app/profile/girlglock.com" target="_blank" class="menu-item">BlueSky</a>
+    </div>
+
+    <script>
+        class SillyDots {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                this.screenWidth = window.innerWidth;
+                this.screenHeight = window.innerHeight;
+
+                this.canvas.width = this.screenWidth;
+                this.canvas.height = this.screenHeight;
+
+                this.dots = [];
+                this.trails = [];
+                this.dotPositions = Array(7).fill().map(() => []);
+
+                this.isAnimating = true;
+                this.time = 0;
+                this.speed = 5;
+                this.dotRadius = this.screenHeight / 55;
+                this.radius = this.screenHeight / 5;
+                this.centerX = this.screenWidth / 2 - this.screenHeight / 7;
+                this.centerY = this.screenHeight / 2;
+                this.angleFreq = 0.008;
+                this.syncCycleDuration = 120 * 120;
+                this.dotAngleOffsets = Array(7).fill().map((_, i) => i * 0.75);
+                this.trailLength = this.screenHeight / 48;
+                this.trailThickness = this.screenHeight / 200;
+                this.globeRotationSpeed = 0.003;
+
+                this.targetFps = 60;
+                this.frameDelay = 1000 / this.targetFps;
+
+                this.createDots();
+                this.animate();
+
+                window.addEventListener('resize', () => {
+                    this.screenWidth = window.innerWidth;
+                    this.screenHeight = window.innerHeight;
+                    this.canvas.width = this.screenWidth;
+                    this.canvas.height = this.screenHeight;
+                    this.centerX = this.screenWidth / 2 - this.screenHeight / 7;
+                    this.centerY = this.screenHeight / 2;
+                });
+            }
+
+            createDots() {
+                for (let i = 0; i < 7; i++) {
+                    this.dots.push({
+                        x: 0,
+                        y: 0,
+                        scale: 1,
+                        perspectiveFactor: 1
+                    });
+                    this.trails.push([]);
+                }
+            }
+
+            project3dTo2d(x, y, z) {
+                const perspectiveFactor = 1 / (1 + z * 0.001);
+                const screenX = x * perspectiveFactor;
+                const screenY = y * perspectiveFactor;
+                return { screenX, screenY, perspectiveFactor };
+            }
+
+            drawGlowBall(x, y, scale) {
+                const size = 96 * scale;
+                const gradient = this.ctx.createRadialGradient(x, y, 0, x, y, size / 2);
+                gradient.addColorStop(0, 'rgba(44, 118, 255, 0.8)');
+                gradient.addColorStop(0.5, 'rgba(44, 118, 255, 0.25)');
+                gradient.addColorStop(1, 'rgba(44, 118, 255, 0)');
+
+                this.ctx.fillStyle = gradient;
+                this.ctx.beginPath();
+                this.ctx.arc(x, y, size / 2, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
+
+            updateTrails() {
+                for (let i = 0; i < this.dots.length; i++) {
+                    const dot = this.dots[i];
+                    const x = dot.x;
+                    const y = dot.y;
+
+                    this.dotPositions[i].unshift({ x, y });
+                    if (this.dotPositions[i].length > this.trailLength) {
+                        this.dotPositions[i].pop();
+                    }
+
+
+                    const positions = this.dotPositions[i];
+                    for (let j = 0; j < positions.length - 1; j++) {
+                        const pos1 = positions[j];
+                        const pos2 = positions[j + 1];
+
+                        const fadeProgress = Math.pow(j / this.trailLength, 0.3);
+                        const width = Math.max(1, (1 - fadeProgress) * this.trailThickness);
+
+                        const redVal = Math.floor(107 * (1 - fadeProgress));
+                        const greenVal = Math.floor(245 * (1 - fadeProgress));
+                        const blueVal = Math.floor(255 * (1 - 0.4 * fadeProgress));
+
+                        this.ctx.strokeStyle = `rgb(${redVal}, ${greenVal}, ${blueVal})`;
+                        this.ctx.lineWidth = width;
+                        this.ctx.lineCap = 'round';
+                        this.ctx.lineJoin = 'round';
+
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(pos1.x, pos1.y);
+                        this.ctx.lineTo(pos2.x, pos2.y);
+                        this.ctx.stroke();
+                    }
+                }
+            }
+
+            animate() {
+                if (!this.isAnimating) return;
+
+                this.ctx.clearRect(0, 0, this.screenWidth, this.screenHeight);
+
+                this.time += this.speed;
+
+                const globeAngle = this.time * this.globeRotationSpeed;
+                const currentRadius = this.radius;
+                const baseAngle = this.time * this.angleFreq;
+
+                for (let i = 0; i < this.dots.length; i++) {
+                    const dotAngle = (i * 2 * Math.PI) / 7;
+                    const cycleProgress = (this.time % this.syncCycleDuration) / this.syncCycleDuration;
+                    const desyncMultiplier = Math.sin(cycleProgress * Math.PI);
+                    const desyncOffset = this.dotAngleOffsets[i] * desyncMultiplier;
+
+                    const circleX = Math.cos(baseAngle + dotAngle + desyncOffset) * currentRadius;
+                    const circleY = Math.sin(baseAngle + dotAngle + desyncOffset * 1.1) * currentRadius;
+
+                    const globeRadius = circleX;
+                    const height = circleY;
+
+                    const x3d = globeRadius * Math.cos(globeAngle);
+                    const y3d = height;
+                    const z3d = globeRadius * Math.sin(globeAngle);
+
+                    const { screenX, screenY, perspectiveFactor } = this.project3dTo2d(x3d, y3d, z3d);
+
+                    const x = this.centerX + screenX;
+                    const y = this.centerY + screenY;
+
+                    const distance = Math.sqrt(screenX * screenX + screenY * screenY);
+                    let scale = (0.8 + (distance / this.radius) * 0.4) * perspectiveFactor;
+                    scale = Math.max(scale, 0.3);
+
+                    this.dots[i].x = x;
+                    this.dots[i].y = y;
+                    this.dots[i].scale = scale;
+                    this.dots[i].perspectiveFactor = perspectiveFactor;
+                }
+
+
+                this.updateTrails();
+
+                for (let i = 0; i < this.dots.length; i++) {
+                    const dot = this.dots[i];
+
+
+                    this.drawGlowBall(dot.x, dot.y, dot.scale);
+
+
+                    const dotSize = this.dotRadius * dot.scale;
+                    this.ctx.fillStyle = 'white';
+                    this.ctx.beginPath();
+                    this.ctx.arc(dot.x, dot.y, dotSize / 2, 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
+
+                setTimeout(() => this.animate(), this.frameDelay);
+            }
+        }
+
+        class SoundManager {
+            constructor() {
+                this.sounds = {};
+                this.loadSounds();
+            }
+
+            loadSounds() {
+                const soundNames = ['hover', 'select'];
+                soundNames.forEach(name => {
+                    const audio = new Audio(`Sounds/${name}.wav`);
+                    audio.volume = 0.1;
+                    audio.preload = 'auto';
+                    this.sounds[name] = audio;
+                });
+            }
+
+            play(name) {
+                if (this.sounds[name]) {
+                    try {
+                        this.sounds[name].currentTime = 0;
+                        this.sounds[name].play().catch(e => {
+                            console.log('no sound because of browser policy:', e);
+                        });
+                    } catch (error) {
+                        console.log('Sound play error:', error);
+                    }
+                }
+            }
+        }
+
+
+        const canvas = document.getElementById('dotsCanvas');
+        const dotsAnimation = new SillyDots(canvas);
+        const soundManager = new SoundManager();
+
+        const menuItems = document.querySelectorAll('.menu-item');
+        let lastHovered = null;
+
+        menuItems.forEach(item => {
+            item.addEventListener('mouseenter', () => {
+                if (lastHovered !== item) {
+                    soundManager.play('hover');
+                    lastHovered = item;
+                }
+            });
+
+            item.addEventListener('click', () => {
+                soundManager.play('select');
+            });
+        });
+
+        const actionButtons = document.querySelectorAll('.action-button');
+        actionButtons.forEach(button => {
+            button.addEventListener('mouseenter', () => {
+                soundManager.play('hover');
+            });
+
+            button.addEventListener('click', () => {
+                soundManager.play('select');
+            });
+        });
+    </script>
+</body>
+
+</html>
