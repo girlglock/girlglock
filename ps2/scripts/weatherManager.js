@@ -17,7 +17,7 @@ class WeatherManager {
 
         weatherDisplay.addEventListener('click', () => {
             modal.style.display = 'flex';
-            locationInput.value = userPreferences.weatherLocation;
+            locationInput.value = ps2Preferences.weatherLocation;
             errorMessage.textContent = '';
         });
 
@@ -48,8 +48,8 @@ class WeatherManager {
         try {
             const isValid = await this.testLocation(newLocation);
             if (isValid) {
-                userPreferences.weatherLocation = newLocation;
-                localStorage.setItem('userPreferences', JSON.stringify(window.userPreferences));
+                ps2Preferences.weatherLocation = newLocation;
+                localStorage.setItem('ps2Preferences', JSON.stringify(window.ps2Preferences));
                 modal.style.display = 'none';
                 this.loadWeather();
             } else {
@@ -113,7 +113,7 @@ class WeatherManager {
     async loadWeather() {
         if (this.isLoading) return;
         this.isLoading = true;
-        const location = window.userPreferences.weatherLocation;
+        const location = ps2Preferences.weatherLocation;
 
         try {
             const coords = await this.getCoordinates(location);

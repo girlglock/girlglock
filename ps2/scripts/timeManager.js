@@ -14,8 +14,8 @@ class TimeManager {
             { name: 'compact', format: { month: 'short', day: 'numeric' } }
         ];
 
-        this.currentTimeFormat = userPreferences.timeFormat;
-        this.currentDateFormat = userPreferences.dateFormat;
+        this.currentTimeFormat = ps2Preferences.timeFormat;
+        this.currentDateFormat = ps2Preferences.dateFormat;
 
         this.setupClickHandlers();
         this.updateTime();
@@ -25,15 +25,15 @@ class TimeManager {
     setupClickHandlers() {
         document.getElementById('current-time').addEventListener('click', () => {
             this.currentTimeFormat = (this.currentTimeFormat + 1) % this.timeFormats.length;
-            userPreferences.timeFormat = this.currentTimeFormat;
-            localStorage.setItem('userPreferences', JSON.stringify(window.userPreferences));
+            ps2Preferences.timeFormat = this.currentTimeFormat;
+            localStorage.setItem('ps2Preferences', JSON.stringify(window.ps2Preferences));
             this.updateTime();
         });
 
         document.getElementById('current-date').addEventListener('click', () => {
             this.currentDateFormat = (this.currentDateFormat + 1) % this.dateFormats.length;
-            userPreferences.dateFormat = this.currentDateFormat;
-            localStorage.setItem('userPreferences', JSON.stringify(window.userPreferences));
+            ps2Preferences.dateFormat = this.currentDateFormat;
+            localStorage.setItem('ps2Preferences', JSON.stringify(window.ps2Preferences));
             this.updateTime();
         });
     }

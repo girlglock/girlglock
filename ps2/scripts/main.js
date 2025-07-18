@@ -1,4 +1,4 @@
-window.userPreferences = JSON.parse(localStorage.getItem('userPreferences')) || {
+window.ps2Preferences = JSON.parse(localStorage.getItem('ps2Preferences')) || {
     timeFormat: 0,
     dateFormat: 0,
     weatherLocation: 'Hannover'
