@@ -26,12 +26,14 @@ class TimeManager {
         document.getElementById('current-time').addEventListener('click', () => {
             this.currentTimeFormat = (this.currentTimeFormat + 1) % this.timeFormats.length;
             userPreferences.timeFormat = this.currentTimeFormat;
+            localStorage.setItem('userPreferences', JSON.stringify(window.userPreferences));
             this.updateTime();
         });
 
         document.getElementById('current-date').addEventListener('click', () => {
             this.currentDateFormat = (this.currentDateFormat + 1) % this.dateFormats.length;
             userPreferences.dateFormat = this.currentDateFormat;
+            localStorage.setItem('userPreferences', JSON.stringify(window.userPreferences));
             this.updateTime();
         });
     }

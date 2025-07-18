@@ -187,6 +187,16 @@ canvas {
     vertical-align: middle;
 }
 
+.launcher-icon {
+    filter: brightness(0) saturate(100%) invert(44%) sepia(5%) saturate(454%) hue-rotate(219deg) brightness(98%) contrast(92%) drop-shadow(-1px -1px 0 black) drop-shadow(2px -1px 0 black) drop-shadow(-1px 1px 0 black) drop-shadow(1px 1px 0 black);
+    transition: filter 0.2s ease;
+    cursor: pointer;
+}
+
+.launcher-icon:hover {
+    filter: brightness(0) saturate(100%) invert(61%) sepia(27%) saturate(1282%) hue-rotate(176deg) brightness(87%) contrast(84%) drop-shadow(-1px -1px 0 black) drop-shadow(1px -1px 0 black) drop-shadow(-1px 1px 0 black) drop-shadow(1px 1px 0 black);
+}
+
 @media (max-width: 768px) {
     .menu-item {
         font-size: 6vw;

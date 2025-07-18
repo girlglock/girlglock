@@ -15,13 +15,13 @@ const menuItems = document.querySelectorAll('.menu-item');
 menuItems.forEach(item => {
     item.addEventListener('mouseenter', () => {
         item.style.color = '#6398c2';
-        new SoundManager().play('hover');
+        soundManager.play('hover');
     });
     item.addEventListener('mouseleave', () => {
         item.style.color = '#6b6a6f';
     });
 
     item.addEventListener('click', () => {
-        new SoundManager().play('select');
+        soundManager.play('select');
     });
 });
