@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VOICE FREQUENCY ANALYZER</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/ekmas/cs16.css@main/css/cs16.min.css">
+
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .centered {
+            width: 100%;
+            max-width: 1900px;
+            max-height: 1900px;
+        }
+
+        .cs-dialog {
+            position: relative;
+        }
+
+        .heading {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        canvas {
+            width: 100%;
+            height: 250px;
+            background: #000080;
+            border: 1px inset #c0c0c0;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            display: inline-block;
+            margin-right: 5px;
+            border: 1px solid #000;
+        }
+
+        .frequency-display {
+            font-size: 24px;
+            font-weight: bold;
+            color: #000080;
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        fieldset {
+            border: 1px solid;
+            border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="centered">
+        <div class="cs-dialog" style="max-width: 90vh; max-height: 90vh;">
+            <header>
+                <div class="cs-form-group" style="margin: 35px 20px 20px 20px;">
+                    <h1>VOICE FREQUENCY ANALYZER</h1>
+
+                    <div class="cs-tabs">
+                        <legend>acoustic spectrum</legend>
+                        <canvas id="frequencyChart"></canvas>
+                    </div>
+
+                    <div class="cs-tabs">
+                        <legend>color meaning:</legend>
+                        <div style="display: flex; flex-wrap: wrap; justify-content: space-around; padding: 5px;">
+                            <div style="padding: 8px 12px;">
+                                <span class="legend-color" style="background: #ff0000;"></span>
+                                unknown
+                            </div>
+                            <div style="padding: 8px 12px;">
+                                <span class="legend-color" style="background: rgba(0, 255, 0, 0.5);"></span>
+                                masculine
+                            </div>
+                            <div style="padding: 8px 12px;">
+                                <span class="legend-color" style="background: rgba(255, 0, 255, 0.5);"></span>
+                                feminine
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px;">
+                        <fieldset style="flex: 1;">
+                            <legend>dom frequency</legend>
+                            <div class="frequency-display" id="dominantFreq">-- Hz</div>
+                        </fieldset>
+                        <fieldset style="flex: 1;">
+                            <legend>in range of:</legend>
+                            <div id="voiceType" style="text-align: center; padding: 10px; font-weight: bold;">--</div>
+                        </fieldset>
+                    </div>
+
+                    <div class="cs-tabs">
+                        <legend>volume</legend>
+                        <div id="volumeLevel" style="text-align: center; padding: 10px;">--</div>
+                    </div>
+
+                    <div class="cs-tabs">
+                        <legend>status</legend>
+                        <div id="status" style="text-align: center; padding: 10px;">initializing...</div>
+                    </div>
+                </div>
+            </header>
+        </div>
+    </div>
+
+    <script>
+        let audioContext;
+        let analyser;
+        let microphone;
+        let dataArray;
+        let canvas;
+        let canvasContext;
+        let animationId;
+        let isAnalyzing = false;
+        let frequencyHistory = [];
+        let maxHistorySize = 150;
+
+        const status = document.getElementById('status');
+        const dominantFreqElement = document.getElementById('dominantFreq');
+        const voiceTypeElement = document.getElementById('voiceType');
+        const volumeLevelElement = document.getElementById('volumeLevel');
+
+        canvas = document.getElementById('frequencyChart');
+        canvasContext = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * window.devicePixelRatio;
+            canvas.height = rect.height * window.devicePixelRatio;
+            canvasContext.scale(window.devicePixelRatio, window.devicePixelRatio);
+        }
+
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        async function initializeAnalysis() {
+            try {
+                status.textContent = "requesting microphone access...";
+
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        echoCancellation: false,
+                        noiseSuppression: false,
+                        autoGainControl: false
+                    }
+                });
+
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                microphone = audioContext.createMediaStreamSource(stream);
+
+                analyser.fftSize = 4096;
+                analyser.smoothingTimeConstant = 0.8;
+                dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+                microphone.connect(analyser);
+
+                isAnalyzing = true;
+                status.textContent = "analyzing voice frequency in real-time...";
+
+                draw();
+
+            } catch (err) {
+                status.textContent = "error: could not access microphone. " + err.message.toLowerCase();
+            }
+        }
+
+        function draw() {
+            if (!isAnalyzing) return;
+
+            animationId = requestAnimationFrame(draw);
+            analyser.getByteFrequencyData(dataArray);
+
+            const width = canvas.width / window.devicePixelRatio;
+            const height = canvas.height / window.devicePixelRatio;
+
+            canvasContext.fillStyle = '#000080';
+            canvasContext.fillRect(0, 0, width, height);
+
+            drawFrequencyRanges(width, height);
+
+            const { dominantFreq, volume } = analyzeDominantFrequency();
+
+            if (dominantFreq > 0) {
+                frequencyHistory.push(dominantFreq);
+                if (frequencyHistory.length > maxHistorySize) {
+                    frequencyHistory.shift();
+                }
+            }
+
+            updateInfo(dominantFreq, volume);
+
+            drawSpectrum(width, height);
+
+            if (dominantFreq > 0) {
+                highlightDominantFrequency(dominantFreq, width, height);
+            }
+        }
+
+        function drawFrequencyRanges(width, height) {
+            const maxDisplayFreq = 500;
+
+            const maleStart = (85 / maxDisplayFreq) * width;
+            const maleEnd = (180 / maxDisplayFreq) * width;
+
+            canvasContext.fillStyle = 'rgba(0, 255, 0, 0.3)';
+            canvasContext.fillRect(maleStart, 0, maleEnd - maleStart, height);
+
+            const femaleStart = (165 / maxDisplayFreq) * width;
+            const femaleEnd = (265 / maxDisplayFreq) * width;
+
+            canvasContext.fillStyle = 'rgba(255, 0, 255, 0.3)';
+            canvasContext.fillRect(femaleStart, 0, femaleEnd - femaleStart, height);
+
+            canvasContext.fillStyle = '#c0c0c0';
+            canvasContext.font = '11px monospace';
+            canvasContext.textAlign = 'center';
+
+            const frequencies = [100, 200, 300, 400, 500];
+            frequencies.forEach(freq => {
+                const x = (freq / maxDisplayFreq) * width;
+                canvasContext.fillText(freq + 'Hz', x, height - 5);
+            });
+        }
+
+        function drawSpectrum(width, height) {
+            const maxDisplayFreq = 500;
+            const binWidth = width / (dataArray.length * (maxDisplayFreq / (audioContext.sampleRate / 2)));
+
+            canvasContext.fillStyle = '#ff0000';
+
+            for (let i = 0; i < dataArray.length * (maxDisplayFreq / (audioContext.sampleRate / 2)); i++) {
+                const barHeight = (dataArray[i] / 255) * height;
+                const x = i * binWidth;
+
+                canvasContext.fillRect(x, height - barHeight, binWidth - 1, barHeight);
+            }
+        }
+
+        function analyzeDominantFrequency() {
+            const nyquist = audioContext.sampleRate / 2;
+            const maxDisplayFreq = 500;
+            const maxBin = Math.floor((maxDisplayFreq / nyquist) * dataArray.length);
+
+            let maxValue = 0;
+            let maxIndex = 0;
+            let totalVolume = 0;
+
+            for (let i = 1; i < maxBin; i++) {
+                totalVolume += dataArray[i];
+                if (dataArray[i] > maxValue && dataArray[i] > 50) {
+                    maxValue = dataArray[i];
+                    maxIndex = i;
+                }
+            }
+
+            const dominantFreq = maxIndex > 0 ? (maxIndex / dataArray.length) * nyquist : 0;
+            const avgVolume = totalVolume / maxBin;
+
+            return { dominantFreq, volume: avgVolume };
+        }
+
+        function highlightDominantFrequency(freq, width, height) {
+            const maxDisplayFreq = 500;
+            const x = (freq / maxDisplayFreq) * width;
+
+            canvasContext.strokeStyle = '#ffff00';
+            canvasContext.lineWidth = 2;
+            canvasContext.setLineDash([3, 3]);
+            canvasContext.beginPath();
+            canvasContext.moveTo(x, 0);
+            canvasContext.lineTo(x, height);
+            canvasContext.stroke();
+            canvasContext.setLineDash([]);
+        }
+
+        function calculateAverageFrequency() {
+            if (frequencyHistory.length === 0) return 0;
+
+            const sum = frequencyHistory.reduce((acc, freq) => acc + freq, 0);
+            return sum / frequencyHistory.length;
+        }
+
+        function updateInfo(freq, volume) {
+            dominantFreqElement.textContent = freq > 0 ? Math.round(freq) + ' Hz' : '-- Hz';
+
+            const avgFreq = calculateAverageFrequency();
+            let voiceType = '--';
+            if (avgFreq > 0) {
+                if (avgFreq >= 85 && avgFreq <= 180) {
+                    voiceType = 'average masculine';
+                } else if (avgFreq >= 165 && avgFreq <= 265) {
+                    voiceType = 'average feminine';
+                } else if (avgFreq < 85) {
+                    voiceType = 'deep';
+                } else if (avgFreq > 265) {
+                    voiceType = 'high';
+                } else {
+                    voiceType = 'androgynous';
+                }
+            }
+            voiceTypeElement.textContent = voiceType;
+
+            let volumeText = '--';
+            if (volume > 0) {
+                if (volume < 20) volumeText = 'very quiet';
+                else if (volume < 40) volumeText = 'quiet';
+                else if (volume < 60) volumeText = 'normal';
+                else if (volume < 80) volumeText = 'loud';
+                else volumeText = 'very loud';
+            }
+            volumeLevelElement.textContent = volumeText;
+        }
+
+        window.addEventListener('load', initializeAnalysis);
+    </script>
+</body>
+
+</html>
