@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>silly browser</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/ekmas/cs16.css@main/css/cs16.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-image: url('https://files.catbox.moe/likszt.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: left;
+            overflow-x: hidden;
+        }
+
+        .server-table th,
+        .star-icon {
+            cursor: pointer;
+            user-select: none
+        }
+
+        .error,
+        .loading {
+            padding: 20px;
+            text-align: center
+        }
+
+        .cs-tooltip .text,
+        .error,
+        .icon-cell,
+        .loading {
+            text-align: center
+        }
+
+        @media (max-width:850px) {
+            body {
+                padding: 10px;
+                box-sizing: border-box
+            }
+
+            .cs-dialog {
+                min-width: 100%;
+                width: 100%;
+                height: auto;
+                max-height: 95vh
+            }
+        }
+
+        .centered {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center
+        }
+
+        .cs-dialog {
+            position: relative;
+            display: inline-block;
+            height: 85vh;
+            width: 75vw;
+            min-width: 800px;
+            max-width: 100%;
+            overflow: hidden
+        }
+
+        .server-list-container {
+            overflow-y: auto;
+            overflow-x: hidden;
+            background-color: var(--secondary-bg);
+            height: 58vh;
+            min-height: 58vh
+        }
+
+        .server-list-container::-webkit-scrollbar {
+            width: 18px
+        }
+
+        .server-list-container::-webkit-scrollbar-track {
+            background-color: var(--scrollbar-track);
+            border: 1px solid var(--border-dark);
+            border-left: 0
+        }
+
+        .server-list-container::-webkit-scrollbar-thumb {
+            background-color: var(--bg);
+            border: 1px solid;
+            border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light)
+        }
+
+        .server-table {
+            width: 100%;
+            font-size: 14px;
+            border-collapse: separate;
+            border-spacing: 0.5px 0;
+            position: relative;
+            overflow: visible
+        }
+
+        .server-table thead {
+            position: sticky;
+            top: 0;
+            background-color: var(--bg);
+            z-index: 10
+        }
+
+        .server-table th {
+            padding: 1px 1px 1px 4px;
+            text-align: left;
+            white-space: nowrap;
+            font-weight: 400;
+            border: 1px solid;
+            border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light)
+        }
+
+        .server-table th:hover {
+            background-color: var(--secondary-accent)
+        }
+
+        .server-table td {
+            padding: 1px;
+            overflow: visible
+        }
+
+        .server-table tr:hover {
+            background-color: var(--accent);
+            cursor: pointer
+        }
+
+        .server-table tr.selected {
+            background-color: var(--secondary-accent);
+            color: #000
+        }
+
+        .icon-cell {
+            width: 20px
+        }
+
+        .flag-icon,
+        .shield-icon,
+        .star-icon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            vertical-align: middle
+        }
+
+        .shield-icon svg,
+        .star-icon svg {
+            width: 100%;
+            height: 100%
+        }
+
+        .flag-icon img {
+            width: 20px;
+            height: 14px;
+            vertical-align: middle;
+            object-fit: cover
+        }
+
+        .server-name {
+            max-width: 400px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap
+        }
+
+        .tooltip-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px
+        }
+
+        .tooltip-info div {
+            display: flex;
+            gap: 8px
+        }
+
+        .tooltip-label {
+            color: var(--text-3);
+            min-width: 60px
+        }
+
+        .tooltip-value {
+            color: var(--text)
+        }
+
+        .loading {
+            color: var(--accent)
+        }
+
+        .error {
+            color: #ff6b6b
+        }
+
+        .progress-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            display: none
+        }
+
+        .progress-overlay.visible {
+            display: block
+        }
+
+        .footer-info {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            font-size: 12px;
+            color: var(--text-3)
+        }
+
+        .panel-buttons {
+            margin-top: 10px;
+            display: flex;
+            gap: 5px;
+            justify-content: flex-end;
+            padding: 10px !important
+        }
+
+        .filters-container {
+            margin-top: 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            box-sizing: border-box;
+            width: 100%
+        }
+
+        .filters-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px
+        }
+
+        .filters-checkboxes {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap
+        }
+
+        @media (max-width:900px) {
+            .filters-row {
+                grid-template-columns: 1fr 1fr
+            }
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            min-width: 0
+        }
+
+        .filter-group label {
+            font-size: 14px;
+            color: var(--text-3);
+            white-space: nowrap
+        }
+
+        .filter-group .cs-input,
+        .filter-group .cs-select {
+            width: 100%;
+            min-width: 0;
+            box-sizing: border-box
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            min-width: 0
+        }
+
+        .panel {
+            display: none;
+            position: relative;
+            bottom: 1px;
+            padding: 10px 0 0 !important;
+            background: var(--bg);
+            width: 100%;
+            border-left: solid 1px var(--border-light);
+            border-bottom: solid 1px var(--border-dark);
+            border-right: solid 1px var(--border-dark);
+            border-top: solid 1px var(--border-light);
+            order: 99;
+            color: var(--text);
+            overflow: hidden
+        }
+
+        .cs-tabs {
+            max-width: 100%;
+            overflow-x: auto
+        }
+
+        .cs-tabs .label {
+            flex-shrink: 0
+        }
+
+        .cs-tooltip {
+            position: relative;
+            display: inline-block;
+            color: #fff;
+            line-height: 1.25rem;
+            user-select: none
+        }
+
+        .cs-tooltip .text {
+            position: fixed;
+            visibility: hidden;
+            background-color: var(--secondary-bg);
+            color: #000;
+            font-size: 1rem;
+            line-height: .9375rem;
+            border: 1px solid var(--border-dark);
+            padding: 4px 6px;
+            z-index: 99999999;
+            pointer-events: none
+        }
+
+        .cs-input {
+            height: 100%
+        }
+    </style>
+</head>
+
+<body>
+    <div class="centered">
+        <section>
+            <dialog class="cs-dialog" style="display: block; max-width: 100%; max-height: 100%;">
+                <div class="heading">
+                    <div class="wrapper">
+                        <div class="icon"></div>
+                        <label class="text" style="margin-top: 3px;">Servers</label>
+                    </div>
+                    <button class="cs-btn close" onclick="window.close()"></button>
+                </div>
+                <div class="cs-tabs" style="margin-top: 18px;">
+                    <input class="radiotab" name="tabs" tabindex="1" type="radio" id="tabone" checked="checked" />
+                    <label class="label" for="tabone">Internet</label>
+                    <div class="panel" tabindex="1" data-tab="internet">
+                        <div class="progress-overlay">
+                            <div class="cs-progress-bar">
+                                <div class="bars" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="server-list-container">
+                            <div class="loading">Loading servers...</div>
+                        </div>
+                        <div class="filters-container">
+                            <div class="filters-row">
+                                <div class="filter-group">
+                                    <label>Server Name</label>
+                                    <input type="text" class="cs-input filter-name" placeholder="Search...">
+                                </div>
+                                <div class="filter-group">
+                                    <label>Gamemode</label>
+                                    <select class="cs-select filter-gamemode">
+                                        <option value="">All</option>
+                                        <option value="surf">Surf</option>
+                                        <option value="bunnyhop">Bunnyhop</option>
+                                        <option value="kz">KZ</option>
+                                        <option value="zombie-escape">Zombie Escape</option>
+                                        <option value="deathmatch">Deathmatch</option>
+                                        <option value="retake">Retake</option>
+                                        <option value="awp">AWP</option>
+                                        <option value="aim">Aim</option>
+                                        <option value="jailbreak">Jailbreak</option>
+                                        <option value="zombiemod">Zombie Mod</option>
+                                        <option value="5v5">5v5</option>
+                                        <option value="gungame">GunGame</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label>Map</label>
+                                    <input type="text" class="cs-input filter-map" placeholder="Map name...">
+                                </div>
+                                <div class="filter-group">
+                                    <label>Max Ping</label>
+                                    <select class="cs-select filter-ping">
+                                        <option value="">Any</option>
+                                        <option value="50">≤ 50ms</option>
+                                        <option value="100">≤ 100ms</option>
+                                        <option value="150">≤ 150ms</option>
+                                        <option value="200">≤ 200ms</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="filters-checkboxes">
+                                <div class="cs-checkbox">
+                                    <input type="checkbox" class="filter-not-empty" id="filterNotEmpty1">
+                                    <label for="filterNotEmpty1" class="cs-checkbox__label">Not empty</label>
+                                </div>
+                                <div class="cs-checkbox">
+                                    <input type="checkbox" class="filter-not-full" id="filterNotFull1">
+                                    <label for="filterNotFull1" class="cs-checkbox__label">Not full</label>
+                                </div>
+                                <div class="cs-checkbox">
+                                    <input type="checkbox" class="filter-secure" id="filterSecure1">
+                                    <label for="filterSecure1" class="cs-checkbox__label">Secure</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel-buttons">
+                            <button class="cs-btn btn-refresh">Refresh</button>
+                            <button class="cs-btn btn-connect">Connect</button>
+                        </div>
+                    </div>
+                    <input class="radiotab" tabindex="1" name="tabs" type="radio" id="tabtwo" />
+                    <label class="label" for="tabtwo">Favorites</label>
+                    <div class="panel" tabindex="1" data-tab="favorites">
+                        <div class="progress-overlay">
+                            <div class="cs-progress-bar">
+                                <div class="bars" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="server-list-container">
+                            <div style="padding: 20px; text-align: center;">no favorite servers</div>
+                        </div>
+                        <div class="filters-container">
+                            <div class="filters-row">
+                                <div class="filter-group">
+                                    <label>Server Name</label>
+                                    <input type="text" class="cs-input filter-name" placeholder="Search...">
+                                </div>
+                                <div class="filter-group">
+                                    <label>Gamemode</label>
+                                    <select class="cs-select filter-gamemode">
+                                        <option value="">All</option>
+                                        <option value="surf">Surf</option>
+                                        <option value="bunnyhop">Bunnyhop</option>
+                                        <option value="kz">KZ</option>
+                                        <option value="zombie-escape">Zombie Escape</option>
+                                        <option value="deathmatch">Deathmatch</option>
+                                        <option value="retake">Retake</option>
+                                        <option value="awp">AWP</option>
+                                        <option value="aim">Aim</option>
+                                        <option value="jailbreak">Jailbreak</option>
+                                        <option value="zombiemod">Zombie Mod</option>
+                                        <option value="5v5">5v5</option>
+                                        <option value="gungame">GunGame</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label>Map</label>
+                                    <input type="text" class="cs-input filter-map" placeholder="Map name...">
+                                </div>
+                                <div class="filter-group">
+                                    <label>Max Ping</label>
+                                    <select class="cs-select filter-ping">
+                                        <option value="">Any</option>
+                                        <option value="50">≤ 50ms</option>
+                                        <option value="100">≤ 100ms</option>
+                                        <option value="150">≤ 150ms</option>
+                                        <option value="200">≤ 200ms</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="filters-checkboxes">
+                                <div class="cs-checkbox">
+                                    <input type="checkbox" class="filter-not-empty" id="filterNotEmpty2">
+                                    <label for="filterNotEmpty2" class="cs-checkbox__label">Not empty</label>
+                                </div>
+                                <div class="cs-checkbox">
+                                    <input type="checkbox" class="filter-not-full" id="filterNotFull2">
+                                    <label for="filterNotFull2" class="cs-checkbox__label">Not full</label>
+                                </div>
+                                <div class="cs-checkbox">
+                                    <input type="checkbox" class="filter-secure" id="filterSecure2">
+                                    <label for="filterSecure2" class="cs-checkbox__label">Secure</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel-buttons">
+                            <button class="cs-btn btn-refresh">Refresh</button>
+                            <button class="cs-btn btn-connect">Connect</button>
+                        </div>
+                    </div>
+                    <input class="radiotab" tabindex="1" name="tabs" type="radio" id="tabthree" />
+                    <label class="label" for="tabthree">History</label>
+                    <div class="panel" tabindex="1" data-tab="history">
+                        <div class="server-list-container">
+                            <div style="padding: 20px; text-align: center;">no server history</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-info">
+                    refreshing server list...
+                </div>
+            </dialog>
+        </section>
+    </div>
+
+    <script>
+        class ServerBrowser { constructor() { this.servers = [], this.filteredServers = [], this.favoriteServers = new Set, this.favoriteServersData = [], this.selectedServer = null, this.sortColumn = "players_count", this.sortDirection = -1, this.currentPage = 0, this.totalServers = 0, this.isLoading = !1, this.hasMorePages = !0, this.lastUserCoords = { lat: 0, lng: 0 }, this.currentTab = "internet", this.filters = { internet: { name: "", map: "", gamemode: "", ping: "", notFull: !1, notEmpty: !1, secure: !1 }, favorites: { name: "", map: "", gamemode: "", ping: "", notFull: !1, notEmpty: !1, secure: !1 } }, this.init() } async init() { this.loadFavorites(), this.loadFilters(), this.setupEventListeners(), this.lastUserCoords = await this.getUserCoordsFromIP(), await this.fetchServers(0, !1) } setupEventListeners() { document.querySelectorAll(".radiotab").forEach((e => { e.addEventListener("change", (e => { const t = e.target.nextElementSibling.nextElementSibling; this.currentTab = t.dataset.tab, "favorites" === this.currentTab && this.fetchFavoriteServers() })) })), document.querySelectorAll(".panel[data-tab]").forEach((e => { const t = e.dataset.tab; if ("history" === t) return; const r = e.querySelector(".filter-name"), s = e.querySelector(".filter-map"), i = e.querySelector(".filter-gamemode"), a = e.querySelector(".filter-ping"), n = e.querySelector(".filter-not-empty"), o = e.querySelector(".filter-not-full"), l = e.querySelector(".filter-secure"), c = this.debounce((() => { "internet" === t ? (this.currentPage = 0, this.hasMorePages = !0, this.fetchServers(0, !1)) : this.fetchFavoriteServers(), this.saveFilters() }), 500); r.addEventListener("input", (e => { this.filters[t].name = e.target.value, c() })), s.addEventListener("input", (e => { this.filters[t].map = e.target.value, c() })), i.addEventListener("change", (e => { this.filters[t].gamemode = e.target.value, "internet" === t ? (this.currentPage = 0, this.hasMorePages = !0, this.fetchServers(0, !1)) : this.fetchFavoriteServers(), this.saveFilters() })), a.addEventListener("change", (e => { this.filters[t].ping = e.target.value, "internet" === t ? (this.currentPage = 0, this.hasMorePages = !0, this.fetchServers(0, !1)) : this.fetchFavoriteServers(), this.saveFilters() })), n.addEventListener("change", (e => { this.filters[t].notEmpty = e.target.checked, "internet" === t ? (this.currentPage = 0, this.hasMorePages = !0, this.fetchServers(0, !1)) : this.fetchFavoriteServers(), this.saveFilters() })), o.addEventListener("change", (e => { this.filters[t].notFull = e.target.checked, "internet" === t ? (this.currentPage = 0, this.hasMorePages = !0, this.fetchServers(0, !1)) : this.fetchFavoriteServers(), this.saveFilters() })), l.addEventListener("change", (e => { this.filters[t].secure = e.target.checked, "internet" === t ? (this.applyLocalFilters(), this.renderServerList("internet")) : (this.applyFavoriteFilters(), this.renderServerList("favorites")), this.saveFilters() })); e.querySelector(".server-list-container").addEventListener("scroll", (e => { if ("internet" !== t) return; const r = e.target.scrollTop, s = e.target.scrollHeight; r + e.target.clientHeight >= s - 50 && this.hasMorePages && !this.isLoading && this.fetchServers(this.currentPage + 1, !0) })), e.querySelector(".btn-refresh").addEventListener("click", (() => { "internet" === t ? (this.currentPage = 0, this.hasMorePages = !0, this.fetchServers(0, !1)) : this.fetchFavoriteServers() })), e.querySelector(".btn-connect").addEventListener("click", (() => { this.selectedServer || alert("pwease select a server first") })) })) } loadFavorites() { try { const e = localStorage.getItem("favorites"); this.favoriteServers = e ? new Set(JSON.parse(e)) : new Set } catch (e) { console.log("No favorites found or error loading:", e), this.favoriteServers = new Set } } saveFavorites() { try { localStorage.setItem("favorites", JSON.stringify([...this.favoriteServers])) } catch (e) { console.error("error saving favorites:", e) } } loadFilters() { try { const e = localStorage.getItem("filters"); if (e) { const t = JSON.parse(e); this.filters = { internet: t.internet || this.filters.internet, favorites: t.favorites || this.filters.favorites }, ["internet", "favorites"].forEach((e => { const t = document.querySelector(`.panel[data-tab="${e}"]`); if (!t) return; const r = this.filters[e] || {}; t.querySelector(".filter-name").value = r.name || "", t.querySelector(".filter-map").value = r.map || "", t.querySelector(".filter-gamemode").value = r.gamemode || "", t.querySelector(".filter-ping").value = r.ping || "", t.querySelector(".filter-not-empty").checked = !!r.notEmpty, t.querySelector(".filter-not-full").checked = !!r.notFull, t.querySelector(".filter-secure").checked = !!r.secure })) } } catch (e) { console.log("error loading filters:", e) } } saveFilters() { try { localStorage.setItem("filters", JSON.stringify(this.filters)) } catch (e) { console.error("error saving filters:", e) } } async fetchServers(e = 0, t = !1) { if (this.isLoading) return; this.isLoading = !0; const r = document.querySelector('.panel[data-tab="internet"]'), s = r.querySelector(".server-list-container"), i = r.querySelector(".progress-overlay"), a = i.querySelector(".bars"); t || (s.innerHTML = '<div class="loading">Loading servers...</div>', this.servers = []), i.classList.add("visible"), a.style.width = "10%"; try { const r = this.filters.internet; let s = `https://cs2browser.net/api/servers?page=${e}&player_sort=desc`; r.gamemode && (s += `&gamemode=${r.gamemode}`), r.name && (s += `&server_name=${r.name}`), r.map && (s += `&show_maps=${r.map}`), r.ping && (s += `&show_pings=${r.ping}`), r.notEmpty && (s += "&hide_empty_servers=1"), r.notFull || (s += "&show_full_servers=1"); const n = `https://corsproxy.io/?url=${s}`; a.style.width = "30%"; const o = await fetch(n); if (!o.ok) throw new Error("Failed to fetch servers"); a.style.width = "60%"; const l = await o.json(), c = l.servers || []; this.servers = t ? [...this.servers, ...c] : c, this.currentPage = e, this.totalServers = l.total_count || 0, this.hasMorePages = 50 === c.length, a.style.width = "80%", this.applyLocalFilters(), this.renderServerList("internet"), this.updateFooterInfo(), a.style.width = "100%", setTimeout((() => { i.classList.remove("visible"), a.style.width = "0%" }), 300) } catch (e) { t || (s.innerHTML = '<div class="error">failed to load servers :c</div>'), console.error("error fetching servers:", e), i.classList.remove("visible"), a.style.width = "0%" } finally { this.isLoading = !1 } } async fetchFavoriteServers() { const e = document.querySelector('.panel[data-tab="favorites"]'), t = e.querySelector(".server-list-container"), r = e.querySelector(".progress-overlay"), s = r.querySelector(".bars"); if (0 !== this.favoriteServers.size) { t.innerHTML = '<div class="loading">Loading favorite servers...</div>', r.classList.add("visible"), s.style.width = "20%"; try { const e = `https://corsproxy.io/?url=https://cs2browser.net/api/servers?servers=${[...this.favoriteServers].join(",")}`; s.style.width = "50%"; const t = await fetch(e); if (!t.ok) throw new Error("failed to fetch favorite servers"); s.style.width = "80%"; const i = await t.json(); this.favoriteServersData = i.servers || [], this.applyFavoriteFilters(), this.renderServerList("favorites"), s.style.width = "100%", setTimeout((() => { r.classList.remove("visible"), s.style.width = "0%" }), 300) } catch (e) { t.innerHTML = '<div class="error">failed to load favorite servers :c</div>', console.error("error fetching favorite servers:", e), r.classList.remove("visible"), s.style.width = "0%" } } else t.innerHTML = '<div style="padding: 20px; text-align: center;">No favorite servers</div>' } applyLocalFilters() { const e = this.filters.internet; this.filteredServers = this.servers.filter((t => !e.secure || t.secure)) } applyFavoriteFilters() { const e = this.filters.favorites; this.filteredServers = this.favoriteServersData.filter((t => { if (e.name && !t.hostname.toLowerCase().includes(e.name.toLowerCase())) return !1; if (e.map && !t.map.toLowerCase().includes(e.map.toLowerCase())) return !1; if (e.ping) { if (this.calculateLatency(t.lat, t.lon) > parseInt(e.ping)) return !1 } return (!e.notEmpty || 0 !== t.real_players) && (!(e.notFull && t.real_players >= t.max_players) && !(e.secure && !t.secure)) })) } sortServers(e, t) { this.sortColumn === e ? this.sortDirection *= -1 : (this.sortColumn = e, this.sortDirection = -1), this.filteredServers.sort(((t, r) => { if ("favorite" === e) { const e = this.favoriteServers.has(t.server_id) ? 1 : 0, s = this.favoriteServers.has(r.server_id) ? 1 : 0; if (e !== s) return s - e } let s, i; return "lat" === e ? (s = this.calculateLatency(t.lat, t.lon), i = this.calculateLatency(r.lat, r.lon)) : (s = t[e], i = r[e]), "hostname" === e && (s = s.toLowerCase(), i = i.toLowerCase()), s < i ? -this.sortDirection : s > i ? this.sortDirection : 0 })), this.renderServerList(t) } toggleFavorite(e, t) { t.stopPropagation(), this.favoriteServers.has(e) ? this.favoriteServers.delete(e) : this.favoriteServers.add(e), this.saveFavorites(), this.renderServerList(this.currentTab), "favorites" === this.currentTab && this.fetchFavoriteServers() } renderServerList(e) { const t = document.querySelector(`.panel[data-tab="${e}"]`).querySelector(".server-list-container"), r = document.createElement("table"); r.className = "server-table"; const s = document.createElement("thead"); s.innerHTML = `\n                    <tr>\n                        <th class="icon-cell" onclick="browser.sortServers('favorite', '${e}')" title="Favorite"><span style="display: inline-block; width: 16px; height: 16px; vertical-align: middle; margin-right: 2px;">${this.getStarSvg()}</span></th>\n                        <th class="icon-cell" onclick="browser.sortServers('secure', '${e}')" title="Secure"><span style="display: inline-block; width: 16px; height: 16px; vertical-align: middle; margin-right: 2px;">${this.getShieldSvg()}</span></th>\n                        <th class="icon-cell" title="Country"><svg viewBox="0 0 16 16" fill="currentColor" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 2px;"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/><ellipse cx="8" cy="8" rx="3" ry="7" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="1" y1="8" x2="15" y2="8" stroke="currentColor" stroke-width="1.5"/><line x1="8" y1="1" x2="8" y2="15" stroke="currentColor" stroke-width="1.5"/></svg></th>\n                        <th onclick="browser.sortServers('hostname', '${e}')">Servers (${this.filteredServers.length})</th>\n                        <th onclick="browser.sortServers('players_count', '${e}')" style="width: 100px;">Players</th>\n                        <th onclick="browser.sortServers('map', '${e}')" style="width: 150px;">Map</th>\n                        <th onclick="browser.sortServers('lat', '${e}')" style="width: 80px;">Latency</th>\n                    </tr>\n                `, r.appendChild(s); const i = document.createElement("tbody"); this.filteredServers.forEach(((t, r) => { const s = document.createElement("tr"); s.dataset.serverId = t.server_id, s.onclick = () => this.selectServer(r, e); const a = this.calculateLatency(t.lat, t.lon), n = this.favoriteServers.has(t.server_id), o = t.players_count - t.real_players, l = o > 0 ? `${t.real_players}/${t.max_players} (${o})` : `${t.real_players}/${t.max_players}`, c = this.createTooltipContent(t); s.innerHTML = `\n                        <td class="icon-cell"><span class="star-icon" onclick="browser.toggleFavorite(${t.server_id}, event)">${this.getStarSvg(n)}</span></td>\n                        <td class="icon-cell">${t.secure ? '<span class="shield-icon">' + this.getShieldSvg() + "</span>" : ""}</td>\n                        <td class="icon-cell"><span class="flag-icon">${this.getFlagImg(t.country)}</span></td>\n                        <td class="server-name" style="padding-left: 8px;">\n                          <div class="cs-tooltip">\n                            ${this.escapeHtml(t.hostname)}\n                            <span class="text">${c}</span>\n                          </div>\n                        </td>\n                        <td>${l}</td>\n                        <td>${this.escapeHtml(t.map)}</td>\n                        <td>${a}</td>\n                    `, i.appendChild(s) })), r.appendChild(i), t.innerHTML = "", t.appendChild(r), t.querySelectorAll(".cs-tooltip").forEach((e => { const t = e.querySelector(".text"); e.addEventListener("mousemove", (e => { t.style.visibility = "visible", t.style.top = `${e.clientY + 15}px`, t.style.left = `${e.clientX + 15}px` })), e.addEventListener("mouseleave", (() => { t.style.visibility = "hidden" })) })) } createTooltipContent(e) { const t = e.tags && e.tags.length > 0 ? e.tags : "None"; return `\n                    <div class="tooltip-info">\n                        <div><span class="tooltip-label">Version:</span><span class="tooltip-value">${this.escapeHtml(e.version || "Unknown")}</span></div>\n                        <div><span class="tooltip-label">IP:</span><span class="tooltip-value">${this.escapeHtml(e.address || "Unknown")}</span></div>\n                        <div><span class="tooltip-label">Tags:</span><span class="tooltip-value">${this.escapeHtml(t)}</span></div>\n                    </div>\n                ` } selectServer(e, t) { this.selectedServer = this.filteredServers[e]; document.querySelector(`.panel[data-tab="${t}"]`).querySelectorAll(".server-table tbody tr").forEach(((t, r) => { r === e ? t.classList.add("selected") : t.classList.remove("selected") })) } async getUserCoordsFromIP() { try { const e = await fetch("http://ip-api.com/json/"), t = await e.json(); return { lat: t.lat, lng: t.lon } } catch (e) { return { lat: 0, lng: 0 } } } calculateLatency(e, t) { const r = this.lastUserCoords.lat, s = this.lastUserCoords.lng, i = (e - r) * (Math.PI / 180), a = (t - s) * (Math.PI / 180), n = Math.sin(i / 2) ** 2 + Math.cos(r * (Math.PI / 180)) * Math.cos(e * (Math.PI / 180)) * Math.sin(a / 2) ** 2, o = 6371 * (2 * Math.atan2(Math.sqrt(n), Math.sqrt(1 - n))) / 2e5 * 2e3 + 10; return Math.round(o) } updateFooterInfo() { const e = document.querySelector(".footer-info"), t = this.filteredServers.length; e.textContent = `${t} / ${this.totalServers} servers` } debounce(e, t) { let r; return function (...s) { clearTimeout(r), r = setTimeout((() => { clearTimeout(r), e(...s) }), t) } } getShieldSvg() { return '<svg viewBox="0 0 16 16" fill="currentColor">\n                    <path d="M8 0.5c-3 0-5.5 1-5.5 1v6c0 3.5 2.5 7 5.5 8.5 3-1.5 5.5-5 5.5-8.5v-6s-2.5-1-5.5-1zm0 1.5c2.2 0 4 0.7 4 0.7v5.8c0 2.8-2 5.5-4 6.8-2-1.3-4-4-4-6.8v-5.8s1.8-0.7 4-0.7z"/>\n                </svg>' } getStarSvg(e) { return e ? '<svg viewBox="0 0 16 16" fill="#ffc107">\n                        <path d="M8 0.5l2.5 5 5.5 0.8-4 3.9 0.9 5.3-4.9-2.6-4.9 2.6 0.9-5.3-4-3.9 5.5-0.8z"/>\n                    </svg>' : '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">\n                        <path d="M8 0.5l2.5 5 5.5 0.8-4 3.9 0.9 5.3-4.9-2.6-4.9 2.6 0.9-5.3-4-3.9 5.5-0.8z"/>\n                    </svg>' } getFlagImg(e) { if (!e || 2 !== e.length) return '<span style="color: #666; font-size: 10px;">??</span>'; const t = e.toUpperCase(); return `<img src="https://flagcdn.com/w40/${t.toLowerCase()}.png" \n                             alt="${t}" \n                             title="${t}"\n                             style="width: 20px; height: 14px; vertical-align: middle; object-fit: cover; margin-top: -7px; margin-right: 6px;"\n                             onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=&quot;color:#666;font-size:10px;&quot;>${t}</span>'">` } escapeHtml(e) { const t = document.createElement("div"); return t.textContent = e, t.innerHTML } } const browser = new ServerBrowser;
+    </script>
+</body>
+
+</html>
