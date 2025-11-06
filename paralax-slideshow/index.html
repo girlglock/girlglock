@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>wife slides</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            overflow: hidden;
+            background: #000;
+            font-family: Arial, sans-serif;
+        }
+        .slideshow-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: #000;
+        }
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+        }
+        .slide.active {
+            opacity: 1;
+            z-index: 2;
+        }
+        .layer {
+            position: absolute;
+            width: 120%;
+            height: 120%;
+            background-size: cover;
+            background-position: center;
+        }
+        .background-layer {
+            z-index: 1;
+        }
+        .foreground-layer {
+            z-index: 2;
+        }
+    </style>
+</head>
+<body>
+    <div class="slideshow-container" id="slideshow"></div>
+    <script>
+        const slides = [
+            {
+                background: "./images/3b.png",
+                foreground: "./images/3f.png",
+                duration: 5,
+                panDirection: "left",
+                zoom: 1.1
+            },
+            {
+                background: "./images/1b.png",
+                foreground: "./images/1f.png",
+                duration: 5,
+                panDirection: "left",
+                zoom: 1.1
+            },
+            {
+                background: "./images/2b.png",
+                foreground: "./images/2f.png",
+                duration: 5,
+                panDirection: "right",
+                zoom: 1.1
+            }
+        ];
+
+        let currentSlide = 0;
+        let timers = [];
+
+        function createSlide(config, index) {
+            const slide = document.createElement("div");
+            slide.className = "slide";
+            slide.dataset.index = index;
+            slide.dataset.motionStarted = "";
+            const background = document.createElement("div");
+            background.className = "layer background-layer";
+            background.style.backgroundImage = `url(${config.background})`;
+            const foreground = document.createElement("div");
+            foreground.className = "layer foreground-layer";
+            foreground.style.backgroundImage = `url(${config.foreground})`;
+            slide.appendChild(background);
+            slide.appendChild(foreground);
+            return slide;
+        }
+
+        function initSlideshow() {
+            const container = document.getElementById("slideshow");
+            slides.forEach((config, index) => {
+                const slide = createSlide(config, index);
+                container.appendChild(slide);
+            });
+            showSlide(0);
+        }
+
+        function slideTheSlide(slideElement, config) {
+            const background = slideElement.querySelector(".background-layer");
+            const foreground = slideElement.querySelector(".foreground-layer");
+            const panDistance = 10;
+            const foregroundPan = panDistance;
+            const backgroundPan = panDistance * 0.5;
+            const fgStart = config.panDirection === "right" ? -foregroundPan : 0;
+            const fgEnd = config.panDirection === "right" ? 0 : -foregroundPan;
+            const bgStart = config.panDirection === "right" ? -backgroundPan : 0;
+            const bgEnd = config.panDirection === "right" ? 0 : -backgroundPan;
+            background.style.transition = "none";
+            foreground.style.transition = "none";
+            background.style.transform = `scale(${config.zoom}) translateX(${bgStart}%)`;
+            foreground.style.transform = `scale(${config.zoom}) translateX(${fgStart}%)`;
+            setTimeout(() => {
+                background.style.transition = `transform ${config.duration}s linear`;
+                foreground.style.transition = `transform ${config.duration}s linear`;
+                background.style.transform = `scale(${config.zoom}) translateX(${bgEnd}%)`;
+                foreground.style.transform = `scale(${config.zoom}) translateX(${fgEnd}%)`;
+            }, 50);
+            slideElement.dataset.motionStarted = "true";
+        }
+
+        function clearTimers() {
+            timers.forEach(t => clearTimeout(t));
+            timers = [];
+        }
+
+        function showSlide(index) {
+            const allSlides = document.querySelectorAll(".slide");
+            const config = slides[index];
+            const current = allSlides[index];
+            clearTimers();
+            allSlides.forEach(s => s.classList.remove("active"));
+            current.classList.add("active");
+            if (!current.dataset.motionStarted) {
+                slideTheSlide(current, config);
+            }
+            const nextIndex = (index + 1) % slides.length;
+            const next = allSlides[nextIndex];
+            timers.push(setTimeout(() => {
+                current.classList.remove("active");
+                current.dataset.motionStarted = "";
+                next.classList.add("active");
+                slideTheSlide(next, slides[nextIndex]);
+                showSlide(nextIndex);
+            }, config.duration * 1000));
+        }
+
+        initSlideshow();
+    </script>
+</body>
+</html>
