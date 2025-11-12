@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>twitch emote sounds configurator</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/ekmas/cs16.css@main/css/cs16.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="centered">
+        <div class="cs-dialog">
+            <div class="heading">
+                <div class="wrapper">
+                    <div class="icon"></div>
+                    <p class="text">EMOTE SOUNDS CONFIGURATOR</p>
+                </div>
+                <button class="cs-btn close" onclick="window.location.href='/'"></button>
+            </div>
+
+            <header id="header">
+                <div class="content-wrapper">
+                    <div class="form-group">
+                        <label>channel name</label>
+                        <input class="cs-input" type="text" id="channelName" placeholder="enter channel name">
+                    </div>
+
+                    <h3 class="section-title">
+                        <hr class="cs-hr" style="margin: 20px 0 10px 0;" />
+                        emotes
+                    </h3>
+
+                    <div class="emote-list-container">
+                        <div id="emoteList"></div>
+                    </div>
+
+                    <button class="cs-btn" onclick="addEmote()" style="margin-top: 0; width: 100%;">+ add emote</button>
+                </div>
+
+                <menu class="footer-btns">
+                    <label class="cs-btn">
+                        load
+                        <input type="file" accept=".html" onchange="loadHTML(this.files[0])" hidden>
+                    </label>
+                    <button class="cs-btn" onclick="generateHTML()">download</button>
+                </menu>
+            </header>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,142 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-image: url("https://files.catbox.moe/likszt.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    text-align: center;
+}
+
+.centered {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.cs-dialog {
+    position: relative;
+    display: inline-block;
+    width: 1500px;
+    min-width: 75vh;
+    min-height: 90vh;
+    overflow: hidden;
+}
+
+.heading {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.content-wrapper {
+    padding: 50px 23px 0 23px;
+}
+
+.emote-list-container {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 5px;
+    margin-bottom: 10px;
+    width: 101%;
+    min-height: 70vh;
+}
+
+.form-group label {
+    display: block;
+    text-align: left;
+    margin-bottom: 5px;
+}
+
+.cs-input {
+    width: 100% !important;
+}
+
+.cs-ruler {
+    margin-top: 4px;
+    margin-left: 4px;
+    height: 5px;
+    width: 100%;
+    background-image: linear-gradient(to right,
+            var(--border-light) 1px,
+            transparent 1px);
+    background-size: 15px 5px;
+    z-index: 0;
+}
+
+.cs-slider [type="range"] {
+    max-height: 3px;
+    z-index: 1;
+}
+
+.emote-card {
+    background: var(--bg);
+    border: 1px solid;
+    border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+    padding: 15px;
+    margin: 10px 0;
+}
+
+.emote-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.emote-name {
+    font-weight: bold;
+}
+
+.input-row {
+    display: flex;
+    gap: 10px;
+    margin: 5px 0;
+}
+
+.input-row input {
+    flex: 1;
+}
+
+.cs-slider {
+    margin: 10px 0;
+}
+
+.cs-slider input[type="range"] {
+    height: 20px;
+}
+
+.sound-item {
+    display: flex;
+    gap: 10px;
+    margin: 10px 0;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.file-name {
+    opacity: 0.8;
+    flex: 1;
+    text-align: left;
+}
+
+.btn-small {
+    padding: 4px 8px;
+    font-size: 11px;
+}
+
+.footer-btns {
+    margin-top: 20px;
+    padding-top: 15px;
+    padding-bottom: 20px;
+}
