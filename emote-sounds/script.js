@@ -24,7 +24,6 @@ function renderEmotes() {
         card.className = "emote-card";
         card.innerHTML = `  
             <div class="form-group" style="display: flex; flex-direction: column; gap: 4px;">
-              <label>emote name</label>
               <div style="display: flex; align-items: center;">
                 <input 
                   class="cs-input" 
