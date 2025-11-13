@@ -17,7 +17,19 @@
                     <div class="icon"></div>
                     <p class="text">EMOTE SOUNDS CONFIGURATOR</p>
                 </div>
-                <button class="cs-btn close" onclick="window.location.href='/'"></button>
+                <div class="cs-tooltip">
+                    <button disabled class="cs-btn help" style="margin-top: 3px; right: 5px; width: 18px;" onclick="window.location.href='/'"></button>
+                    <span style="display: block; text-align: left; right: 125%;" class="text">
+                        1. enter your channel name<br>
+                        2. add sounds with sound files <br>
+                        3. download html file <br>
+                        4. add downloaded html file as local browser source into your obs <br>
+                        5. (optional) to change something afterwards click load and select previously downloaded html
+                        file
+                    </span>
+
+                </div>
+
             </div>
 
             <header id="header">
@@ -30,17 +42,17 @@
                     <h3 class="section-title">
                         <hr class="cs-hr" style="margin: 20px 0 10px 0;" />
                         emotes
+                        <br>
+                        <button class="cs-btn" onclick="addEmote()" style="margin-right: 70vh; width: 10%; background-color: #709b4b;">+ add emote</button>
                     </h3>
 
                     <div class="emote-list-container">
                         <div id="emoteList"></div>
                     </div>
-
-                    <button class="cs-btn" onclick="addEmote()" style="margin-top: 0; width: 100%;">+ add emote</button>
                 </div>
 
                 <menu class="footer-btns">
-                    <label class="cs-btn" style="padding-bottom: 4px; margin-right: 2px;">
+                    <label class="cs-btn">
                         load
                         <input type="file" accept=".html" onchange="loadHTML(this.files[0])" hidden>
                     </label>
@@ -52,4 +64,5 @@
 
     <script src="script.js"></script>
 </body>
+
 </html>
