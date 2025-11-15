@@ -76,7 +76,29 @@
                 OhnePixel, ArrowCS, PSP1G & FTK789</label>
         </div>
     </div>
-    <script src="script.js"></script>
+    <script>
+        window.onload = function () {
+            const progressBar = document.querySelector(".cs-progress-bar .bars");
+            const barElement = document.querySelector(".progress-bar");
+            let width = 0;
+            const step = 10;
+            const interval = 50;
+            const maxWidth = 30;
+
+            progressBar.style.width = width + '%';
+
+            const progressInterval = setInterval(() => {
+                width += step;
+                progressBar.style.width = width + '%';
+
+                if (width >= maxWidth) {
+                    clearInterval(progressInterval);
+                    console.log('done');
+                }
+            }, interval);
+        };
+    </script>
+    <script defer src="script.js"></script>
 </body>
 
 </html>
