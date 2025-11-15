@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,13 +12,24 @@
 <body>
     <div class="centered">
         <div class="cs-dialog">
+            <div class="section-title">
+                <div class="form-group" style="width: 97%; margin-left: -15px;">
+                    <label>channel name</label>
+                    <input class="cs-input" ype="text" id="channelName" placeholder="enter channel name">
+                </div>
+
+                <h3 style="margin-top: 20px;">
+                    emotes
+                </h3>
+            </div>
             <div class="heading">
                 <div class="wrapper">
                     <div class="icon"></div>
                     <p class="text">EMOTE SOUNDS CONFIGURATOR</p>
                 </div>
                 <div class="cs-tooltip">
-                    <button disabled class="cs-btn help" style="margin-top: 3px; right: 5px; width: 18px;" onclick="window.location.href='/'"></button>
+                    <button disabled class="cs-btn help" style="margin-top: 3px; right: 5px; width: 18px;"
+                        onclick="window.location.href='/'"></button>
                     <span style="display: block; text-align: left; right: 125%;" class="text">
                         1. enter your channel name<br>
                         2. add sounds with sound files <br>
@@ -33,34 +45,33 @@
 
             <header id="header">
                 <div class="content-wrapper">
-                    <div class="form-group">
-                        <label>channel name</label>
-                        <input class="cs-input" type="text" id="channelName" placeholder="enter channel name">
-                    </div>
-
-                    <h3 class="section-title">
-                        <hr class="cs-hr" style="margin: 20px 0 10px 0;" />
-                        emotes
-                        <br>
-                        <button class="cs-btn" onclick="addEmote()" style="margin-right: 70vh; width: 10%; background-color: #709b4b;">+ add emote</button>
-                    </h3>
-
                     <div class="emote-list-container">
                         <div id="emoteList"></div>
                     </div>
                 </div>
-
                 <menu class="footer-btns">
+                    <button class="cs-btn" onclick="removeAllSounds()">remove all</button>
                     <label class="cs-btn">
                         load
                         <input type="file" accept=".html" onchange="loadHTML(this.files[0])" hidden>
                     </label>
                     <button class="cs-btn" onclick="generateHTML()">download</button>
                 </menu>
+                <br>
+                <menu class="footer-btns" style="position: static;">
+                    <button class="cs-btn" onclick="addEmote()"
+                        style="max-width: 120px;min-width: 120px; background-color: #709b4b;">
+                        + add new emote
+                    </button>
+                </menu>
+
             </header>
+            <label style="left:8px; bottom: 0;position: absolute; color: var(--secondary-bg);">default sounds by ArrowCS
+            , PSP1G & FTK789</label>
         </div>
     </div>
 
     <script src="script.js"></script>
 </body>
+
 </html>
