@@ -224,6 +224,32 @@ body {
     padding-bottom: 8px;
 }
 
+.progress-bar .cs-progress-bar .bars {
+    animation: initialLoad 0.15s ease-out forwards;
+}
+
+.progress-bar.script-loaded .cs-progress-bar .bars {
+    animation: fullLoad 0.35s ease-out forwards;
+}
+
+@keyframes initialLoad {
+    from {
+        width: 0%;
+    }
+    to {
+        width: 30%;
+    }
+}
+
+@keyframes fullLoad {
+    from {
+        width: 30%;
+    }
+    to {
+        width: 100%;
+    }
+}
+
 @media (max-width: 1200px) {
     #emoteList {
         grid-template-columns: repeat(2, 1fr) !important;
