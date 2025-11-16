@@ -100,7 +100,7 @@
     <div class="menu-container">
         <a href="https://twitter.com/girlglock_" target="_blank" class="menu-item">Twitter</a>
         <a href="https://github.com/girlglock" target="_blank" class="menu-item">Github</a>
-        <a href="https://steamcommunity.com/id/source_ts" target="_blank" class="menu-item">Steam</a>
+        <a href="https://steamcommunity.com/id/cs_script" target="_blank" class="menu-item">Steam</a>
         <a href="https://youtube.com/@girIglock" target="_blank" class="menu-item">YouTube</a>
         <a href="https://bsky.app/profile/girlglock.com" target="_blank" class="menu-item">BlueSky</a>
     </div>
@@ -291,7 +291,7 @@
             loadSounds() {
                 const soundNames = ['hover', 'select'];
                 soundNames.forEach(name => {
-                    const audio = new Audio(`sounds/${name}.wav`);
+                    const audio = new Audio(`ps2/Sounds/${name}.wav`);
                     audio.volume = 0.1;
                     audio.preload = 'auto';
                     this.sounds[name] = audio;
