@@ -1,1 +1,191 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>cs2 firewall server picker</title><link href="https://cdn.jsdelivr.net/gh/ekmas/cs16.css@main/css/cs16.min.css" rel="stylesheet"><style>:root{--border-out:var(--border-light) var(--border-dark) var(--border-dark);--border-in:var(--border-dark) var(--border-light) var(--border-light)}body{margin:0;padding:20px;background:url(https://files.catbox.moe/likszt.png) center/cover no-repeat;min-height:100vh;display:flex;justify-content:center;align-items:center;color:#fff}.centered{display:flex;flex-direction:column;justify-content:center;align-items:center;width:100%}.cs-dialog{position:relative;display:inline-block;width:900px;max-width:95vw;user-select:text}.heading{position:absolute;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;align-items:center}.content-area{padding:45px 23px 23px}.status-box{padding:10px;margin-bottom:15px;border:1px solid;border-color:var(--border-in);background:var(--secondary-bg);text-align:center;font-size:12px}.button-row{display:flex;gap:5px;margin-bottom:15px;flex-wrap:wrap}.servers-grid::-webkit-scrollbar-button:vertical:start:increment,.servers-grid::-webkit-scrollbar-button:vertical:end:decrement{display:none!important}.servers-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin-bottom:20px;max-height:400px;overflow-y:auto;padding:10px;border:1px solid;border-color:var(--border-in);background:var(--secondary-bg)}.server-card{border:1px solid;border-color:var(--border-out);padding:10px;cursor:pointer;transition:all .2s ease;background:var(--bg);font-size:11px}.server-card:hover{border:1px solid;border-color:var(--border-out);background:color-mix(in srgb,var(--bg) 95%,white)}.server-card.selected{background:color-mix(in srgb,var(--bg) 75%,rgb(0,225,255));border-color:var(--border-out)}.server-card .location{font-weight:700;font-size:13px;margin-bottom:5px}.server-card .info{opacity:.8;margin-bottom:3px}.command-section{margin-top:15px}.command-section h3{font-size:14px;margin-bottom:10px;text-align:center}.command-box{background:rgba(0,0,0,.6);padding:15px;border:1px solid rgba(255,255,255,.3);font-family:"Courier New",monospace;font-size:11px;overflow:auto;white-space:pre-wrap;word-break:break-all;max-height:120px;min-height:120px}.empty-state{text-align:center;padding:40px;opacity:.7}menu.footer-btns{position:relative;margin:0;padding:0}</style></head><body><div class="centered"><div class="cs-dialog"><div class="heading"><div class="wrapper"><div class="icon"></div><p class="text">CS2 Server Picker</p></div><button class="cs-btn close" onclick="location.reload()"></button></div><header id="header"><div class="content-area"><div class="loading status-box" id="status"></div><div class="button-row"><button class="cs-btn" onclick="loadServers()">reload</button><button class="cs-btn" onclick="selectAll()">select all</button><button class="cs-btn" onclick="deselectAll()">remove all</button></div><div class="servers-grid" id="servers"></div><div class="command-section"><h3>powershell command (run as admin):</h3><div class="command-box" id="commandBox"><div id="command">Select at least one server</div></div></div></div></header><menu class="footer-btns"><button class="cs-btn" onclick="copyCommand()">Copy</button><button class="cs-btn" onclick="location.reload()">Reset</button></menu></div></div><script>let serversData={},selectedServers=new Set,lastUserCoords=null;async function loadServers(){const e=document.getElementById("status");try{e.textContent="getting your location...";const t=await fetch("https://corsproxy.io/?url=http://ip-api.com/json/"),s=await t.json();lastUserCoords={lat:s.lat,lng:s.lon},e.textContent="loading servers...";const a=await fetch("https://corsproxy.io/?url=https://api.steampowered.com/ISteamApps/GetSDRConfig/v1/?appid=730"),o=await a.json();serversData=o.pops||{},selectedServers.clear(),renderServers(),updateCommand(),e.className="status-box success",e.textContent=`loaded ${Object.keys(serversData).length} servers from steam api (location: ${s.city}, ${s.country})`}catch(t){e.className="status-box error",e.textContent="failed to load server list",console.error("error loading servers:",t)}}function calculateLatency(e,t){if(!lastUserCoords)return null;const s=lastUserCoords.lat,a=lastUserCoords.lng,o=(e-s)*(Math.PI/180),r=(t-a)*(Math.PI/180),n=Math.sin(o/2)**2+Math.cos(s*(Math.PI/180))*Math.cos(e*(Math.PI/180))*Math.sin(r/2)**2,l=6371*(2*Math.atan2(Math.sqrt(n),Math.sqrt(1-n)));return Math.round(l/2e5*2e3+10)}function renderServers(){const e=document.getElementById("servers");if(0===Object.keys(serversData).length)return void(e.innerHTML='<div class="empty-state">no servers found</div>');e.innerHTML="";const t=Object.entries(serversData).map(([e,t])=>{let s=null;return t.geo&&t.geo.length>=2&&(s=calculateLatency(t.geo[1],t.geo[0])),{code:e,data:t,ping:s}});t.sort((e,t)=>null===e.ping?1:null===t.ping?-1:e.ping-t.ping),t.forEach(({code:t,data:s,ping:a})=>{if(!s.relays||0===s.relays.length)return;const o=document.createElement("div");o.className="server-card",o.onclick=()=>toggleServer(t);const r=s.relays.length,n=s.relays.map(e=>e.ipv4).join(", "),l=null!==a?`~${a}ms`:"n/a";o.innerHTML=`<div class="location">${s.desc} <span style="color:#4ade80">${l}</span></div><div class="info">code: ${t.toUpperCase()}</div><div class="info">relays: ${r}</div><div class="info" style="font-size:10px;margin-top:5px">${n}</div>`,e.appendChild(o)})}function toggleServer(e){selectedServers.has(e)?selectedServers.delete(e):selectedServers.add(e),updateUI()}function selectAll(){Object.keys(serversData).forEach(e=>{serversData[e].relays&&serversData[e].relays.length>0&&selectedServers.add(e)}),updateUI()}function deselectAll(){selectedServers.clear(),updateUI()}function updateUI(){document.querySelectorAll(".server-card").forEach(e=>{const t=e.querySelector(".info").textContent.replace("code: ","").toLowerCase();selectedServers.has(t)?e.classList.add("selected"):e.classList.remove("selected")}),updateCommand()}function updateCommand(){const e=document.getElementById("command");if(0===selectedServers.size)return void(e.textContent="select at least one server");const t=[];if(Object.entries(serversData).forEach(([e,s])=>{!selectedServers.has(e)&&s.relays&&s.relays.forEach(e=>{e.ipv4&&t.push(e.ipv4)})}),0===t.length)return void(e.textContent='remove-netfirewallrule -displayname "cs2 server picker" -erroraction silentlycontinue\nremove-netfirewallrule -displayname "cs2 server picker incoming" -erroraction silentlycontinue');e.textContent=`remove-netfirewallrule -displayname "cs2 server picker" -erroraction silentlycontinue\nremove-netfirewallrule -displayname "cs2 server picker incoming" -erroraction silentlycontinue\nnew-netfirewallrule -displayname "cs2 server picker" -direction outbound -action block -remoteaddress ${t.join(",")} -protocol udp -enabled true\nnew-netfirewallrule -displayname "cs2 server picker incoming" -direction inbound -action block -remoteaddress ${t.join(",")} -protocol udp -enabled true`}function copyCommand(){const e=document.getElementById("command").textContent;navigator.clipboard?navigator.clipboard.writeText(e).then(()=>{alert("powershell command copied")}).catch(()=>{fallbackCopy(e)}):fallbackCopy(e)}loadServers()</script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>cs2 firewall server picker</title>
+    <link href="https://cdn.jsdelivr.net/gh/ekmas/cs16.css@main/css/cs16.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --border-out: var(--border-light) var(--border-dark) var(--border-dark);
+            --border-in: var(--border-dark) var(--border-light) var(--border-light)
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background: url(https://files.catbox.moe/likszt.png) center/cover no-repeat;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff
+        }
+
+        .centered {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%
+        }
+
+        .cs-dialog {
+            position: relative;
+            display: inline-block;
+            width: 900px;
+            max-width: 95vw;
+            user-select: text
+        }
+
+        .heading {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center
+        }
+
+        .content-area {
+            padding: 45px 23px 23px
+        }
+
+        .status-box {
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid;
+            border-color: var(--border-in);
+            background: var(--secondary-bg);
+            text-align: center;
+            font-size: 12px
+        }
+
+        .button-row {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+            flex-wrap: wrap
+        }
+
+        .servers-grid::-webkit-scrollbar-button:vertical:start:increment,
+        .servers-grid::-webkit-scrollbar-button:vertical:end:decrement {
+            display: none !important
+        }
+
+        .servers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+            border: 1px solid;
+            border-color: var(--border-in);
+            background: var(--secondary-bg)
+        }
+
+        .server-card {
+            border: 1px solid;
+            border-color: var(--border-out);
+            padding: 10px;
+            cursor: pointer;
+            transition: all .2s ease;
+            background: var(--bg);
+            font-size: 11px
+        }
+
+        .server-card:hover {
+            border: 1px solid;
+            border-color: var(--border-out);
+            background: color-mix(in srgb, var(--bg) 95%, white)
+        }
+
+        .server-card.selected {
+            background: color-mix(in srgb, var(--bg) 75%, rgb(0, 225, 255));
+            border-color: var(--border-out)
+        }
+
+        .server-card .location {
+            font-weight: 700;
+            font-size: 13px;
+            margin-bottom: 5px
+        }
+
+        .server-card .info {
+            opacity: .8;
+            margin-bottom: 3px
+        }
+
+        .command-section {
+            margin-top: 15px
+        }
+
+        .command-section h3 {
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-align: center
+        }
+
+        .command-box {
+            background: rgba(0, 0, 0, .6);
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, .3);
+            font-family: "Courier New", monospace;
+            font-size: 11px;
+            overflow: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 120px;
+            min-height: 120px
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            opacity: .7
+        }
+
+        menu.footer-btns {
+            position: relative;
+            margin: 0;
+            padding: 0
+        }
+    </style>
+</head>
+
+<body>
+    <div class="centered">
+        <div class="cs-dialog">
+            <div class="heading">
+                <div class="wrapper">
+                    <div class="icon"></div>
+                    <p class="text">CS2 Server Picker</p>
+                </div><button class="cs-btn close" onclick="location.reload()"></button>
+            </div>
+            <header id="header">
+                <div class="content-area">
+                    <div class="loading status-box" id="status"></div>
+                    <div class="button-row"><button class="cs-btn" onclick="loadServers()">reload</button><button
+                            class="cs-btn" onclick="selectAll()">select all</button><button class="cs-btn"
+                            onclick="deselectAll()">remove all</button></div>
+                    <div class="servers-grid" id="servers"></div>
+                    <div class="command-section">
+                        <h3>powershell command (run as admin):</h3>
+                        <div class="command-box" id="commandBox">
+                            <div id="command">Select at least one server</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            <menu class="footer-btns"><button class="cs-btn" onclick="copyCommand()">Copy</button><button class="cs-btn"
+                    onclick="location.reload()">Reset</button></menu>
+        </div>
+    </div>
+    <script>let serversData = {}, selectedServers = new Set, lastUserCoords = null; async function loadServers() { const e = document.getElementById("status"); try { e.textContent = "getting your location..."; const t = await fetch("https://corsproxy.io/?url=http://ip-api.com/json/"), s = await t.json(); lastUserCoords = { lat: s.lat, lng: s.lon }, e.textContent = "loading servers..."; const a = await fetch("https://corsproxy.io/?url=https://api.steampowered.com/ISteamApps/GetSDRConfig/v1/?appid=730"), o = await a.json(); serversData = o.pops || {}, selectedServers.clear(), renderServers(), updateCommand(), e.className = "status-box success", e.textContent = `loaded ${Object.keys(serversData).length} servers from steam api (location: ${s.city}, ${s.country})` } catch (t) { e.className = "status-box error", e.textContent = "failed to load server list", console.error("error loading servers:", t) } } function calculateLatency(e, t) { if (!lastUserCoords) return null; const s = lastUserCoords.lat, a = lastUserCoords.lng, o = (e - s) * (Math.PI / 180), r = (t - a) * (Math.PI / 180), n = Math.sin(o / 2) ** 2 + Math.cos(s * (Math.PI / 180)) * Math.cos(e * (Math.PI / 180)) * Math.sin(r / 2) ** 2, l = 6371 * (2 * Math.atan2(Math.sqrt(n), Math.sqrt(1 - n))); return Math.round(l / 2e5 * 2e3 + 10) } function renderServers() { const e = document.getElementById("servers"); if (0 === Object.keys(serversData).length) return void (e.innerHTML = '<div class="empty-state">no servers found</div>'); e.innerHTML = ""; const t = Object.entries(serversData).map(([e, t]) => { let s = null; return t.geo && t.geo.length >= 2 && (s = calculateLatency(t.geo[1], t.geo[0])), { code: e, data: t, ping: s } }); t.sort((e, t) => null === e.ping ? 1 : null === t.ping ? -1 : e.ping - t.ping), t.forEach(({ code: t, data: s, ping: a }) => { if (!s.relays || 0 === s.relays.length) return; const o = document.createElement("div"); o.className = "server-card", o.onclick = () => toggleServer(t); const r = s.relays.length, n = s.relays.map(e => e.ipv4).join(", "), l = null !== a ? `~${a}ms` : "n/a"; o.innerHTML = `<div class="location">${s.desc} <span style="color:#4ade80">${l}</span></div><div class="info">code: ${t.toUpperCase()}</div><div class="info">relays: ${r}</div><div class="info" style="font-size:10px;margin-top:5px">${n}</div>`, e.appendChild(o) }) } function toggleServer(e) { selectedServers.has(e) ? selectedServers.delete(e) : selectedServers.add(e), updateUI() } function selectAll() { Object.keys(serversData).forEach(e => { serversData[e].relays && serversData[e].relays.length > 0 && selectedServers.add(e) }), updateUI() } function deselectAll() { selectedServers.clear(), updateUI() } function updateUI() { document.querySelectorAll(".server-card").forEach(e => { const t = e.querySelector(".info").textContent.replace("code: ", "").toLowerCase(); selectedServers.has(t) ? e.classList.add("selected") : e.classList.remove("selected") }), updateCommand() } function updateCommand() { const e = document.getElementById("command"); if (0 === selectedServers.size) return void (e.textContent = "select at least one server"); const t = []; if (Object.entries(serversData).forEach(([e, s]) => { !selectedServers.has(e) && s.relays && s.relays.forEach(e => { e.ipv4 && t.push(e.ipv4) }) }), 0 === t.length) return void (e.textContent = 'remove-netfirewallrule -displayname "cs2 server picker" -erroraction silentlycontinue\nremove-netfirewallrule -displayname "cs2 server picker incoming" -erroraction silentlycontinue'); e.textContent = `remove-netfirewallrule -displayname "cs2 server picker" -erroraction silentlycontinue\nremove-netfirewallrule -displayname "cs2 server picker incoming" -erroraction silentlycontinue\nnew-netfirewallrule -displayname "cs2 server picker" -direction outbound -action block -remoteaddress ${t.join(",")} -protocol udp -enabled true\nnew-netfirewallrule -displayname "cs2 server picker incoming" -direction inbound -action block -remoteaddress ${t.join(",")} -protocol udp -enabled true` } function copyCommand() { const e = document.getElementById("command").textContent; navigator.clipboard ? navigator.clipboard.writeText(e).then(() => { alert("powershell command copied") }).catch(() => { fallbackCopy(e) }) : fallbackCopy(e) } loadServers()</script>
+</body>
+
+</html>

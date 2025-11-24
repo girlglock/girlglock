@@ -5,37 +5,163 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>get png alpha</title>
-    <link rel="stylesheet" href="../styles/styles.css">
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/ekmas/cs16.css@main/css/cs16.min.css">
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-image: url("https://femboy.beauty/JJ3mBb.png");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+        }
+
+        .centered {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            width: 90vh;
+        }
+
+        .cs-dialog {
+            position: relative;
+            display: inline-block;
+            max-width: 90vh;
+            width: 60vh;
+        }
+
+        .heading {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .preview-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .preview-row {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .preview {
+            width: 150px;
+            height: 150px;
+            border: 1px solid #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+        }
+
+        .preview img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        #loadingOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .spinner {
+            border: 4px solid #333;
+            border-top: 4px solid #fff;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <div id="loadingOverlay" style="display:none;">
+    <div id="loadingOverlay">
         <div class="spinner"></div>
     </div>
 
-    <video class="background-video" autoplay muted loop>
-        <source
-            src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/items/1653970/b3fdd1a60ce544cd7fc629d7e7c72680b3c0c86c.webm"
-            type="video/webm">
-    </video>
+    <div class="centered">
+        <div class="cs-dialog">
+            <div class="heading">
+                <div class="wrapper">
+                    <div class="icon"></div>
+                    <p class="text">GIRLGLOCK</p>
+                </div>
+                <button class="cs-btn close" onclick="window.location.href='/'"></button>
+            </div>
 
-    <div class="container" style="width: 25%;">
-        <h1>get png alpha</h1>
-        <br>
-        <input type="file" id="fileInput" accept="image/png" multiple style="display: none;" onchange="showPreviews()">
-        <label for="fileInput" class="button">choose png(s)</label>
-        <div style="margin-top: 15px;">
-            <input type="checkbox" id="invertAlpha" class="styled-checkbox" onchange="showPreviews()">
-            <label for="invertAlpha">invert alpha</label>
+            <header id="header">
+                <div class="top">
+                    <div class="converter-section">
+                        <div class="cs-form-group" style="margin: 35px 0">
+                            <h2>get png alpha</h2>
+                            <br>
+                            <div class="cs-checkbox">
+                                <input type="checkbox" id="invertAlpha" class="checkbox" onchange="showPreviews()">
+                                <label class="cs-checkbox__label" for="invertAlpha">invert alpha</label>
+                            </div>
+                            <div class="cs-checkbox">
+                                <input type="checkbox" checked id="resizeToPowerOfTwo" class="checkbox"
+                                    onchange="showPreviews()">
+                                <label class="cs-checkbox__label" for="resizeToPowerOfTwo">make square (2ⁿ)</label>
+                            </div>
+                            <br>
+                            <hr class="cs-hr" />
+                            <br>
+                            <input type="file" id="fileInput" accept="image/png" multiple style="display: none;"
+                                onchange="showPreviews()">
+                            <label for="fileInput" class="cs-btn">choose png(s)</label>
+                            <br>
+                            <div class="preview-container" id="previewContainer"></div>
+                        </div>
+                    </div>
+                </div>
+                <menu class="footer-btns" style="position:relative;">
+                    <button class="cs-btn" style="min-width: 100px;" id="processButton"
+                        onclick="downloadAllAlphas()">get all alphas</button>
+                    <button class="cs-btn" onclick="window.location.href='/'">Cancel</button>
+                </menu>
+            </header>
         </div>
-        <div style="margin-top: 15px;">
-            <input type="checkbox" id="resizeToPowerOfTwo" class="styled-checkbox" onchange="showPreviews()">
-            <label for="resizeToPowerOfTwo">make square (2ⁿ)</label>
-        </div>
-        <br>
-        <button id="processButton" class="button" onclick="downloadAllAlphas()">get all alphas</button>
-        <h2 id="outputMessage"></h2>
-        <div class="preview-container" id="previewContainer"></div>
     </div>
 
     <canvas id="canvas" style="display:none;"></canvas>
@@ -43,36 +169,36 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script>
         async function showPreviews() {
-            const fileInput = document.getElementById('fileInput');
+            const fileInput = document.getElementById("fileInput");
             const files = fileInput.files;
-            const previewContainer = document.getElementById('previewContainer');
-            const invertAlpha = document.getElementById('invertAlpha').checked;
-            const resizeToPowerOfTwo = document.getElementById('resizeToPowerOfTwo').checked;
-            const loadingOverlay = document.getElementById('loadingOverlay');
+            const previewContainer = document.getElementById("previewContainer");
+            const invertAlpha = document.getElementById("invertAlpha").checked;
+            const resizeToPowerOfTwo = document.getElementById("resizeToPowerOfTwo").checked;
+            const loadingOverlay = document.getElementById("loadingOverlay");
 
             previewContainer.innerHTML = "";
-            loadingOverlay.style.display = 'flex';
+            loadingOverlay.style.display = "flex";
 
-            const canvas = document.getElementById('canvas');
-            const ctx = canvas.getContext('2d');
+            const canvas = document.getElementById("canvas");
+            const ctx = canvas.getContext("2d");
 
             const imagePromises = Array.from(files).map((file) => processImage(file, ctx, canvas, resizeToPowerOfTwo, invertAlpha, previewContainer));
 
             await Promise.all(imagePromises);
-            loadingOverlay.style.display = 'none';
+            loadingOverlay.style.display = "none";
         }
 
         async function downloadAllAlphas() {
-            const fileInput = document.getElementById('fileInput');
+            const fileInput = document.getElementById("fileInput");
             const files = fileInput.files;
-            const invertAlpha = document.getElementById('invertAlpha').checked;
-            const resizeToPowerOfTwo = document.getElementById('resizeToPowerOfTwo').checked;
+            const invertAlpha = document.getElementById("invertAlpha").checked;
+            const resizeToPowerOfTwo = document.getElementById("resizeToPowerOfTwo").checked;
 
-            const canvas = document.getElementById('canvas');
-            const ctx = canvas.getContext('2d');
+            const canvas = document.getElementById("canvas");
+            const ctx = canvas.getContext("2d");
 
-            document.getElementById('loadingOverlay').style.display = 'flex';
-            document.getElementById('processButton').disabled = true;
+            document.getElementById("loadingOverlay").style.display = "flex";
+            document.getElementById("processButton").disabled = true;
 
             const zip = new JSZip();
 
@@ -82,10 +208,10 @@
 
                     const { colorImage, alphaImage } = await processImageData(file, ctx, canvas, resizeToPowerOfTwo, invertAlpha);
 
-                    const base64Color = colorImage.split(',')[1];
-                    const base64Alpha = alphaImage.split(',')[1];
+                    const base64Color = colorImage.split(",")[1];
+                    const base64Alpha = alphaImage.split(",")[1];
 
-                    const fileNameBase = file.name.replace(/\.png$/, '');
+                    const fileNameBase = file.name.replace(/\.png$/, "");
                     zip.file(`${fileNameBase}-color.png`, base64Color, { base64: true });
                     zip.file(`${fileNameBase}-alpha.png`, base64Alpha, { base64: true });
                 }
@@ -96,10 +222,10 @@
                 link.download = `girlglock-${Date.now()}.zip`;
                 link.click();
             } catch (error) {
-                console.error('Error processing images:', error);
+                console.error("Error processing images:", error);
             } finally {
-                document.getElementById('loadingOverlay').style.display = 'none';
-                document.getElementById('processButton').disabled = false;
+                document.getElementById("loadingOverlay").style.display = "none";
+                document.getElementById("processButton").disabled = false;
             }
         }
 
@@ -211,4 +337,5 @@
         }
     </script>
 </body>
+
 </html>
