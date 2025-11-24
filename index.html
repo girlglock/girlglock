@@ -2,348 +2,194 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GIRLGLOCK.COM</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GIRLGLOCK ૮ ˶ᵔ ᵕ ᵔ˶ ა">
 
-        body {
-            background: black;
-            overflow: hidden;
-            font-family: 'Helvetica', Arial, sans-serif;
-        }
+  <meta property="og:url" content="https://girlglock.com">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="GIRLGLOCK">
+  <meta property="og:description" content="GIRLGLOCK ૮ ˶ᵔ ᵕ ᵔ˶ ა">
+  <meta property="og:image" content="https://cdn.7tv.app/emote/01H9D5QNVR0005XNK7Z4N9D90F/4x.gif">
 
-        canvas {
-            display: block;
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="twitter:domain" content="girlglock.com">
+  <meta property="twitter:url" content="https://girlglock.com">
+  <meta name="twitter:title" content="GIRLGLOCK">
+  <meta name="twitter:description" content="GIRLGLOCK ૮ ˶ᵔ ᵕ ᵔ˶ ა">
+  <meta name="twitter:image" content="https://cdn.7tv.app/emote/01H9D5QNVR0005XNK7Z4N9D90F/4x.gif">
+  <title>GIRLGLOCK</title>
 
-        .menu-container {
-            position: absolute;
-            top: 50%;
-            right: 35%;
-            transform: translateY(-50%);
-            z-index: 100;
-        }
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/ekmas/cs16.css@main/css/cs16.min.css">
 
-        .menu-item {
-            display: block;
-            color: #6b6a6f;
-            font-size: 3.5vw;
-            text-decoration: none;
-            margin-bottom: 1vh;
-            transition: color 0.2s ease;
-            text-align: center;
-            text-shadow:
-                -2px -2px 0 black,
-                2px -2px 0 black,
-                -2px 2px 0 black,
-                2px 2px 0 black;
-        }
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-image: url("https://femboy.beauty/JJ3mBb.png");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      text-align: center;
+    }
 
-        .menu-item:hover {
-            color: #6398c2;
-        }
+    .centered {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      width: 100%;
+    }
 
-        .action-buttons {
-            position: absolute;
-            bottom: 50px;
-            right: 50px;
-            z-index: 100;
-        }
+    .cs-dialog {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      width: 90vw;
+      height: 90vh;
+      max-width: 800px;
+      max-height: 450px;
+    }
 
-        .action-button {
-            color: #e6e6e6;
-            font-size: 28px;
-            text-decoration: none;
-            margin-left: 30px;
-            transition: color 0.2s ease;
-        }
+    .heading {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      right: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
 
-        .action-button:hover {
-            color: #6398c2;
-        }
+    .cs-progress-bar {
+      margin-top: 50px;
+      width: 30%;
+      margin-left: 35%;
+    }
 
-        @media (max-width: 768px) {
-            .menu-item {
-                font-size: 6vw;
-                margin-bottom: 3vh;
-            }
+    #header {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+    }
 
-            .menu-container {
-                right: 20%;
-            }
+    .cs-tabs {
+      display: flex;
+      flex-direction: row;
+    }
 
-            .action-buttons {
-                bottom: 30px;
-                right: 30px;
-            }
+    .panel {
+      flex-grow: 1;
+      overflow-y: auto;
+    }
 
-            .action-button {
-                font-size: 20px;
-                margin-left: 20px;
-            }
-        }
-    </style>
+    .links {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .cs-btn {
+      width: 200px;
+      margin: 5px 0;
+    }
+
+    .footer-btns {
+      margin-top: auto;
+      display: flex;
+      justify-content: right;
+      gap: 10px;
+    }
+  </style>
 </head>
 
 <body>
-    <canvas id="dotsCanvas"></canvas>
+  <div class="centered">
+    <div class="cs-dialog">
+      <div class="heading">
+        <div class="wrapper">
+          <div class="icon"></div>
+          <p class="text">GIRLGLOCK</p>
+        </div>
+        <button class="cs-btn close"></button>
+      </div>
 
-    <div class="menu-container">
-        <a href="https://twitter.com/girlglock_" target="_blank" class="menu-item">Twitter</a>
-        <a href="https://github.com/girlglock" target="_blank" class="menu-item">Github</a>
-        <a href="https://steamcommunity.com/id/cs_script" target="_blank" class="menu-item">Steam</a>
-        <a href="https://youtube.com/@girIglock" target="_blank" class="menu-item">YouTube</a>
-        <a href="https://bsky.app/profile/girlglock.com" target="_blank" class="menu-item">BlueSky</a>
+      <div class="cs-progress-bar" id="progress-bar">
+        <div style="width: 0%" class="bars"></div>
+      </div>
+
+      <header id="header" style="display: none;">
+        <div class="top">
+          <br>
+          <br>
+        </div>
+        <div class="cs-tabs">
+          <input class="radiotab" name="tabs" tabindex="1" type="radio" id="tabone" checked="checked" />
+          <label class="label" for="tabone">Socials</label>
+          <div class="panel" tabindex="1">
+            <h1>Socials</h1>
+            <div class="links">
+              <a href="https://bsky.app/profile/girlglock.com" class="cs-btn">BlueSky</a>
+              <a href="https://x.com/girlglock_" target="_blank" class="cs-btn">Twitter</a>
+              <a href="https://github.com/girlglock" target="_blank" class="cs-btn">Github</a>
+              <a href="https://www.youtube.com/@girIglock" target="_blank" class="cs-btn">YouTube</a>
+              <a href="https://steamcommunity.com/id/cs_script/" target="_blank" class="cs-btn">Steam</a>
+            </div>
+          </div>
+          <input class="radiotab" tabindex="1" name="tabs" type="radio" id="tabtwo" />
+          <label class="label" for="tabtwo">Tools</label>
+          <div class="panel" tabindex="1">
+            <h1>Tools</h1>
+            <div class="links">
+              <a href="https://girlglock.com/browser/" target="_blank" class="cs-btn">CS2 Server Browser</a>
+              <a href="https://girlglock.com/ps2/" target="_blank" class="cs-btn">PS2 Wallpaper</a>
+              <a href="https://girlglock.com/speaking-cat/" target="_blank" class="cs-btn">PNG-Tuber Tool</a>
+              <a href="https://girlglock.com/emote-sounds/" target="_blank" class="cs-btn">Emote Combo Sounds</a>
+              <a href="https://girlglock.com/voicefreq/" target="_blank" class="cs-btn">Voice Frequency range monitor</a>
+              <a href="https://girlglock.com/paste/" target="_blank" class="cs-btn">Pastebin Clone</a>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <menu class="footer-btns">
+        <button class="cs-btn">Cancel</button>
+      </menu>
     </div>
+  </div>
+  <script>
+    window.onload = function () {
+      const progressBar = document.querySelector(".cs-progress-bar .bars");
+      const header = document.getElementById("header");
 
-    <script>
-        class SillyDots {
-            constructor(canvas) {
-                this.canvas = canvas;
-                this.ctx = canvas.getContext('2d');
-                this.screenWidth = window.innerWidth;
-                this.screenHeight = window.innerHeight;
+      let width = 0;
+      const step = 10;
+      const interval = 50;
+      const maxWidth = 100;
 
-                this.canvas.width = this.screenWidth;
-                this.canvas.height = this.screenHeight;
+      progressBar.style.width = width + "%";
 
-                this.dots = [];
-                this.trails = [];
-                this.dotPositions = Array(7).fill().map(() => []);
+      const progressInterval = setInterval(() => {
+        width += step;
+        progressBar.style.width = width + "%";
 
-                this.isAnimating = true;
-                this.time = 0;
-                this.speed = 5;
-                this.dotRadius = this.screenHeight / 55;
-                this.radius = this.screenHeight / 5;
-                this.centerX = this.screenWidth / 2 - this.screenHeight / 7;
-                this.centerY = this.screenHeight / 2;
-                this.angleFreq = 0.008;
-                this.syncCycleDuration = 120 * 120;
-                this.dotAngleOffsets = Array(7).fill().map((_, i) => i * 0.75);
-                this.trailLength = this.screenHeight / 48;
-                this.trailThickness = this.screenHeight / 200;
-                this.globeRotationSpeed = 0.003;
+        if (width >= maxWidth) {
+          clearInterval(progressInterval);
 
-                this.targetFps = 60;
-                this.frameDelay = 1000 / this.targetFps;
-
-                this.createDots();
-                this.animate();
-
-                window.addEventListener('resize', () => {
-                    this.screenWidth = window.innerWidth;
-                    this.screenHeight = window.innerHeight;
-                    this.canvas.width = this.screenWidth;
-                    this.canvas.height = this.screenHeight;
-                    this.centerX = this.screenWidth / 2 - this.screenHeight / 7;
-                    this.centerY = this.screenHeight / 2;
-                });
-            }
-
-            createDots() {
-                for (let i = 0; i < 7; i++) {
-                    this.dots.push({
-                        x: 0,
-                        y: 0,
-                        scale: 1,
-                        perspectiveFactor: 1
-                    });
-                    this.trails.push([]);
-                }
-            }
-
-            project3dTo2d(x, y, z) {
-                const perspectiveFactor = 1 / (1 + z * 0.001);
-                const screenX = x * perspectiveFactor;
-                const screenY = y * perspectiveFactor;
-                return { screenX, screenY, perspectiveFactor };
-            }
-
-            drawGlowBall(x, y, scale) {
-                const size = 96 * scale;
-                const gradient = this.ctx.createRadialGradient(x, y, 0, x, y, size / 2);
-                gradient.addColorStop(0, 'rgba(44, 118, 255, 0.8)');
-                gradient.addColorStop(0.5, 'rgba(44, 118, 255, 0.25)');
-                gradient.addColorStop(1, 'rgba(44, 118, 255, 0)');
-
-                this.ctx.fillStyle = gradient;
-                this.ctx.beginPath();
-                this.ctx.arc(x, y, size / 2, 0, Math.PI * 2);
-                this.ctx.fill();
-            }
-
-            updateTrails() {
-                for (let i = 0; i < this.dots.length; i++) {
-                    const dot = this.dots[i];
-                    const x = dot.x;
-                    const y = dot.y;
-
-                    this.dotPositions[i].unshift({ x, y });
-                    if (this.dotPositions[i].length > this.trailLength) {
-                        this.dotPositions[i].pop();
-                    }
-
-
-                    const positions = this.dotPositions[i];
-                    for (let j = 0; j < positions.length - 1; j++) {
-                        const pos1 = positions[j];
-                        const pos2 = positions[j + 1];
-
-                        const fadeProgress = Math.pow(j / this.trailLength, 0.3);
-                        const width = Math.max(1, (1 - fadeProgress) * this.trailThickness);
-
-                        const redVal = Math.floor(107 * (1 - fadeProgress));
-                        const greenVal = Math.floor(245 * (1 - fadeProgress));
-                        const blueVal = Math.floor(255 * (1 - 0.4 * fadeProgress));
-
-                        this.ctx.strokeStyle = `rgb(${redVal}, ${greenVal}, ${blueVal})`;
-                        this.ctx.lineWidth = width;
-                        this.ctx.lineCap = 'round';
-                        this.ctx.lineJoin = 'round';
-
-                        this.ctx.beginPath();
-                        this.ctx.moveTo(pos1.x, pos1.y);
-                        this.ctx.lineTo(pos2.x, pos2.y);
-                        this.ctx.stroke();
-                    }
-                }
-            }
-
-            animate() {
-                if (!this.isAnimating) return;
-
-                this.ctx.clearRect(0, 0, this.screenWidth, this.screenHeight);
-
-                this.time += this.speed;
-
-                const globeAngle = this.time * this.globeRotationSpeed;
-                const currentRadius = this.radius;
-                const baseAngle = this.time * this.angleFreq;
-
-                for (let i = 0; i < this.dots.length; i++) {
-                    const dotAngle = (i * 2 * Math.PI) / 7;
-                    const cycleProgress = (this.time % this.syncCycleDuration) / this.syncCycleDuration;
-                    const desyncMultiplier = Math.sin(cycleProgress * Math.PI);
-                    const desyncOffset = this.dotAngleOffsets[i] * desyncMultiplier;
-
-                    const circleX = Math.cos(baseAngle + dotAngle + desyncOffset) * currentRadius;
-                    const circleY = Math.sin(baseAngle + dotAngle + desyncOffset * 1.1) * currentRadius;
-
-                    const globeRadius = circleX;
-                    const height = circleY;
-
-                    const x3d = globeRadius * Math.cos(globeAngle);
-                    const y3d = height;
-                    const z3d = globeRadius * Math.sin(globeAngle);
-
-                    const { screenX, screenY, perspectiveFactor } = this.project3dTo2d(x3d, y3d, z3d);
-
-                    const x = this.centerX + screenX;
-                    const y = this.centerY + screenY;
-
-                    const distance = Math.sqrt(screenX * screenX + screenY * screenY);
-                    let scale = (0.8 + (distance / this.radius) * 0.4) * perspectiveFactor;
-                    scale = Math.max(scale, 0.3);
-
-                    this.dots[i].x = x;
-                    this.dots[i].y = y;
-                    this.dots[i].scale = scale;
-                    this.dots[i].perspectiveFactor = perspectiveFactor;
-                }
-
-
-                this.updateTrails();
-
-                for (let i = 0; i < this.dots.length; i++) {
-                    const dot = this.dots[i];
-
-
-                    this.drawGlowBall(dot.x, dot.y, dot.scale);
-
-
-                    const dotSize = this.dotRadius * dot.scale;
-                    this.ctx.fillStyle = 'white';
-                    this.ctx.beginPath();
-                    this.ctx.arc(dot.x, dot.y, dotSize / 2, 0, Math.PI * 2);
-                    this.ctx.fill();
-                }
-
-                setTimeout(() => this.animate(), this.frameDelay);
-            }
+          setTimeout(() => {
+            document.getElementById("progress-bar").style.display = "none";
+            header.style.display = "flex";
+          }, 200);
         }
-
-        class SoundManager {
-            constructor() {
-                this.sounds = {};
-                this.loadSounds();
-            }
-
-            loadSounds() {
-                const soundNames = ['hover', 'select'];
-                soundNames.forEach(name => {
-                    const audio = new Audio(`ps2/Sounds/${name}.wav`);
-                    audio.volume = 0.1;
-                    audio.preload = 'auto';
-                    this.sounds[name] = audio;
-                });
-            }
-
-            play(name) {
-                if (this.sounds[name]) {
-                    try {
-                        this.sounds[name].currentTime = 0;
-                        this.sounds[name].play().catch(e => {
-                            console.log('no sound because of browser policy:', e);
-                        });
-                    } catch (error) {
-                        console.log('Sound play error:', error);
-                    }
-                }
-            }
-        }
-
-
-        const canvas = document.getElementById('dotsCanvas');
-        const dotsAnimation = new SillyDots(canvas);
-        const soundManager = new SoundManager();
-
-        const menuItems = document.querySelectorAll('.menu-item');
-        let lastHovered = null;
-
-        menuItems.forEach(item => {
-            item.addEventListener('mouseenter', () => {
-                if (lastHovered !== item) {
-                    soundManager.play('hover');
-                    lastHovered = item;
-                }
-            });
-
-            item.addEventListener('click', () => {
-                soundManager.play('select');
-            });
-        });
-
-        const actionButtons = document.querySelectorAll('.action-button');
-        actionButtons.forEach(button => {
-            button.addEventListener('mouseenter', () => {
-                soundManager.play('hover');
-            });
-
-            button.addEventListener('click', () => {
-                soundManager.play('select');
-            });
-        });
-    </script>
+      }, interval);
+    };
+  </script>
 </body>
 
 </html>
