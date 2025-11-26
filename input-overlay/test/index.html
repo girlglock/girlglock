@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>input-overlay websocket example</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 10px;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+
+        .logbox {
+            width: 50%;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 6px;
+            overflow-y: auto;
+            max-height: 90vh;
+        }
+
+        h3 {
+            margin-top: 0;
+        }
+
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="logbox">
+            <h3>Keyboard Log (Site)</h3>
+            <ul id="keyboardLog"></ul>
+        </div>
+
+        <div class="logbox">
+            <h3>WebSocket Log</h3>
+            <ul id="log"></ul>
+        </div>
+    </div>
+
+</body>
+
+<script>
+    var l = document.getElementById("log");
+    var keyboardLog = document.getElementById("keyboardLog");
+
+    var require_clear = false;
+    var count = 0;
+
+    let eventCounter = 0;
+
+    function nextEventID() {
+        return ++eventCounter;
+    }
+
+    function on_data(e) {
+        let data;
+
+        try {
+            data = JSON.parse(e.data);
+        } catch (err) {
+            console.error("Invalid JSON:", e.data);
+            return;
+        }
+
+        if (data.event_type && !data.event_type.includes("mouse")) {
+            const id = nextEventID();
+
+            l.insertAdjacentHTML(
+                "beforeend",
+                `<li>[${id}] ${e.data}</li>`
+            );
+
+            if (!require_clear) {
+                count++;
+                if (count > 40) require_clear = true;
+            } else {
+                if (l.children.length > 0) {
+                    l.children[0].remove();
+                }
+            }
+        }
+    }
+
+    function start_websocket() {
+        var ws = new WebSocket("ws://localhost:16899/");
+        ws.onmessage = on_data;
+        ws.onerror = (e) => console.log('WebSocket error:', e);
+
+        ws.onclose = () => {
+            ws = null;
+            setTimeout(start_websocket, 2000);
+        };
+    }
+
+    start_websocket();
+
+    const pressed = new Set();
+
+    document.addEventListener("keydown", (e) => {
+        if (!pressed.has(e.key)) {
+            pressed.add(e.key);
+
+            keyboardLog.insertAdjacentHTML(
+                "beforeend",
+                `<li>[${nextEventID()}] Key DOWN: ${e.key}</li>`
+            );
+        }
+    });
+
+    document.addEventListener("keyup", (e) => {
+        pressed.delete(e.key);
+
+        keyboardLog.insertAdjacentHTML(
+            "beforeend",
+            `<li>[${nextEventID()}] Key UP: ${e.key}</li>`
+        );
+    });
+</script>
+
+</html>
