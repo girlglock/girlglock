@@ -174,7 +174,7 @@ body {
     object-fit: cover;
     transform: translate(-50%, -50%);
     pointer-events: none;
-    filter: blur(12px) brightness(0.7);
+    filter: blur(4px) brightness(0.7);
 }
 
 .preview-container {
