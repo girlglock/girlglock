@@ -7,6 +7,7 @@
     <title>input overlay configurator</title>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/ekmas/cs16.css@main/css/cs16.min.css">
     <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/classic.min.css"/>
 </head>
 
 <body>
@@ -22,7 +23,7 @@
 
     <div class="centered" id="configurator">
         <div class="cs-dialog">
-            <div class="heading" style="margin-left: 55%; scale: 2">
+            <div class="heading">
                 <div class="wrapper">
                     <div class="text">input overlay configurator</div>
                 </div>
@@ -63,53 +64,57 @@
                         <legend>style & animation</legend>
                         <div class="nested-grid-2">
                             <div class="cs-form-group">
-                                <label class="cs-input__label">active color</label>
+                                <label class="cs-input__label">active color (glow)</label>
                                 <div class="color-input-group">
-                                    <input id="activecolor" class="config-input color-picker" type="color"
-                                        value="#8b5cf6">
+                                    <div id="activecolor" class="config-input pickr-target" data-initial-color="#8b5cf6"></div>
                                     <input id="activecolorhex" class="cs-input config-input color-hex-input" type="text"
-                                        maxlength="7" value="#8b5cf6">
+                                        maxlength="9" value="#8b5cf6">
                                 </div>
                             </div>
                             <div class="cs-form-group">
                                 <label class="cs-input__label">key background color</label>
                                 <div class="color-input-group">
-                                    <input id="backgroundcolor" class="config-input color-picker" type="color"
-                                        value="#1a1a1a">
+                                    <div id="backgroundcolor" class="config-input pickr-target" data-initial-color="#1a1a1a"></div>
                                     <input id="backgroundcolorhex" class="cs-input config-input color-hex-input"
-                                        type="text" maxlength="7" value="#1a1a1a">
+                                        type="text" maxlength="9" value="#1a1a1a">
+                                </div>
+                            </div>
+                            <div class="cs-form-group">
+                                <label class="cs-input__label">active key background</label>
+                                <div class="color-input-group">
+                                    <div id="activebgcolor" class="config-input pickr-target" data-initial-color="#202020"></div>
+                                    <input id="activebgcolorhex" class="cs-input config-input color-hex-input"
+                                        type="text" maxlength="9" value="#202020">
                                 </div>
                             </div>
                             <div class="cs-form-group">
                                 <label class="cs-input__label">outline color</label>
                                 <div class="color-input-group">
-                                    <input id="outlinecolor" class="config-input color-picker" type="color"
-                                        value="#4f4f4f">
+                                    <div id="outlinecolor" class="config-input pickr-target" data-initial-color="#4f4f4f"></div>
                                     <input id="outlinecolorhex" class="cs-input config-input color-hex-input"
-                                        type="text" maxlength="7" value="#4f4f4f">
+                                        type="text" maxlength="9" value="#4f4f4f">
                                 </div>
                             </div>
                             <div class="cs-form-group">
                                 <label class="cs-input__label">active font color</label>
                                 <div class="color-input-group">
-                                    <input id="fontcolor" class="config-input color-picker" type="color"
-                                        value="#ffffff">
+                                    <div id="fontcolor" class="config-input pickr-target" data-initial-color="#ffffff"></div>
                                     <input id="fontcolorhex" class="cs-input config-input color-hex-input" type="text"
-                                        maxlength="7" value="#ffffff">
+                                        maxlength="9" value="#ffffff">
                                 </div>
                             </div>
                             <div class="cs-form-group">
                                 <label class="cs-input__label">inactive font color</label>
                                 <div class="color-input-group">
-                                    <input id="inactivecolor" class="config-input color-picker" type="color"
-                                        value="#808080">
+                                    <div id="inactivecolor" class="config-input pickr-target" data-initial-color="#808080"></div>
                                     <input id="inactivecolorhex" class="cs-input config-input color-hex-input"
-                                        type="text" maxlength="7" value="#808080">
+                                        type="text" maxlength="9" value="#808080">
                                 </div>
                             </div>
                             <div class="cs-form-group">
                                 <label class="cs-input__label">font family</label>
-                                <select class="cs-select config-input" id="fontfamily" style="max-height: 23px; font-size: 12px;">
+                                <select class="cs-select config-input" id="fontfamily"
+                                    style="max-height: 23px; font-size: 12px;">
                                     <option value="">system default</option>
                                     <option value="roboto">roboto</option>
                                     <option value="open sans">open sans</option>
@@ -176,23 +181,6 @@
                             </div>
                         </div>
                     </fieldset>
-                </div>
-
-                <div class="config-column">
-                    <fieldset class="cs-fieldset preview-fieldset">
-                        <legend>live preview</legend>
-
-                        <div class="preview-wrapper" id="preview-wrapper">
-                            <video class="preview-bg" autoplay muted loop playsinline id="bgvideo">
-                                <source id="bgsource" type="video/mp4">
-                            </video>
-                            <div class="preview-container">
-                                <div id="preview-keyboard" class="keyboard-section"></div>
-                                <div id="preview-mouse" class="mouse-section"></div>
-                            </div>
-                        </div>
-                    </fieldset>
-
                     <div class="link-result full-width">
                         <label class="cs-input__label" style="margin-bottom: 5px; display: block;">obs browser source
                             url</label>
@@ -202,10 +190,54 @@
                         </div>
                     </div>
                 </div>
-
+                <div class="config-column">
+                    <fieldset class="cs-fieldset preview-fieldset">
+                        <legend>live preview</legend>
+                            <div class="preview-wrapper" id="preview-wrapper">
+                                <video class="preview-bg" autoplay muted loop playsinline id="bgvideo">
+                                    <source id="bgsource" type="video/mp4">
+                                </video>
+                                <div style="scale: 0.75;">
+                                    <div class="preview-container">
+                                        <div id="preview-keyboard" class="keyboard-section"></div>
+                                        <div id="preview-mouse" class="mouse-section"></div>
+                                    </div>
+                                </div>
+                            </div>
+                    </fieldset>
+                    <fieldset class="cs-fieldset">
+                        <legend>custom keyboard layout</legend>
+                        <div class="cs-form-group">
+                            <label class="cs-input__label">top row</label>
+                            <textarea class="cs-input config-input" id="customLayoutRow1" rows="2"
+                                spellcheck="false"></textarea>
+                        </div>
+                        <div class="cs-form-group">
+                            <label class="cs-input__label">qwery row</label>
+                            <textarea class="cs-input config-input" id="customLayoutRow2" rows="2"
+                                spellcheck="false"></textarea>
+                        </div>
+                        <div class="cs-form-group">
+                            <label class="cs-input__label">asdf row</label>
+                            <textarea class="cs-input config-input" id="customLayoutRow3" rows="2"
+                                spellcheck="false"></textarea>
+                        </div>
+                        <div class="cs-form-group">
+                            <label class="cs-input__label">zxcv row</label>
+                            <textarea class="cs-input config-input" id="customLayoutRow4" rows="2"
+                                spellcheck="false"></textarea>
+                        </div>
+                        <div class="cs-form-group">
+                            <label class="cs-input__label">space row</label>
+                            <textarea class="cs-input config-input" id="customLayoutRow5" rows="2"
+                                spellcheck="false"></textarea>
+                        </div>
+                    </fieldset>
+                </div>
             </div>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
     <script src="script.js"></script>
     <script>
         const video = document.getElementById("bgvideo");

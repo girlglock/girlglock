@@ -74,7 +74,7 @@
             return;
         }
 
-        if (data.event_type && !data.event_type.includes("mouse")) {
+        if (data.event_type) {
             const id = nextEventID();
 
             l.insertAdjacentHTML(
