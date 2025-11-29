@@ -270,7 +270,6 @@ body {
     font-weight: 600;
     min-width: 50px;
     text-align: center;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.13);
     position: relative;
     overflow: hidden;
 }
@@ -348,7 +347,6 @@ body {
     font-size: 14px;
     font-weight: 600;
     text-align: center;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.13);
     position: relative;
     overflow: hidden;
     display: flex;
@@ -383,7 +381,6 @@ body {
     font-size: 18px;
     font-weight: 600;
     text-align: center;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.13);
     position: relative;
     overflow: visible;
     display: flex;
