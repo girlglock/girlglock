@@ -74,7 +74,7 @@
             return;
         }
 
-        if (data.event_type) {
+        if (data.event_type && data.event_type === "key_pressed" || data.event_type === "key_released") {
             const id = nextEventID();
 
             l.insertAdjacentHTML(

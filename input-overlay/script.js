@@ -857,13 +857,14 @@ function initOverlayMode() {
                 if (keyName) {
                     const el = els.keyElements.get(keyName);
 
-                    if (keyReleaseTimers[keyName]) {
-                        clearTimeout(keyReleaseTimers[keyName]);
-                        delete keyReleaseTimers[keyName];
-                    }
-
                     if (el) {
-                        updateElementState(el, keyName, event.event_type === "key_pressed", keys);
+                        if (event.event_type === "key_pressed") {
+                            if (!keys.has(keyName)) {
+                                updateElementState(el, keyName, true, keys);
+                            }
+                        } else {
+                            updateElementState(el, keyName, false, keys);
+                        }
                     }
                 }
             }
@@ -872,7 +873,13 @@ function initOverlayMode() {
                 if (btnName) {
                     const el = els.mouseElements.get(btnName);
                     if (el) {
-                        updateElementState(el, btnName, event.event_type === "mouse_pressed", buttons);
+                        if (event.event_type === "mouse_pressed") {
+                            if (!buttons.has(btnName)) {
+                                updateElementState(el, btnName, true, buttons);
+                            }
+                        } else {
+                            updateElementState(el, btnName, false, buttons);
+                        }
                     }
                 }
             }
