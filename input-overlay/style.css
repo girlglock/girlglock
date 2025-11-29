@@ -179,7 +179,7 @@ body {
 .preview-wrapper {
     position: relative;
     flex: 1;
-    min-height: 300px;
+    min-height: 375.01px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -262,7 +262,6 @@ body {
 
 .key {
     background: linear-gradient(135deg, rgb(30, 30, 30), rgb(20, 20, 20));
-    backdrop-filter: blur(10px);
     border: 2px solid #ffffff33;
     border-radius: 8px;
     padding: 12px;
@@ -276,12 +275,46 @@ body {
     overflow: hidden;
 }
 
-.key.wide {
-    min-width: 70px;
+.key.w-1u {
+    width: 50px;
+    min-width: 50px;
 }
 
+.key.w-1-25u {
+    width: 62.5px;
+    min-width: 62.5px;
+}
+
+.key.w-1-5u,
+.key.wide {
+    width: 75px;
+    min-width: 75px;
+}
+
+.key.w-1-75u {
+    width: 87.5px;
+    min-width: 87.5px;
+}
+
+.key.w-2u,
 .key.extra-wide {
-    min-width: 90px;
+    width: 100px;
+    min-width: 100px;
+}
+
+.key.w-2-25u {
+    width: 112.5px;
+    min-width: 112.5px;
+}
+
+.key.w-2-75u {
+    width: 137.5px;
+    min-width: 137.5px;
+}
+
+.key.w-6-25u{
+    width: 312.5px;
+    min-width: 312.5px;
 }
 
 .key.super-wide {
@@ -295,8 +328,7 @@ body {
 .mouse-section {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    width: 325px;
+    gap: 10px; 
 }
 
 .mouse-row {
@@ -309,7 +341,6 @@ body {
 .mouse-btn {
     flex: 1;
     background: linear-gradient(135deg, rgb(30, 30, 30), rgb(20, 20, 20));
-    backdrop-filter: blur(10px);
     border: 2px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     padding: 20px;
@@ -325,9 +356,36 @@ body {
     justify-content: center;
 }
 
+.mouse-btn.mouse-wide {
+    flex: 1.5;
+}
+
+.mouse-btn.mouse-side {
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    padding: 5px;
+    font-size: 12px;
+    gap: 2px;
+}
+
+.mouse-btn.mouse-side span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    height: 100%;
+}
+
+.mouse-btn.mouse-side span.active {
+    border-color: var(--active-color) !important;
+    /* Placeholder, will be replaced by dynamic CSS */
+    box-shadow: 0 0 5px var(--active-color) !important;
+    /* Placeholder */
+}
+
 .scroll-display {
     background: linear-gradient(135deg, rgb(30, 30, 30), rgb(20, 20, 20));
-    backdrop-filter: blur(10px);
     border: 2px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     color: rgba(255, 255, 255, 0.5);
@@ -382,7 +440,6 @@ body {
 
 .status {
     background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     padding: 12px 20px;

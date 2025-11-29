@@ -58,10 +58,11 @@ let keyReleaseTimers = {};
 
 const DEFAULT_LAYOUT_STRINGS = {
     row1: "key_escape:\"ESC\":invisible, key_1:\"1\", key_2:\"2\", key_3:\"3\", key_4:\"4\"",
-    row2: "key_tab:\"TAB\":wide, key_q:\"Q\", key_w:\"W\", key_e:\"E\", key_r:\"R\"",
-    row3: "key_leftshift:\"SHIFT\":extra-wide, key_a:\"A\", key_s:\"S\", key_d:\"D\", key_f:\"F\"",
+    row2: "key_tab:\"TAB\":w-1-5u, key_q:\"Q\", key_w:\"W\", key_e:\"E\", key_r:\"R\"",
+    row3: "key_leftshift:\"SHIFT\":w-2u, key_a:\"A\", key_s:\"S\", key_d:\"D\", key_f:\"F\"",
     row4: "",
-    row5: "key_leftctrl:\"CTRL\":wide, key_leftalt:\"ALT\":wide, key_space:\"SPACE\":super-wide"
+    row5: "key_leftctrl:\"CTRL\":w-1-5u, key_leftalt:\"ALT\":w-1-5u, key_space:\"SPACE\":super-wide",
+    mouse: "mouse_left:\"M1\":mouse-wide, scroller:\"-\":\"↑\":\"↓\", mouse_right:\"M2\":mouse-wide"
 };
 
 const COLOR_PICKERS = [
@@ -134,7 +135,7 @@ function initPickrColorInput(pickrId, defaultColor) {
 function parseKeyDef(keyString) {
     if (!keyString) return null;
 
-    const parts = keyString.match(/^(\w+):"([^"]+)"(?::([-\w]+))?$/);
+    const parts = keyString.match(/^(\w+):"([^"]+)"(?::([-\w\.]+))?$/);
 
     if (parts) {
         const keyDef = { key: parts[1], label: parts[2] };
@@ -148,11 +149,49 @@ function parseKeyDef(keyString) {
     return null;
 }
 
-function parseCustomLayoutInput(inputString) {
+function parseMouseDef(mouseString) {
+    if (!mouseString) return null;
+
+    //standard button: key:"label"(:"class")?
+    const standardMatch = mouseString.match(/^(\w+):"([^"]+)"(?::([-\w]+))?$/);
+    if (standardMatch) {
+        return { 
+            key: standardMatch[1], 
+            labels: [standardMatch[2]], 
+            class: standardMatch[3] || 'mouse-btn'
+        };
+    }
+
+    //scroller: scroller:"label1":"label2":"label3"
+    const scrollerMatch = mouseString.match(/^(scroller):"([^"]+)":"([^"]+)":"([^"]+)"$/);
+    if (scrollerMatch) {
+        return {
+            key: scrollerMatch[1], 
+            labels: [scrollerMatch[2], scrollerMatch[3], scrollerMatch[4]], // default, up, down
+            class: 'scroll-display'
+        };
+    }
+
+    //side buttons: mouse_side:"label1":"label2"
+    const sideMatch = mouseString.match(/^(mouse_side):"([^"]+)":"([^"]+)"$/);
+    if (sideMatch) {
+        return {
+            key: sideMatch[1], 
+            labels: [sideMatch[2], sideMatch[3]], // M4, M5
+            class: 'mouse-side'
+        };
+    }
+
+    return null;
+}
+
+function parseCustomLayoutInput(inputString, isMouseLayout = false) {
     if (!inputString) return [];
 
+    const parser = isMouseLayout ? parseMouseDef : parseKeyDef;
+
     return inputString.split(/\s*,\s*/)
-        .map(parseKeyDef)
+        .map(parser)
         .filter(def => def !== null);
 }
 
@@ -186,14 +225,26 @@ function getKeyboardLayoutDef(settings) {
     return defaultLayoutFallback;
 }
 
-function buildInterface(keyboardContainer, mouseContainer, layoutDef) {
-    if (!keyboardContainer || !mouseContainer || !layoutDef || layoutDef.length === 0) return null;
+function getMouseLayoutDef(settings) {
+    const customLayout = parseCustomLayoutInput(settings.customLayoutMouse, true);
+    if (customLayout.length > 0) {
+        return customLayout;
+    }
+    return parseCustomLayoutInput(DEFAULT_LAYOUT_STRINGS.mouse, true);
+}
+
+
+function buildInterface(keyboardContainer, mouseContainer, layoutDef, mouseLayoutDef) {
+    if (!keyboardContainer || !mouseContainer || !layoutDef) return null;
 
     keyboardContainer.innerHTML = "";
     mouseContainer.innerHTML = "";
 
     const keyElements = new Map();
     const mouseElements = new Map();
+    let scrollDisplay = null;
+    let scrollArrow = null;
+    let scrollCount = null;
 
     layoutDef.forEach(row => {
         const rowEl = document.createElement("div");
@@ -210,31 +261,27 @@ function buildInterface(keyboardContainer, mouseContainer, layoutDef) {
 
     const mouseRow = document.createElement("div");
     mouseRow.className = "mouse-row";
+    
+    mouseLayoutDef.forEach(item => {
+        if (item.key === 'scroller') {
+            const display = createScrollDisplay(item.labels);
+            mouseRow.appendChild(display.el);
+            scrollDisplay = display.el;
+            scrollArrow = display.arrow;
+            scrollCount = display.count;
+            mouseElements.set("mouse_middle", display.el);
+        } else if (item.key === 'mouse_side') {
+            const sideBtn = createSideMouseButton(item.labels[0], item.labels[1], item.class);
+            mouseRow.appendChild(sideBtn.el);
+            mouseElements.set("mouse4", sideBtn.m4El);
+            mouseElements.set("mouse5", sideBtn.m5El);
+        } else {
+            const btnEl = createKeyOrButtonElement("mouse-btn", item.key, item.labels[0], item.class);
+            mouseRow.appendChild(btnEl);
+            mouseElements.set(item.key, btnEl);
+        }
+    });
 
-    const leftBtn = createKeyOrButtonElement("mouse-btn", "mouse_left", "M1");
-    mouseRow.appendChild(leftBtn);
-    mouseElements.set("mouse_left", leftBtn);
-
-    const scrollDisplay = document.createElement("div");
-    scrollDisplay.className = "scroll-display";
-    scrollDisplay.id = "scrolldisplay";
-    scrollDisplay.dataset.button = "mouse_middle";
-    mouseElements.set("mouse_middle", scrollDisplay);
-
-    const scrollArrow = document.createElement("span");
-    scrollArrow.className = "scroll-arrow";
-    scrollArrow.textContent = "-";
-
-    const scrollCount = document.createElement("span");
-    scrollCount.className = "scroll-count";
-
-    scrollDisplay.appendChild(scrollArrow);
-    scrollDisplay.appendChild(scrollCount);
-    mouseRow.appendChild(scrollDisplay);
-
-    const rightBtn = createKeyOrButtonElement("mouse-btn", "mouse_right", "M2");
-    mouseRow.appendChild(rightBtn);
-    mouseElements.set("mouse_right", rightBtn);
 
     const mouseSection = document.createElement("div");
     mouseSection.className = "mouse-section";
@@ -252,6 +299,48 @@ function createKeyOrButtonElement(baseClass, keyName, label, customClass) {
 
     return el;
 }
+
+function createScrollDisplay(labels) {
+    const scrollDisplay = document.createElement("div");
+    scrollDisplay.className = "scroll-display";
+    scrollDisplay.id = "scrolldisplay";
+    scrollDisplay.dataset.button = "mouse_middle";
+
+    const scrollArrow = document.createElement("span");
+    scrollArrow.className = "scroll-arrow";
+    scrollArrow.textContent = labels[0];
+
+    const scrollCount = document.createElement("span");
+    scrollCount.className = "scroll-count";
+
+    scrollDisplay.appendChild(scrollArrow);
+    scrollDisplay.appendChild(scrollCount);
+
+    scrollDisplay.dataset.defaultLabel = labels[0];
+    scrollDisplay.dataset.upLabel = labels[1];
+    scrollDisplay.dataset.downLabel = labels[2];
+
+    return { el: scrollDisplay, arrow: scrollArrow, count: scrollCount };
+}
+
+function createSideMouseButton(labelM4, labelM5, customClass) {
+    const el = document.createElement("div");
+    el.className = 'mouse-btn mouse-side' + (customClass ? " " + customClass : "");
+
+    const m4El = document.createElement("span");
+    m4El.textContent = labelM4;
+    m4El.dataset.key = "mouse4";
+
+    const m5El = document.createElement("span");
+    m5El.textContent = labelM5;
+    m5El.dataset.key = "mouse5";
+
+    el.appendChild(m4El);
+    el.appendChild(m5El);
+
+    return { el, m4El, m5El };
+}
+
 
 function hexToRgba(hex, alpha = 1) {
     if (!hex || !hex.startsWith("#")) return `rgba(0, 0, 0, ${alpha})`;
@@ -307,6 +396,9 @@ function applyStyles(opts) {
     }
 
     const css = `
+        :root {
+            --active-color: ${opts.activecolor};
+        }
         .key, .mouse-btn, .scroll-display {
             border-radius: ${opts.borderradius}px !important;
             color: ${opts.inactivecolor} !important;
@@ -325,6 +417,27 @@ function applyStyles(opts) {
         .key.active::before, .mouse-btn.active::before, .scroll-display.active::before {
             background: linear-gradient(135deg, ${activeColorForGradient}, ${activeColorForGradient}) !important;
         }
+        /* Specific styles for mouse-side buttons */
+        .mouse-btn.mouse-side {
+            background: none !important;
+            border-color: none !important;
+            box-shadow: none !important;
+            padding: 5px;
+        }
+        .mouse-btn.mouse-side span {
+            background: ${opts.backgroundcolor} !important;
+            border-color: ${opts.outlinecolor} !important;
+            color: ${opts.inactivecolor} !important;
+            transition: all ${animDuration} cubic-bezier(0.4,0,0.2,1) !important;
+        }
+        .mouse-btn.mouse-side span.active {
+            border-color: ${opts.activecolor} !important;
+            box-shadow: 0 0 ${opts.glowradius}px ${opts.activecolor} !important;
+            color: ${opts.fontcolor} !important;
+            background: ${opts.activebgcolor} !important;
+            transform: scale(${pressscalevalue}) !important;
+        }
+        
         .scroll-count {
             color: ${opts.fontcolor} !important;
         }
@@ -369,6 +482,7 @@ function getCurrentSettings() {
         customLayoutRow3: document.getElementById("customLayoutRow3") ? document.getElementById("customLayoutRow3").value : "",
         customLayoutRow4: document.getElementById("customLayoutRow4") ? document.getElementById("customLayoutRow4").value : "",
         customLayoutRow5: document.getElementById("customLayoutRow5") ? document.getElementById("customLayoutRow5").value : "",
+        customLayoutMouse: document.getElementById("customLayoutMouse") ? document.getElementById("customLayoutMouse").value : "",
     };
 }
 
@@ -387,19 +501,20 @@ function initConfiguratorMode() {
     const previewKeys = document.getElementById("preview-keyboard");
     const previewMouse = document.getElementById("preview-mouse");
 
-    const customLayoutRow1Input = document.getElementById("customLayoutRow1");
-    const customLayoutRow2Input = document.getElementById("customLayoutRow2");
-    const customLayoutRow3Input = document.getElementById("customLayoutRow3");
-    const customLayoutRow4Input = document.getElementById("customLayoutRow4");
-    const customLayoutRow5Input = document.getElementById("customLayoutRow5");
+    document.getElementById("customLayoutRow1").value = document.getElementById("customLayoutRow1").value || DEFAULT_LAYOUT_STRINGS.row1;
+    document.getElementById("customLayoutRow2").value = document.getElementById("customLayoutRow2").value || DEFAULT_LAYOUT_STRINGS.row2;
+    document.getElementById("customLayoutRow3").value = document.getElementById("customLayoutRow3").value || DEFAULT_LAYOUT_STRINGS.row3;
+    document.getElementById("customLayoutRow4").value = document.getElementById("customLayoutRow4").value || DEFAULT_LAYOUT_STRINGS.row4;
+    document.getElementById("customLayoutRow5").value = document.getElementById("customLayoutRow5").value || DEFAULT_LAYOUT_STRINGS.row5;
 
-    customLayoutRow1Input.value = customLayoutRow1Input.value || DEFAULT_LAYOUT_STRINGS.row1;
-    customLayoutRow2Input.value = customLayoutRow2Input.value || DEFAULT_LAYOUT_STRINGS.row2;
-    customLayoutRow3Input.value = customLayoutRow3Input.value || DEFAULT_LAYOUT_STRINGS.row3;
-    customLayoutRow4Input.value = customLayoutRow4Input.value || DEFAULT_LAYOUT_STRINGS.row4;
-    customLayoutRow5Input.value = customLayoutRow5Input.value || DEFAULT_LAYOUT_STRINGS.row5;
+    const customLayoutMouseInput = document.getElementById("customLayoutMouse");
+    customLayoutMouseInput.value = customLayoutMouseInput.value || DEFAULT_LAYOUT_STRINGS.mouse;
 
-    previewElements = buildInterface(previewKeys, previewMouse, getKeyboardLayoutDef(getCurrentSettings()));
+
+    const settings = getCurrentSettings();
+    const keyboardLayout = getKeyboardLayoutDef(settings);
+    const mouseLayout = getMouseLayoutDef(settings);
+    previewElements = buildInterface(previewKeys, previewMouse, keyboardLayout, mouseLayout);
 
     COLOR_PICKERS.forEach(cp => {
         initPickrColorInput(cp.id, cp.defaultColor);
@@ -450,28 +565,25 @@ function updateState() {
 
     const previewKeys = document.getElementById("preview-keyboard");
     const previewMouse = document.getElementById("preview-mouse");
-    const layoutDef = getKeyboardLayoutDef(settings);
+    const keyboardLayout = getKeyboardLayoutDef(settings);
+    const mouseLayout = getMouseLayoutDef(settings);
 
     const oldActiveKeys = new Set(activeKeys);
     const oldActiveMouseButtons = new Set(activeMouseButtons);
 
-    previewElements = buildInterface(previewKeys, previewMouse, layoutDef);
+    previewElements = buildInterface(previewKeys, previewMouse, keyboardLayout, mouseLayout);
 
     oldActiveKeys.forEach(keyName => {
         const el = previewElements.keyElements.get(keyName);
         if (el) {
-            el.classList.add("active");
-            el.style.zIndex = zIndexCounter;
-            activeKeys.add(keyName);
+            updateElementState(el, keyName, true, activeKeys);
         }
     });
 
     oldActiveMouseButtons.forEach(btnName => {
         const el = previewElements.mouseElements.get(btnName);
         if (el) {
-            el.classList.add("active");
-            el.style.zIndex = zIndexCounter;
-            activeMouseButtons.add(btnName);
+            updateElementState(el, btnName, true, activeMouseButtons);
         }
     });
 
@@ -502,6 +614,7 @@ function updateState() {
     if (settings.customLayoutRow3) params.set("customLayoutRow3", settings.customLayoutRow3);
     if (settings.customLayoutRow4) params.set("customLayoutRow4", settings.customLayoutRow4);
     if (settings.customLayoutRow5) params.set("customLayoutRow5", settings.customLayoutRow5);
+    if (settings.customLayoutMouse) params.set("customLayoutMouse", settings.customLayoutMouse);
 
     const link = window.location.origin + window.location.pathname + "?" + params.toString();
     document.getElementById("generatedlink").value = link;
@@ -548,7 +661,10 @@ function handleScroll(dir, els) {
     lastScrollDirection = dir;
     currentScrollCount++;
 
-    els.scrollArrow.textContent = dir === -1 ? "↑" : "↓";
+    const upLabel = els.scrollDisplay ? els.scrollDisplay.dataset.upLabel : "↑";
+    const downLabel = els.scrollDisplay ? els.scrollDisplay.dataset.downLabel : "↓";
+
+    els.scrollArrow.textContent = dir === -1 ? upLabel : downLabel;
     if (els.scrollDisplay.dataset.button !== "mouse_middle") {
         els.scrollDisplay.dataset.button = "mouse_middle";
     }
@@ -563,7 +679,8 @@ function handleScroll(dir, els) {
 
     clearTimeout(scrollTimeout);
     scrollTimeout = setTimeout(() => {
-        els.scrollArrow.textContent = "-";
+        const defaultLabel = els.scrollDisplay ? els.scrollDisplay.dataset.defaultLabel : "-";
+        els.scrollArrow.textContent = defaultLabel;
         els.scrollCount.textContent = "";
         els.scrollDisplay.classList.remove("active");
         lastScrollDirection = null;
@@ -615,7 +732,9 @@ function handlePreviewInput(event, els, type) {
     else if (type === "mouse_wheel") {
         event.preventDefault();
         const dir = -Math.sign(event.deltaY);
-        handleScroll(dir, els, settings.animationspeed);
+        if (els.scrollDisplay) {
+            handleScroll(dir, els, settings.animationspeed);
+        }
     }
 }
 
@@ -643,7 +762,8 @@ function initOverlayMode() {
         customLayoutRow2: urlParams.get("customLayoutRow2") || DEFAULT_LAYOUT_STRINGS.row2,
         customLayoutRow3: urlParams.get("customLayoutRow3") || DEFAULT_LAYOUT_STRINGS.row3,
         customLayoutRow4: urlParams.get("customLayoutRow4") || DEFAULT_LAYOUT_STRINGS.row4,
-        customLayoutRow5: urlParams.get("customLayoutRow5") || DEFAULT_LAYOUT_STRINGS.row5
+        customLayoutRow5: urlParams.get("customLayoutRow5") || DEFAULT_LAYOUT_STRINGS.row5,
+        customLayoutMouse: urlParams.get("customLayoutMouse") || DEFAULT_LAYOUT_STRINGS.mouse,
     };
 
     applyTransformations(document.body, settings);
@@ -651,8 +771,9 @@ function initOverlayMode() {
 
     const keyboardTarget = document.getElementById("keyboard-target");
     const mouseTarget = document.getElementById("mouse-target");
-    const layoutDef = getKeyboardLayoutDef(settings);
-    const elements = buildInterface(keyboardTarget, mouseTarget, layoutDef);
+    const keyboardLayout = getKeyboardLayoutDef(settings);
+    const mouseLayout = getMouseLayoutDef(settings);
+    const elements = buildInterface(keyboardTarget, mouseTarget, keyboardLayout, mouseLayout);
 
     const wsConfig = (urlParams.get("ws") || "").split(":");
     const wsAddress = wsConfig[0] || "localhost";
@@ -699,14 +820,20 @@ function initOverlayMode() {
             el.style.zIndex = "";
         });
         elements.mouseElements.forEach(el => {
-            el.classList.remove("active");
-            el.style.zIndex = "";
+            if (el.dataset.key === 'mouse4' || el.dataset.key === 'mouse5') {
+                 el.classList.remove("active");
+            } else {
+                 el.classList.remove("active");
+                 el.style.zIndex = "";
+            }
         });
         activeKeys.clear();
         activeMouseButtons.clear();
-        elements.scrollDisplay.classList.remove("active");
-        elements.scrollArrow.textContent = "-";
-        elements.scrollCount.textContent = "";
+        if (elements.scrollDisplay) {
+            elements.scrollDisplay.classList.remove("active");
+            elements.scrollArrow.textContent = elements.scrollDisplay.dataset.defaultLabel || "-";
+            elements.scrollCount.textContent = "";
+        }
         currentScrollCount = 0;
         
         for (const key in keyReleaseTimers) {
@@ -754,7 +881,9 @@ function initOverlayMode() {
             }
             else if (event.event_type === "mouse_wheel") {
                 const dir = event.rotation;
-                handleScroll(dir, els, speed);
+                if (els.scrollDisplay) {
+                    handleScroll(dir, els, speed);
+                }
             }
         } catch (err) {
             console.error("parse error", err);
