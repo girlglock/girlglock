@@ -141,7 +141,7 @@ function parseKeyDef(keyString) {
         const keyDef = { key: parts[1], label: parts[2] };
         if (parts[3]) {
             keyDef.class = parts[3];
-        } else if (keyDef.label === "invisible") {
+        } else if (keyDef.label === "invisible" || keyDef.key === "invisible" || keyDef.key === "dummy") {
             keyDef.class = "invisible";
         }
         return keyDef;
