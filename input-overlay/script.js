@@ -440,6 +440,7 @@ function applyStyles(opts) {
         
         .scroll-count {
             color: ${opts.fontcolor} !important;
+            display: ${opts.hidescrollcombo ? "none" : "flex"} !important;
         }
         .mouse-section {
             display: ${opts.hidemouse ? "none" : "flex"} !important;
@@ -476,6 +477,7 @@ function getCurrentSettings() {
         opacity: document.getElementById("opacity").value,
         fontfamily: document.getElementById("fontfamily").value,
         hidemouse: document.getElementById("hidemouse").checked,
+        hidescrollcombo: document.getElementById("hidescrollcombo").checked,
 
         customLayoutRow1: document.getElementById("customLayoutRow1") ? document.getElementById("customLayoutRow1").value : "",
         customLayoutRow2: document.getElementById("customLayoutRow2") ? document.getElementById("customLayoutRow2").value : "",
@@ -608,6 +610,7 @@ function updateState() {
     params.set("opacity", settings.opacity);
     if (settings.fontfamily) params.set("fontfamily", settings.fontfamily.toLowerCase());
     if (settings.hidemouse) params.set("hidemouse", "1");
+    if (settings.hidescrollcombo) params.set("hidescrollcombo", "1");
 
     if (settings.customLayoutRow1) params.set("customLayoutRow1", settings.customLayoutRow1);
     if (settings.customLayoutRow2) params.set("customLayoutRow2", settings.customLayoutRow2);
@@ -757,6 +760,7 @@ function initOverlayMode() {
         opacity: urlParams.get("opacity") || "100",
         fontfamily: urlParams.get("fontfamily") || "",
         hidemouse: urlParams.get("hidemouse") === "1",
+        hidescrollcombo: urlParams.get("hidescrollcombo") === "1",
 
         customLayoutRow1: urlParams.get("customLayoutRow1") || DEFAULT_LAYOUT_STRINGS.row1,
         customLayoutRow2: urlParams.get("customLayoutRow2") || DEFAULT_LAYOUT_STRINGS.row2,
