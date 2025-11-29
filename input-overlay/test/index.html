@@ -15,7 +15,7 @@
         }
 
         .logbox {
-            width: 50%;
+            width: 150%;
             border: 1px solid #ccc;
             padding: 10px;
             border-radius: 6px;
@@ -38,10 +38,10 @@
 <body>
 
     <div class="container">
-        <div class="logbox">
+       <!--  <div class="logbox">
             <h3>Keyboard Log (Site)</h3>
             <ul id="keyboardLog"></ul>
-        </div>
+        </div> -->
 
         <div class="logbox">
             <h3>WebSocket Log</h3>
@@ -74,7 +74,7 @@
             return;
         }
 
-        if (data.event_type && !data.event_type.includes("move") && !data.event_type.includes("drag")) {
+        if (data.event_type ) {
             const id = nextEventID();
 
             l.insertAdjacentHTML(
