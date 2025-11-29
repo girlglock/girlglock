@@ -861,30 +861,8 @@ function initOverlayMode() {
                         if (event.event_type === "key_pressed") {
                             if (!keys.has(keyName)) {
                                 updateElementState(el, keyName, true, keys);
-
-                                if (keyReleaseTimers[keyName]) {
-                                    clearTimeout(keyReleaseTimers[keyName]);
-                                }
-                                keyReleaseTimers[keyName] = setTimeout(() => {
-                                    console.warn(`Auto-releasing stuck key: ${keyName}`);
-                                    updateElementState(el, keyName, false, keys);
-                                    delete keyReleaseTimers[keyName];
-                                }, 1000);
-                            } else {
-                                if (keyReleaseTimers[keyName]) {
-                                    clearTimeout(keyReleaseTimers[keyName]);
-                                    keyReleaseTimers[keyName] = setTimeout(() => {
-                                        console.warn(`Auto-releasing stuck key: ${keyName}`);
-                                        updateElementState(el, keyName, false, keys);
-                                        delete keyReleaseTimers[keyName];
-                                    }, 1000);
-                                }
                             }
                         } else {
-                            if (keyReleaseTimers[keyName]) {
-                                clearTimeout(keyReleaseTimers[keyName]);
-                                delete keyReleaseTimers[keyName];
-                            }
                             updateElementState(el, keyName, false, keys);
                         }
                     }
@@ -898,23 +876,8 @@ function initOverlayMode() {
                         if (event.event_type === "mouse_pressed") {
                             if (!buttons.has(btnName)) {
                                 updateElementState(el, btnName, true, buttons);
-
-                                const timerKey = `mouse_${btnName}`;
-                                if (keyReleaseTimers[timerKey]) {
-                                    clearTimeout(keyReleaseTimers[timerKey]);
-                                }
-                                keyReleaseTimers[timerKey] = setTimeout(() => {
-                                    console.warn(`Auto-releasing stuck mouse button: ${btnName}`);
-                                    updateElementState(el, btnName, false, buttons);
-                                    delete keyReleaseTimers[timerKey];
-                                }, 1000);
                             }
                         } else {
-                            const timerKey = `mouse_${btnName}`;
-                            if (keyReleaseTimers[timerKey]) {
-                                clearTimeout(keyReleaseTimers[timerKey]);
-                                delete keyReleaseTimers[timerKey];
-                            }
                             updateElementState(el, btnName, false, buttons);
                         }
                     }
