@@ -865,15 +865,6 @@ function initOverlayMode() {
                     if (el) {
                         updateElementState(el, keyName, event.event_type === "key_pressed", keys);
                     }
-
-                    if (event.event_type === "key_pressed") {
-                        keyReleaseTimers[keyName] = setTimeout(() => {
-                            if (el) {
-                                updateElementState(el, keyName, false, keys);
-                            }
-                            delete keyReleaseTimers[keyName];
-                        }, 200);
-                    }
                 }
             }
             else if (event.event_type === "mouse_pressed" || event.event_type === "mouse_released") {
