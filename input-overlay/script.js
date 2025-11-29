@@ -54,6 +54,7 @@ let currentScrollCount = 0;
 let lastScrollDirection = null;
 let scrollTimeout;
 let zIndexCounter = 100;
+let keyReleaseTimers = {};
 
 const DEFAULT_LAYOUT_STRINGS = {
     row1: "key_escape:\"ESC\":invisible, key_1:\"1\", key_2:\"2\", key_3:\"3\", key_4:\"4\"",
@@ -538,7 +539,7 @@ function updateElementState(el, keyName, isActive, activeSet) {
     }
 }
 
-function handleScroll(dir, els, speed) {
+function handleScroll(dir, els) {
     if (dir === 0) return;
     
     if (lastScrollDirection !== null && lastScrollDirection !== dir) {
@@ -567,7 +568,7 @@ function handleScroll(dir, els, speed) {
         els.scrollDisplay.classList.remove("active");
         lastScrollDirection = null;
         currentScrollCount = 0;
-    }, 150 * (100 / parseInt(speed)));
+    }, 250);
 }
 
 
@@ -707,6 +708,11 @@ function initOverlayMode() {
         elements.scrollArrow.textContent = "-";
         elements.scrollCount.textContent = "";
         currentScrollCount = 0;
+        
+        for (const key in keyReleaseTimers) {
+            clearTimeout(keyReleaseTimers[key]);
+        }
+        keyReleaseTimers = {};
     }
 
     function handleOverlayInput(data, els, keys, buttons, speed) {
@@ -717,8 +723,23 @@ function initOverlayMode() {
                 const keyName = rawcodeToKeyName[event.rawcode];
                 if (keyName) {
                     const el = els.keyElements.get(keyName);
+                    
+                    if (keyReleaseTimers[keyName]) {
+                        clearTimeout(keyReleaseTimers[keyName]);
+                        delete keyReleaseTimers[keyName];
+                    }
+
                     if (el) {
                         updateElementState(el, keyName, event.event_type === "key_pressed", keys);
+                    }
+                    
+                    if (event.event_type === "key_pressed") {
+                        keyReleaseTimers[keyName] = setTimeout(() => {
+                            if (el) {
+                                updateElementState(el, keyName, false, keys);
+                            }
+                            delete keyReleaseTimers[keyName];
+                        }, 200); 
                     }
                 }
             }
