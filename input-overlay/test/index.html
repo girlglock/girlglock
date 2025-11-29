@@ -74,7 +74,7 @@
             return;
         }
 
-        if (data.event_type && data.event_type === "key_pressed" || data.event_type === "key_released") {
+        if (data.event_type && !data.event_type.includes("move") && !data.event_type.includes("drag")) {
             const id = nextEventID();
 
             l.insertAdjacentHTML(
