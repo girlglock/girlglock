@@ -155,9 +155,9 @@ function parseMouseDef(mouseString) {
     //standard button: key:"label"(:"class")?
     const standardMatch = mouseString.match(/^(\w+):"([^"]+)"(?::([-\w]+))?$/);
     if (standardMatch) {
-        return { 
-            key: standardMatch[1], 
-            labels: [standardMatch[2]], 
+        return {
+            key: standardMatch[1],
+            labels: [standardMatch[2]],
             class: standardMatch[3] || 'mouse-btn'
         };
     }
@@ -166,7 +166,7 @@ function parseMouseDef(mouseString) {
     const scrollerMatch = mouseString.match(/^(scroller):"([^"]+)":"([^"]+)":"([^"]+)"$/);
     if (scrollerMatch) {
         return {
-            key: scrollerMatch[1], 
+            key: scrollerMatch[1],
             labels: [scrollerMatch[2], scrollerMatch[3], scrollerMatch[4]], // default, up, down
             class: 'scroll-display'
         };
@@ -176,7 +176,7 @@ function parseMouseDef(mouseString) {
     const sideMatch = mouseString.match(/^(mouse_side):"([^"]+)":"([^"]+)"$/);
     if (sideMatch) {
         return {
-            key: sideMatch[1], 
+            key: sideMatch[1],
             labels: [sideMatch[2], sideMatch[3]], // M4, M5
             class: 'mouse-side'
         };
@@ -261,7 +261,7 @@ function buildInterface(keyboardContainer, mouseContainer, layoutDef, mouseLayou
 
     const mouseRow = document.createElement("div");
     mouseRow.className = "mouse-row";
-    
+
     mouseLayoutDef.forEach(item => {
         if (item.key === 'scroller') {
             const display = createScrollDisplay(item.labels);
@@ -273,8 +273,8 @@ function buildInterface(keyboardContainer, mouseContainer, layoutDef, mouseLayou
         } else if (item.key === 'mouse_side') {
             const sideBtn = createSideMouseButton(item.labels[0], item.labels[1], item.class);
             mouseRow.appendChild(sideBtn.el);
-            mouseElements.set("mouse4", sideBtn.m4El);
             mouseElements.set("mouse5", sideBtn.m5El);
+            mouseElements.set("mouse4", sideBtn.m4El);
         } else {
             const btnEl = createKeyOrButtonElement("mouse-btn", item.key, item.labels[0], item.class);
             mouseRow.appendChild(btnEl);
@@ -334,9 +334,8 @@ function createSideMouseButton(labelM4, labelM5, customClass) {
     const m5El = document.createElement("span");
     m5El.textContent = labelM5;
     m5El.dataset.key = "mouse5";
-
-    el.appendChild(m4El);
     el.appendChild(m5El);
+    el.appendChild(m4El);
 
     return { el, m4El, m5El };
 }
@@ -350,7 +349,7 @@ function hexToRgba(hex, alpha = 1) {
         const r = parseInt(hex.substring(1, 3), 16);
         const g = parseInt(hex.substring(3, 5), 16);
         const b = parseInt(hex.substring(5, 7), 16);
-        const a = parseInt(hex.substring(7, 9), 16) / 255; 
+        const a = parseInt(hex.substring(7, 9), 16) / 255;
         return `rgba(${r}, ${g}, ${b}, ${a.toFixed(2)})`;
     }
 
@@ -363,7 +362,7 @@ function hexToRgba(hex, alpha = 1) {
 function applyStyles(opts) {
     const pressscalevalue = parseInt(opts.pressscale) / 100;
     const animDuration = (0.15 * (100 / parseInt(opts.animationspeed))) + "s";
-    
+
     const activeColorRgb = hexToRgba(opts.activecolor, 1);
     const activeColorForGradient = activeColorRgb.replace(/, [\d\.]+?\)/, ', 0.3)');
 
@@ -417,17 +416,15 @@ function applyStyles(opts) {
         .key.active::before, .mouse-btn.active::before, .scroll-display.active::before {
             background: linear-gradient(135deg, ${activeColorForGradient}, ${activeColorForGradient}) !important;
         }
-        /* Specific styles for mouse-side buttons */
+
         .mouse-btn.mouse-side {
-            background: none !important;
-            border-color: none !important;
-            box-shadow: none !important;
             padding: 5px;
         }
         .mouse-btn.mouse-side span {
             background: ${opts.backgroundcolor} !important;
             border-color: ${opts.outlinecolor} !important;
             color: ${opts.inactivecolor} !important;
+            width: 18px !important;
             transition: all ${animDuration} cubic-bezier(0.4,0,0.2,1) !important;
         }
         .mouse-btn.mouse-side span.active {
@@ -453,7 +450,7 @@ function applyStyles(opts) {
 function applyTransformations(targetElement, settings) {
     const scaleVal = parseInt(settings.scale) / 100;
     const opacityVal = parseInt(settings.opacity) / 100;
-    
+
     targetElement.style.transform = `scale(${scaleVal})`;
     targetElement.style.opacity = opacityVal;
     targetElement.style.transformOrigin = isOverlayMode ? "top left" : "center";
@@ -463,12 +460,12 @@ function getCurrentSettings() {
     return {
         wsaddress: document.getElementById("wsaddress").value || "localhost",
         wsport: document.getElementById("wsport").value || "16899",
-        activecolor: document.getElementById("activecolorhex").value, 
-        inactivecolor: document.getElementById("inactivecolorhex").value, 
-        backgroundcolor: document.getElementById("backgroundcolorhex").value, 
+        activecolor: document.getElementById("activecolorhex").value,
+        inactivecolor: document.getElementById("inactivecolorhex").value,
+        backgroundcolor: document.getElementById("backgroundcolorhex").value,
         activebgcolor: document.getElementById("activebgcolorhex").value,
-        outlinecolor: document.getElementById("outlinecolorhex").value, 
-        fontcolor: document.getElementById("fontcolorhex").value, 
+        outlinecolor: document.getElementById("outlinecolorhex").value,
+        fontcolor: document.getElementById("fontcolorhex").value,
         glowradius: document.getElementById("glowradius").value,
         borderradius: document.getElementById("borderradius").value,
         pressscale: document.getElementById("pressscale").value,
@@ -536,11 +533,11 @@ function initConfiguratorMode() {
                     let val = input.value;
                     if (input.id.includes("scale") && !input.id.includes("pressscale")) val = (val / 100).toFixed(1);
                     else if (input.id === "pressscale") val = (val / 100).toFixed(2);
-                    
+
                     label.textContent = val + suffix;
                 }
             } else if (input.classList.contains("color-hex-input")) {
-                return; 
+                return;
             }
             updateState();
         });
@@ -578,6 +575,7 @@ function updateState() {
     oldActiveKeys.forEach(keyName => {
         const el = previewElements.keyElements.get(keyName);
         if (el) {
+            el.style.zIndex = zIndexCounter++;
             updateElementState(el, keyName, true, activeKeys);
         }
     });
@@ -585,6 +583,7 @@ function updateState() {
     oldActiveMouseButtons.forEach(btnName => {
         const el = previewElements.mouseElements.get(btnName);
         if (el) {
+            el.style.zIndex = zIndexCounter++;
             updateElementState(el, btnName, true, activeMouseButtons);
         }
     });
@@ -644,20 +643,19 @@ function updateElementState(el, keyName, isActive, activeSet) {
     if (isActive) {
         if (!activeSet.has(keyName)) {
             el.classList.add("active");
+            activeSet.add(keyName);
             zIndexCounter++;
             el.style.zIndex = zIndexCounter;
-            activeSet.add(keyName);
         }
     } else {
         el.classList.remove("active");
-        el.style.zIndex = "";
         activeSet.delete(keyName);
     }
 }
 
 function handleScroll(dir, els) {
     if (dir === 0) return;
-    
+
     if (lastScrollDirection !== null && lastScrollDirection !== dir) {
         currentScrollCount = 0;
     }
@@ -677,6 +675,12 @@ function handleScroll(dir, els) {
         els.scrollCount.classList.remove("animate");
         void els.scrollCount.offsetWidth;
         els.scrollCount.classList.add("animate");
+
+        if (!els.scrollDisplay.classList.contains("active")) {
+            zIndexCounter++;
+            els.scrollDisplay.style.zIndex = zIndexCounter;
+        }
+
         els.scrollDisplay.classList.add("active");
     });
 
@@ -703,8 +707,8 @@ function handlePreviewInput(event, els, type) {
         let el = els.keyElements.get(keyName);
 
         if (!el && event.key) {
-             const keyLabel = event.key.toUpperCase();
-             for (const [key, element] of els.keyElements.entries()) {
+            const keyLabel = event.key.toUpperCase();
+            for (const [key, element] of els.keyElements.entries()) {
                 if (element.textContent === keyLabel) {
                     keyName = key;
                     el = element;
@@ -821,14 +825,12 @@ function initOverlayMode() {
     function clearStuckKeys() {
         elements.keyElements.forEach(el => {
             el.classList.remove("active");
-            el.style.zIndex = "";
         });
         elements.mouseElements.forEach(el => {
             if (el.dataset.key === 'mouse4' || el.dataset.key === 'mouse5') {
-                 el.classList.remove("active");
+                el.classList.remove("active");
             } else {
-                 el.classList.remove("active");
-                 el.style.zIndex = "";
+                el.classList.remove("active");
             }
         });
         activeKeys.clear();
@@ -839,7 +841,7 @@ function initOverlayMode() {
             elements.scrollCount.textContent = "";
         }
         currentScrollCount = 0;
-        
+
         for (const key in keyReleaseTimers) {
             clearTimeout(keyReleaseTimers[key]);
         }
@@ -854,7 +856,7 @@ function initOverlayMode() {
                 const keyName = rawcodeToKeyName[event.rawcode];
                 if (keyName) {
                     const el = els.keyElements.get(keyName);
-                    
+
                     if (keyReleaseTimers[keyName]) {
                         clearTimeout(keyReleaseTimers[keyName]);
                         delete keyReleaseTimers[keyName];
@@ -863,14 +865,14 @@ function initOverlayMode() {
                     if (el) {
                         updateElementState(el, keyName, event.event_type === "key_pressed", keys);
                     }
-                    
+
                     if (event.event_type === "key_pressed") {
                         keyReleaseTimers[keyName] = setTimeout(() => {
                             if (el) {
                                 updateElementState(el, keyName, false, keys);
                             }
                             delete keyReleaseTimers[keyName];
-                        }, 200); 
+                        }, 200);
                     }
                 }
             }
