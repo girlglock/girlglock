@@ -265,17 +265,43 @@ body {
     overflow: hidden;
 }
 
-.key.w-1u { --key-width: 50px; }
-.key.w-1-25u { --key-width: 62.5px; }
+.key.w-1u {
+    --key-width: 50px;
+}
+
+.key.w-1-25u {
+    --key-width: 62.5px;
+}
+
 .key.w-1-5u,
-.key.wide { --key-width: 75px; }
-.key.w-1-75u { --key-width: 87.5px; }
+.key.wide {
+    --key-width: 75px;
+}
+
+.key.w-1-75u {
+    --key-width: 87.5px;
+}
+
 .key.w-2u,
-.key.extra-wide { --key-width: 100px; }
-.key.w-2-25u { --key-width: 112.5px; }
-.key.w-2-75u { --key-width: 137.5px; }
-.key.w-6-25u { --key-width: 312.5px; }
-.key.super-wide { --key-width: 167px; }
+.key.extra-wide {
+    --key-width: 100px;
+}
+
+.key.w-2-25u {
+    --key-width: 112.5px;
+}
+
+.key.w-2-75u {
+    --key-width: 137.5px;
+}
+
+.key.w-6-25u {
+    --key-width: 312.5px;
+}
+
+.key.super-wide {
+    --key-width: 167px;
+}
 
 .key.invisible {
     visibility: hidden;
@@ -306,6 +332,8 @@ body {
     border-radius: 12px;
     position: relative;
     overflow: hidden;
+    font-size: 16px;
+    font-weight: 600;
 }
 
 .mouse-btn {
@@ -389,6 +417,7 @@ body {
         opacity: 1;
         transform: rotate(-15deg) scale(0.7);
     }
+
     100% {
         opacity: 1;
         transform: rotate(0deg) scale(1);
@@ -400,6 +429,7 @@ body {
         opacity: 1;
         transform: rotate(-15deg) scale(0.7);
     }
+
     100% {
         opacity: 1;
         transform: rotate(0deg) scale(1);
@@ -432,8 +462,15 @@ body {
 }
 
 @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
 }
 
 .side-by-side-group {
@@ -455,6 +492,7 @@ body {
     .side-by-side-group {
         flex-direction: column;
     }
+
     .custom-layout-fieldset,
     .preview-fieldset {
         flex: 1 1 100%;

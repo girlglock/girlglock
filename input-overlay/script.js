@@ -52,7 +52,7 @@ const DEFAULT_LAYOUT_STRINGS = {
     row3: "key_leftshift:\"SHIFT\":w-2u, key_a:\"A\", key_s:\"S\", key_d:\"D\", key_f:\"F\"",
     row4: "",
     row5: "key_leftctrl:\"CTRL\":w-1-5u, key_leftalt:\"ALT\":w-1-5u, key_space:\"SPACE\":super-wide",
-    mouse: "mouse_left:\"M1\":mouse-wide, scroller:\"-\":\"🡅\":\"🡇\", mouse_right:\"M2\":mouse-wide"
+    mouse: "mouse_left:\"M1\":mouse-wide, scroller:\"M3\":\"🡅\":\"🡇\", mouse_right:\"M2\":mouse-wide"
 };
 
 const COLOR_PICKERS = [
@@ -85,8 +85,6 @@ class InputOverlay {
         }
     }
 
-    //utils
-
     hexToRgba(hex, alpha = 1) {
         if (!hex || !hex.startsWith("#")) return `rgba(0, 0, 0, ${alpha})`;
         hex = hex.toLowerCase();
@@ -118,8 +116,6 @@ class InputOverlay {
             activeSet.delete(keyName);
         }
     }
-
-    //settings
 
     getCurrentSettings() {
         return {
@@ -170,8 +166,6 @@ class InputOverlay {
         linkInput.className = "link-container hint";
         setTimeout(() => linkInput.className = "link-container", 1000);
     }
-
-    //style
 
     applyStyles(opts) {
         const pressscalevalue = parseInt(opts.pressscale) / 100;
@@ -279,8 +273,6 @@ class InputOverlay {
         }
     }
 
-    //custom layout
-
     parseKeyDef(keyString) {
         if (!keyString) return null;
 
@@ -381,8 +373,6 @@ class InputOverlay {
         }
         return this.parseCustomLayoutInput(DEFAULT_LAYOUT_STRINGS.mouse, true);
     }
-
-    //create elements
 
     createKeyOrButtonElement(baseClass, keyName, label, customClass) {
         const el = document.createElement("div");
@@ -518,20 +508,28 @@ class InputOverlay {
         });
     }
 
-    //font size
-
     adjustScrollDisplays() {
         document.querySelectorAll('.scroll-display').forEach(display => {
             const arrow = display.querySelector('.scroll-arrow');
-            const containerWidth = display.clientWidth - 16;
-            const textWidth = arrow.scrollWidth;
+            const count = display.querySelector('.scroll-count');
 
-            if (textWidth > containerWidth) {
-                const scale = containerWidth / textWidth;
-                arrow.style.transform = `scale(${scale})`;
-            } else {
-                arrow.style.transform = '';
+            arrow.style.transform = 'none';
+            count.textContent = "";
+            display.classList.remove("active");
+            this.lastScrollDirection = null;
+            this.currentScrollCount = 0;
+
+            const defaultLabel = display.dataset.defaultLabel || "-";
+            arrow.textContent = defaultLabel;
+
+            const containerWidth = display.clientWidth - 16;
+            const textWidth = this.measureTextWidth(arrow);
+
+            let finalScale = 1.1;
+            if (textWidth * finalScale > containerWidth) {
+                finalScale = containerWidth / textWidth;
             }
+            arrow.style.transform = `scale(${finalScale})`;
         });
     }
 
@@ -571,8 +569,6 @@ class InputOverlay {
         element.style.fontSize = `${newFontSize}px`;
     }
 
-    //cfg mode
-
     setupBackgroundVideo() {
         const video = document.getElementById("bgvideo");
         const source = document.getElementById("bgsource");
@@ -609,8 +605,7 @@ class InputOverlay {
     }
 
     initConfiguratorMode() {
-        const configuratorEl = document.getElementById("configurator");
-        configuratorEl.style.display = "block";
+        document.getElementById("configurator").style.display = "block";
         document.getElementById("overlay").classList.remove("show");
 
         const previewKeys = document.getElementById("preview-keyboard");
@@ -782,8 +777,6 @@ class InputOverlay {
         }
     }
 
-    //url copy
-
     updateGeneratedLink(settings) {
         const params = this.buildURLParams(settings);
         const link = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
@@ -860,11 +853,9 @@ class InputOverlay {
         }
     }
 
-    //scroll
-
     handleScroll(dir) {
         const els = this.previewElements;
-        if (dir === 0) return;
+        if (dir === 0 || !els.scrollDisplay) return;
 
         if (this.lastScrollDirection !== null && this.lastScrollDirection !== dir) {
             this.currentScrollCount = 0;
@@ -872,17 +863,22 @@ class InputOverlay {
         this.lastScrollDirection = dir;
         this.currentScrollCount++;
 
-        const upLabel = els.scrollDisplay ? els.scrollDisplay.dataset.upLabel : "↑";
-        const downLabel = els.scrollDisplay ? els.scrollDisplay.dataset.downLabel : "↓";
+        const upLabel = els.scrollDisplay.dataset.upLabel || "↑";
+        const downLabel = els.scrollDisplay.dataset.downLabel || "↓";
 
         els.scrollArrow.textContent = dir === -1 ? upLabel : downLabel;
 
         const containerWidth = els.scrollDisplay.clientWidth - 16;
-        els.scrollArrow.style.transform = 'scale(1.75)';
+        els.scrollArrow.style.transform = 'none';
         const textWidth = els.scrollArrow.scrollWidth;
+
+        let finalScaleActive = 1;
+
         if (textWidth > containerWidth) {
-            els.scrollArrow.style.transform = `scale(${containerWidth / textWidth})`;
+            finalScaleActive = containerWidth / textWidth;
         }
+
+        els.scrollArrow.style.transform = `scale(${finalScaleActive})`;
 
         if (els.scrollDisplay.dataset.button !== "mouse_middle") {
             els.scrollDisplay.dataset.button = "mouse_middle";
@@ -913,24 +909,9 @@ class InputOverlay {
 
         clearTimeout(this.scrollTimeout);
         this.scrollTimeout = setTimeout(() => {
-            const defaultLabel = els.scrollDisplay ? els.scrollDisplay.dataset.defaultLabel : "-";
-            els.scrollArrow.textContent = defaultLabel;
-
-            const containerWidth = els.scrollDisplay.clientWidth - 16;
-            els.scrollArrow.style.transform = 'scale(1.75)';
-            const textWidth = els.scrollArrow.scrollWidth;
-            if (textWidth > containerWidth) {
-                els.scrollArrow.style.transform = `scale(${containerWidth / textWidth})`;
-            }
-
-            els.scrollCount.textContent = "";
-            els.scrollDisplay.classList.remove("active");
-            this.lastScrollDirection = null;
-            this.currentScrollCount = 0;
+            this.adjustScrollDisplays();
         }, 250);
     }
-
-    //overlay
 
     initOverlayMode() {
         document.getElementById("configurator").style.display = "none";
