@@ -584,24 +584,27 @@ class InputOverlay {
     }
 
     setupCheatSheetToggle() {
-        const detailsTag = document.getElementById('cheatSheetDetails');
-        const closeBtn = document.getElementById('closeCheatSheet');
+        const allDetails = document.querySelectorAll('.fullscreen-details');
 
-        if (detailsTag && closeBtn) {
-            closeBtn.addEventListener('click', (e) => {
+        allDetails.forEach(detailsTag => {
+            const closeBtn = detailsTag.querySelector('.close-btn');
+            if (!closeBtn) return;
+
+            closeBtn.addEventListener('click', e => {
                 e.preventDefault();
                 detailsTag.open = false;
             });
 
             const updateCloseButtonVisibility = () => {
-                closeBtn.style.display = detailsTag.open ? 'block' : 'none';
-                this.adjustKeyFontSizes();
-                this.adjustScrollDisplays();
+                closeBtn.style.display = detailsTag.open ? 'inline' : 'none';
+
+                this.adjustKeyFontSizes?.();
+                this.adjustScrollDisplays?.();
             };
 
             updateCloseButtonVisibility();
             detailsTag.addEventListener('toggle', updateCloseButtonVisibility);
-        }
+        });
     }
 
     initConfiguratorMode() {
@@ -726,7 +729,7 @@ class InputOverlay {
         document.addEventListener("keyup", e => this.handlePreviewInput(e, "key_released"), { capture: true });
         document.addEventListener("mousedown", e => this.handlePreviewInput(e, "mouse_pressed"));
         document.addEventListener("mouseup", e => this.handlePreviewInput(e, "mouse_released"));
-        document.addEventListener("wheel", e => this.handlePreviewInput(e, "mouse_wheel"), { passive: false });
+        document.addEventListener("wheel", e => this.handlePreviewInput(e, "mouse_wheel"), { passive: true });
     }
 
     handlePreviewInput(event, type) {
