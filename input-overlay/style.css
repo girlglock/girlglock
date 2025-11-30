@@ -16,29 +16,27 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    width: 100%
+    width: 100%;
 }
 
 .cs-dialog {
     position: relative;
-    display: inline-block;
+    display: inline-flex;
     width: 50vw;
     max-width: 95vw;
     border: 0;
-    flex-wrap: nowrap;
     flex-direction: column;
     align-items: center;
+    flex-wrap: nowrap;
 }
 
 .cs-dialog__header {
     padding: 5px 10px;
-    font-weight: bold;
+    font: bold 13px tahoma, sans-serif;
     display: flex;
     align-items: center;
     background: linear-gradient(to right, #000080, #1084d0);
-    color: white;
-    font-family: tahoma, sans-serif;
-    font-size: 13px;
+    color: #fff;
 }
 
 .content-wrapper {
@@ -47,7 +45,7 @@ body {
     overflow-y: auto;
     overflow-x: hidden;
     background: #ece9d8;
-    color: black;
+    color: #000;
 }
 
 .config-layout {
@@ -82,9 +80,9 @@ body {
 
 .cs-input__label {
     display: block;
-    text-align: left;
     margin-bottom: 4px;
     font-size: 12px;
+    text-align: left;
 }
 
 .val-label {
@@ -112,20 +110,13 @@ body {
 .color-input-group .pickr-target .pcr-button {
     width: 100%;
     height: 100%;
-    border: none;
+    border: 0;
     padding: 0;
     background: none;
     box-shadow: none;
     border-radius: 0;
     position: relative;
     z-index: 10;
-}
-
-.color-input-group .pickr-target .pcr-button::before,
-.color-input-group .pickr-target .pcr-button::after {
-    box-shadow: none;
-    border-radius: 0;
-    content: none !important;
 }
 
 .color-input-group .cs-input {
@@ -142,6 +133,7 @@ body {
 }
 
 .cs-ruler {
+    position: absolute;
     top: 28px;
     margin-left: 4px;
     height: 6px;
@@ -149,10 +141,9 @@ body {
     background-image: linear-gradient(to right, #aca899 1px, transparent 1px);
     background-size: 10%;
     z-index: 0;
-    position: absolute;
 }
 
-.cs-slider [type="range"] {
+.cs-slider input[type="range"] {
     position: relative;
     z-index: 1;
     width: 100%;
@@ -161,7 +152,7 @@ body {
 
 .nested-grid-2 {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, 1fr);
     gap: 10px;
     margin-top: -20px;
 }
@@ -174,6 +165,7 @@ body {
 .preview-fieldset {
     display: flex;
     flex-direction: column;
+    flex: 1;
 }
 
 .preview-wrapper {
@@ -200,23 +192,21 @@ body {
 
 .preview-container {
     position: relative;
-    z-index: 10;
-}
-
-.preview-container {
     display: flex;
     flex-direction: column;
     gap: 15px;
-}
-
-.link-result {
-    margin-top: auto;
-    padding: 10px;
+    z-index: 10;
 }
 
 .link-container {
     display: flex;
     gap: 5px;
+    transition-duration: 1s;
+}
+
+.link-container.hint {
+    box-shadow: #c4b55075 0px 0px 20px 2px;
+    transition-duration: 0.1s;
 }
 
 .cs-btn.copied {
@@ -257,71 +247,42 @@ body {
 .key-row {
     display: flex;
     gap: 8px;
-    justify-content: flex-start;
 }
 
 .key {
-    background: linear-gradient(135deg, rgb(30, 30, 30), rgb(20, 20, 20));
+    width: var(--key-width, 50px);
+    min-width: var(--key-width, 50px);
+    max-width: var(--key-width, 50px);
+    background: linear-gradient(135deg, #1e1e1e, #141414);
     border: 2px solid #ffffff33;
     border-radius: 8px;
     padding: 12px;
     color: rgba(255, 255, 255, 0.5);
     font-size: 16px;
     font-weight: 600;
-    min-width: 50px;
     text-align: center;
     position: relative;
     overflow: hidden;
 }
 
-.key.w-1u {
-    width: 50px;
-    min-width: 50px;
-}
-
-.key.w-1-25u {
-    width: 62.5px;
-    min-width: 62.5px;
-}
-
+.key.w-1u { --key-width: 50px; }
+.key.w-1-25u { --key-width: 62.5px; }
 .key.w-1-5u,
-.key.wide {
-    width: 75px;
-    min-width: 75px;
-}
-
-.key.w-1-75u {
-    width: 87.5px;
-    min-width: 87.5px;
-}
-
+.key.wide { --key-width: 75px; }
+.key.w-1-75u { --key-width: 87.5px; }
 .key.w-2u,
-.key.extra-wide {
-    width: 100px;
-    min-width: 100px;
-}
-
-.key.w-2-25u {
-    width: 112.5px;
-    min-width: 112.5px;
-}
-
-.key.w-2-75u {
-    width: 137.5px;
-    min-width: 137.5px;
-}
-
-.key.w-6-25u {
-    width: 312.5px;
-    min-width: 312.5px;
-}
-
-.key.super-wide {
-    min-width: 167px;
-}
+.key.extra-wide { --key-width: 100px; }
+.key.w-2-25u { --key-width: 112.5px; }
+.key.w-2-75u { --key-width: 137.5px; }
+.key.w-6-25u { --key-width: 312.5px; }
+.key.super-wide { --key-width: 167px; }
 
 .key.invisible {
     visibility: hidden;
+}
+
+.key.dummy {
+    display: none;
 }
 
 .mouse-section {
@@ -337,21 +298,25 @@ body {
     height: 52px;
 }
 
-.mouse-btn {
-    flex: 1;
-    background: linear-gradient(135deg, rgb(30, 30, 30), rgb(20, 20, 20));
+.mouse-btn,
+.scroll-display {
+    background: linear-gradient(135deg, #1e1e1e, #141414);
     border: 2px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 20px;
     color: rgba(255, 255, 255, 0.5);
-    font-size: 14px;
-    font-weight: 600;
-    text-align: center;
+    border-radius: 12px;
     position: relative;
     overflow: hidden;
+}
+
+.mouse-btn {
+    flex: 1;
+    padding: 20px;
+    font-size: 14px;
+    font-weight: 600;
     display: flex;
     align-items: center;
     justify-content: center;
+    text-align: center;
 }
 
 .mouse-btn.mouse-wide {
@@ -374,52 +339,67 @@ body {
 }
 
 .scroll-display {
-    background: linear-gradient(135deg, rgb(30, 30, 30), rgb(20, 20, 20));
-    border: 2px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    color: rgba(255, 255, 255, 0.5);
-    font-size: 18px;
-    font-weight: 600;
-    text-align: center;
-    position: relative;
-    overflow: visible;
+    width: 70px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 70px;
+    overflow: visible !important;
 }
 
 .scroll-arrow {
+    font-size: 80%;
     line-height: 1;
-    font-size: 32px;
 }
 
 .scroll-count {
     font-size: 64px;
     line-height: 1;
     position: absolute;
-    top: -30px;
-    left: -20px;
     opacity: 0;
     font-weight: bold;
     color: #fff;
-    text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
-    transform: rotate(-45deg);
+    text-shadow: 0 0 10px #000c;
     pointer-events: none;
     z-index: 9999;
 }
 
-.scroll-count.animate {
-    animation: scrollbounce 0.1s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+.scroll-count.scroll-up {
+    top: -30px;
+    left: -20px;
+    transform: rotate(-45deg);
 }
 
-@keyframes scrollbounce {
+.scroll-count.scroll-down {
+    bottom: -30px;
+    right: -20px;
+    transform: rotate(-45deg);
+}
+
+.scroll-count.animate.scroll-up {
+    animation: scrollbounce-up 0.1s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.scroll-count.animate.scroll-down {
+    animation: scrollbounce-down 0.1s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes scrollbounce-up {
     0% {
         opacity: 1;
         transform: rotate(-15deg) scale(0.7);
     }
+    100% {
+        opacity: 1;
+        transform: rotate(0deg) scale(1);
+    }
+}
 
+@keyframes scrollbounce-down {
+    0% {
+        opacity: 1;
+        transform: rotate(-15deg) scale(0.7);
+    }
     100% {
         opacity: 1;
         transform: rotate(0deg) scale(1);
@@ -452,15 +432,8 @@ body {
 }
 
 @keyframes pulse {
-
-    0%,
-    100% {
-        opacity: 1;
-    }
-
-    50% {
-        opacity: 0.5;
-    }
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
 }
 
 .side-by-side-group {
@@ -479,11 +452,9 @@ body {
 }
 
 @media (max-width: 800px) {
-
     .side-by-side-group {
         flex-direction: column;
     }
-
     .custom-layout-fieldset,
     .preview-fieldset {
         flex: 1 1 100%;
@@ -497,12 +468,10 @@ body {
     width: 100vw;
     height: 100vh;
     background: #1a1a1a;
-    color: #ffffff;
+    color: #fff;
     z-index: 9999;
     overflow-y: auto;
     padding: 20px;
-    box-sizing: border-box;
-    user-select: text;
 }
 
 .fullscreen-details[open] summary {
@@ -516,10 +485,10 @@ body {
 
 .fullscreen-details[open] summary.close-btn {
     width: 55px;
-    text-align: center;
     height: 55px;
     padding: 15px;
     left: 100%;
+    text-align: center;
 }
 
 .close-btn {
@@ -528,11 +497,11 @@ body {
     right: 20px;
     font-size: 24px;
     cursor: pointer;
-    background: #ff0000;
-    color: #ffffff;
-    border: none;
+    background: #f00;
+    color: #fff;
+    border: 0;
     padding: 5px 10px;
-    border-radius: 0px;
+    border-radius: 0;
     line-height: 1;
     opacity: 0.5;
     transition: opacity 0.2s;
@@ -557,10 +526,10 @@ body {
 }
 
 .key-list-table th {
-    background-color: #202020;
+    background: #202020;
 }
 
-.key-list-table th:nth-child(1),
-.key-list-table td:nth-child(1) {
+.key-list-table th:first-child,
+.key-list-table td:first-child {
     width: 35%;
 }

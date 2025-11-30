@@ -1,4 +1,4 @@
-const rawcodeToKeyName = {
+const RAW_CODE_TO_KEY_NAME = {
     27: "key_escape", 49: "key_1", 50: "key_2", 51: "key_3", 52: "key_4", 53: "key_5", 54: "key_6", 55: "key_7", 56: "key_8", 57: "key_9", 48: "key_0", 189: "key_minus", 187: "key_equals", 8: "key_backspace",
     112: "key_f1", 113: "key_f2", 114: "key_f3", 115: "key_f4", 116: "key_f5", 117: "key_f6", 118: "key_f7", 119: "key_f8", 120: "key_f9", 121: "key_f10", 122: "key_f11", 123: "key_f12", 44: "key_printscreen", 145: "key_scrolllock", 19: "key_pause",
     45: "key_insert", 46: "key_delete", 36: "key_home", 35: "key_end", 33: "key_pageup", 34: "key_pagedown",
@@ -14,7 +14,7 @@ const rawcodeToKeyName = {
     96: "key_numpad_0", 110: "key_numpad_decimal"
 };
 
-const browserCodeToKeyName = {
+const BROWSER_CODE_TO_KEY_NAME = {
     "escape": "key_escape", "digit1": "key_1", "digit2": "key_2", "digit3": "key_3", "digit4": "key_4", "digit5": "key_5", "digit6": "key_6", "digit7": "key_7", "digit8": "key_8", "digit9": "key_9", "digit0": "key_0", "minus": "key_minus", "equal": "key_equals", "backspace": "key_backspace",
     "f1": "key_f1", "f2": "key_f2", "f3": "key_f3", "f4": "key_f4", "f5": "key_f5", "f6": "key_f6", "f7": "key_f7", "f8": "key_f8", "f9": "key_f9", "f10": "key_f10", "f11": "key_f11", "f12": "key_f12", "printscreen": "key_printscreen", "scrolllock": "key_scrolllock", "pause": "key_pause",
     "insert": "key_insert", "delete": "key_delete", "home": "key_home", "end": "key_end", "pageup": "key_pageup", "pagedown": "key_pagedown",
@@ -30,7 +30,7 @@ const browserCodeToKeyName = {
     "numpad0": "key_numpad_0", "numpaddecimal": "key_numpad_decimal"
 };
 
-const mouseButtonMap = {
+const MOUSE_BUTTON_MAP = {
     1: "mouse_left",
     2: "mouse_right",
     3: "mouse_middle",
@@ -38,7 +38,7 @@ const mouseButtonMap = {
     5: "mouse5"
 };
 
-const browserButtonToKeyName = {
+const BROWSER_BUTTON_TO_KEY_NAME = {
     0: "mouse_left",
     1: "mouse_middle",
     2: "mouse_right",
@@ -46,23 +46,13 @@ const browserButtonToKeyName = {
     4: "mouse5"
 };
 
-
-let previewElements = null;
-let activeKeys = new Set();
-let activeMouseButtons = new Set();
-let currentScrollCount = 0;
-let lastScrollDirection = null;
-let scrollTimeout;
-let zIndexCounter = 100;
-let keyReleaseTimers = {};
-
 const DEFAULT_LAYOUT_STRINGS = {
     row1: "key_escape:\"ESC\":invisible, key_1:\"1\", key_2:\"2\", key_3:\"3\", key_4:\"4\"",
     row2: "key_tab:\"TAB\":w-1-5u, key_q:\"Q\", key_w:\"W\", key_e:\"E\", key_r:\"R\"",
     row3: "key_leftshift:\"SHIFT\":w-2u, key_a:\"A\", key_s:\"S\", key_d:\"D\", key_f:\"F\"",
     row4: "",
     row5: "key_leftctrl:\"CTRL\":w-1-5u, key_leftalt:\"ALT\":w-1-5u, key_space:\"SPACE\":super-wide",
-    mouse: "mouse_left:\"M1\":mouse-wide, scroller:\"-\":\"↑\":\"↓\", mouse_right:\"M2\":mouse-wide"
+    mouse: "mouse_left:\"M1\":mouse-wide, scroller:\"-\":\"🡅\":\"🡇\", mouse_right:\"M2\":mouse-wide"
 };
 
 const COLOR_PICKERS = [
@@ -74,825 +64,1050 @@ const COLOR_PICKERS = [
     { id: "inactivecolor", defaultColor: "#808080" }
 ];
 
-function initPickrColorInput(pickrId, defaultColor) {
-    const pickrEl = document.getElementById(pickrId);
-    const hexInput = document.getElementById(pickrId + "hex");
+let Z_INDEX_COUNTER = 100;
+let KEY_RELEASE_TIMERS = {};
 
-    if (!pickrEl || !hexInput) return;
+class InputOverlay {
+    constructor() {
+        this.previewElements = null;
+        this.activeKeys = new Set();
+        this.activeMouseButtons = new Set();
+        this.currentScrollCount = 0;
+        this.lastScrollDirection = null;
+        this.scrollTimeout = null;
+        this.urlParams = new URLSearchParams(window.location.search);
+        this.isOverlayMode = this.urlParams.has("ws");
 
-    const pickr = Pickr.create({
-        el: pickrEl,
-        theme: "classic",
-        default: hexInput.value || defaultColor,
-        components: {
-            preview: true,
-            opacity: true,
-            hue: true,
-            interaction: {
-                hex: true,
-                rgba: true,
-                hsva: true,
-                input: true,
-                clear: false,
-                save: true
-            }
-        },
-        strings: {
-            save: "Apply"
-        },
-        swatches: []
-    });
-
-    pickr.on("change", (color) => {
-        const hexA = color.toHEXA().toString();
-        hexInput.value = hexA.toLowerCase();
-        pickr.applyColor();
-        updateState();
-    });
-
-    hexInput.addEventListener("input", (e) => {
-        let val = e.target.value.toLowerCase().replace(/[^0-9a-f#]/g, "");
-        if (!val.startsWith("#")) val = "#" + val;
-        if (val.length > 9) val = val.substring(0, 9);
-        e.target.value = val;
-
-        if (val.length === 7 || val.length === 9) {
-            try {
-                pickr.setColor(val, true);
-            } catch (error) {
-            }
-            updateState();
-        }
-    });
-
-    try {
-        pickr.setColor(hexInput.value || defaultColor, true);
-    } catch (error) {
-    }
-}
-
-
-function parseKeyDef(keyString) {
-    if (!keyString) return null;
-
-    const parts = keyString.match(/^(\w+):"([^"]+)"(?::([-\w\.]+))?$/);
-
-    if (parts) {
-        const keyDef = { key: parts[1], label: parts[2] };
-        if (parts[3]) {
-            keyDef.class = parts[3];
-        } else if (keyDef.label === "invisible" || keyDef.key === "invisible" || keyDef.key === "dummy") {
-            keyDef.class = "invisible";
-        }
-        return keyDef;
-    }
-    return null;
-}
-
-function parseMouseDef(mouseString) {
-    if (!mouseString) return null;
-
-    //standard button: key:"label"(:"class")?
-    const standardMatch = mouseString.match(/^(\w+):"([^"]+)"(?::([-\w]+))?$/);
-    if (standardMatch) {
-        return {
-            key: standardMatch[1],
-            labels: [standardMatch[2]],
-            class: standardMatch[3] || 'mouse-btn'
-        };
-    }
-
-    //scroller: scroller:"label1":"label2":"label3"
-    const scrollerMatch = mouseString.match(/^(scroller):"([^"]+)":"([^"]+)":"([^"]+)"$/);
-    if (scrollerMatch) {
-        return {
-            key: scrollerMatch[1],
-            labels: [scrollerMatch[2], scrollerMatch[3], scrollerMatch[4]], // default, up, down
-            class: 'scroll-display'
-        };
-    }
-
-    //side buttons: mouse_side:"label1":"label2"
-    const sideMatch = mouseString.match(/^(mouse_side):"([^"]+)":"([^"]+)"$/);
-    if (sideMatch) {
-        return {
-            key: sideMatch[1],
-            labels: [sideMatch[2], sideMatch[3]], // M4, M5
-            class: 'mouse-side'
-        };
-    }
-
-    return null;
-}
-
-function parseCustomLayoutInput(inputString, isMouseLayout = false) {
-    if (!inputString) return [];
-
-    const parser = isMouseLayout ? parseMouseDef : parseKeyDef;
-
-    return inputString.split(/\s*,\s*/)
-        .map(parser)
-        .filter(def => def !== null);
-}
-
-function getKeyboardLayoutDef(settings) {
-    const customLayout = [];
-
-    const row1 = parseCustomLayoutInput(settings.customLayoutRow1);
-    const row2 = parseCustomLayoutInput(settings.customLayoutRow2);
-    const row3 = parseCustomLayoutInput(settings.customLayoutRow3);
-    const row4 = parseCustomLayoutInput(settings.customLayoutRow4);
-    const row5 = parseCustomLayoutInput(settings.customLayoutRow5);
-
-    if (row1.length > 0) customLayout.push(row1);
-    if (row2.length > 0) customLayout.push(row2);
-    if (row3.length > 0) customLayout.push(row3);
-    if (row4.length > 0) customLayout.push(row4);
-    if (row5.length > 0) customLayout.push(row5);
-
-    if (customLayout.length > 0) {
-        return customLayout;
-    }
-
-    const defaultLayoutFallback = [
-        parseCustomLayoutInput(DEFAULT_LAYOUT_STRINGS.row1),
-        parseCustomLayoutInput(DEFAULT_LAYOUT_STRINGS.row2),
-        parseCustomLayoutInput(DEFAULT_LAYOUT_STRINGS.row3),
-        parseCustomLayoutInput(DEFAULT_LAYOUT_STRINGS.row4),
-        parseCustomLayoutInput(DEFAULT_LAYOUT_STRINGS.row5)
-    ].filter(row => row.length > 0);
-
-    return defaultLayoutFallback;
-}
-
-function getMouseLayoutDef(settings) {
-    const customLayout = parseCustomLayoutInput(settings.customLayoutMouse, true);
-    if (customLayout.length > 0) {
-        return customLayout;
-    }
-    return parseCustomLayoutInput(DEFAULT_LAYOUT_STRINGS.mouse, true);
-}
-
-
-function buildInterface(keyboardContainer, mouseContainer, layoutDef, mouseLayoutDef) {
-    if (!keyboardContainer || !mouseContainer || !layoutDef) return null;
-
-    keyboardContainer.innerHTML = "";
-    mouseContainer.innerHTML = "";
-
-    const keyElements = new Map();
-    const mouseElements = new Map();
-    let scrollDisplay = null;
-    let scrollArrow = null;
-    let scrollCount = null;
-
-    layoutDef.forEach(row => {
-        const rowEl = document.createElement("div");
-        rowEl.className = "key-row";
-        row.forEach(item => {
-            const keyEl = createKeyOrButtonElement("key", item.key, item.label, item.class);
-            rowEl.appendChild(keyEl);
-            if (!item.class || item.class !== "invisible") {
-                keyElements.set(item.key, keyEl);
-            }
-        });
-        keyboardContainer.appendChild(rowEl);
-    });
-
-    const mouseRow = document.createElement("div");
-    mouseRow.className = "mouse-row";
-
-    mouseLayoutDef.forEach(item => {
-        if (item.key === 'scroller') {
-            const display = createScrollDisplay(item.labels);
-            mouseRow.appendChild(display.el);
-            scrollDisplay = display.el;
-            scrollArrow = display.arrow;
-            scrollCount = display.count;
-            mouseElements.set("mouse_middle", display.el);
-        } else if (item.key === 'mouse_side') {
-            const sideBtn = createSideMouseButton(item.labels[0], item.labels[1], item.class);
-            mouseRow.appendChild(sideBtn.el);
-            mouseElements.set("mouse5", sideBtn.m5El);
-            mouseElements.set("mouse4", sideBtn.m4El);
+        if (this.isOverlayMode) {
+            this.initOverlayMode();
         } else {
-            const btnEl = createKeyOrButtonElement("mouse-btn", item.key, item.labels[0], item.class);
-            mouseRow.appendChild(btnEl);
-            mouseElements.set(item.key, btnEl);
+            this.initConfiguratorMode();
         }
-    });
+    }
 
+    //utils
 
-    const mouseSection = document.createElement("div");
-    mouseSection.className = "mouse-section";
-    mouseSection.appendChild(mouseRow);
-    mouseContainer.appendChild(mouseSection);
+    hexToRgba(hex, alpha = 1) {
+        if (!hex || !hex.startsWith("#")) return `rgba(0, 0, 0, ${alpha})`;
+        hex = hex.toLowerCase();
 
-    return { keyElements, mouseElements, scrollDisplay, scrollArrow, scrollCount };
-}
+        if (hex.length === 9) {
+            const r = parseInt(hex.substring(1, 3), 16);
+            const g = parseInt(hex.substring(3, 5), 16);
+            const b = parseInt(hex.substring(5, 7), 16);
+            const a = parseInt(hex.substring(7, 9), 16) / 255;
+            return `rgba(${r}, ${g}, ${b}, ${a.toFixed(2)})`;
+        }
 
-function createKeyOrButtonElement(baseClass, keyName, label, customClass) {
-    const el = document.createElement("div");
-    el.className = baseClass + (customClass ? " " + customClass : "");
-    el.textContent = label;
-    el.dataset.key = keyName;
-
-    return el;
-}
-
-function createScrollDisplay(labels) {
-    const scrollDisplay = document.createElement("div");
-    scrollDisplay.className = "scroll-display";
-    scrollDisplay.id = "scrolldisplay";
-    scrollDisplay.dataset.button = "mouse_middle";
-
-    const scrollArrow = document.createElement("span");
-    scrollArrow.className = "scroll-arrow";
-    scrollArrow.textContent = labels[0];
-
-    const scrollCount = document.createElement("span");
-    scrollCount.className = "scroll-count";
-
-    scrollDisplay.appendChild(scrollArrow);
-    scrollDisplay.appendChild(scrollCount);
-
-    scrollDisplay.dataset.defaultLabel = labels[0];
-    scrollDisplay.dataset.upLabel = labels[1];
-    scrollDisplay.dataset.downLabel = labels[2];
-
-    return { el: scrollDisplay, arrow: scrollArrow, count: scrollCount };
-}
-
-function createSideMouseButton(labelM4, labelM5, customClass) {
-    const el = document.createElement("div");
-    el.className = 'mouse-btn mouse-side' + (customClass ? " " + customClass : "");
-
-    const m4El = document.createElement("span");
-    m4El.textContent = labelM4;
-    m4El.dataset.key = "mouse4";
-
-    const m5El = document.createElement("span");
-    m5El.textContent = labelM5;
-    m5El.dataset.key = "mouse5";
-    el.appendChild(m5El);
-    el.appendChild(m4El);
-
-    return { el, m4El, m5El };
-}
-
-
-function hexToRgba(hex, alpha = 1) {
-    if (!hex || !hex.startsWith("#")) return `rgba(0, 0, 0, ${alpha})`;
-    hex = hex.toLowerCase();
-
-    if (hex.length === 9) {
         const r = parseInt(hex.substring(1, 3), 16);
         const g = parseInt(hex.substring(3, 5), 16);
         const b = parseInt(hex.substring(5, 7), 16);
-        const a = parseInt(hex.substring(7, 9), 16) / 255;
-        return `rgba(${r}, ${g}, ${b}, ${a.toFixed(2)})`;
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
 
-    const r = parseInt(hex.substring(1, 3), 16);
-    const g = parseInt(hex.substring(3, 5), 16);
-    const b = parseInt(hex.substring(5, 7), 16);
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
-
-function applyStyles(opts) {
-    const pressscalevalue = parseInt(opts.pressscale) / 100;
-    const animDuration = (0.15 * (100 / parseInt(opts.animationspeed))) + "s";
-
-    const activeColorRgb = hexToRgba(opts.activecolor, 1);
-    const activeColorForGradient = activeColorRgb.replace(/, [\d\.]+?\)/, ', 0.3)');
-
-    if (opts.fontfamily) {
-        const link = document.createElement("link");
-
-        const fontName = opts.fontfamily.toLowerCase().replace(/ /g, "+");
-        link.href = `https://fonts.googleapis.com/css2?family=${fontName}&display=swap`;
-        link.rel = "stylesheet";
-
-        document.head.querySelectorAll("link[href*='fonts.googleapis']").forEach(el => el.remove());
-
-        if (fontName !== "") {
-            document.head.appendChild(link);
-            document.body.style.fontFamily = `"${opts.fontfamily}", sans-serif`;
+    updateElementState(el, keyName, isActive, activeSet) {
+        if (isActive) {
+            if (!activeSet.has(keyName)) {
+                el.classList.add("active");
+                activeSet.add(keyName);
+                Z_INDEX_COUNTER++;
+                el.style.zIndex = Z_INDEX_COUNTER;
+            }
         } else {
+            el.classList.remove("active");
+            activeSet.delete(keyName);
+        }
+    }
+
+    //settings
+
+    getCurrentSettings() {
+        return {
+            wsaddress: document.getElementById("wsaddress").value || "localhost",
+            wsport: document.getElementById("wsport").value || "16899",
+            activecolor: document.getElementById("activecolorhex").value,
+            inactivecolor: document.getElementById("inactivecolorhex").value,
+            backgroundcolor: document.getElementById("backgroundcolorhex").value,
+            activebgcolor: document.getElementById("activebgcolorhex").value,
+            outlinecolor: document.getElementById("outlinecolorhex").value,
+            fontcolor: document.getElementById("fontcolorhex").value,
+            glowradius: document.getElementById("glowradius").value,
+            borderradius: document.getElementById("borderradius").value,
+            pressscale: document.getElementById("pressscale").value,
+            animationspeed: document.getElementById("animationspeed").value,
+            scale: document.getElementById("scale").value,
+            opacity: document.getElementById("opacity").value,
+            fontfamily: document.getElementById("fontfamily").value,
+            hidemouse: document.getElementById("hidemouse").checked,
+            hidescrollcombo: document.getElementById("hidescrollcombo").checked,
+
+            customLayoutRow1: document.getElementById("customLayoutRow1") ? document.getElementById("customLayoutRow1").value : "",
+            customLayoutRow2: document.getElementById("customLayoutRow2") ? document.getElementById("customLayoutRow2").value : "",
+            customLayoutRow3: document.getElementById("customLayoutRow3") ? document.getElementById("customLayoutRow3").value : "",
+            customLayoutRow4: document.getElementById("customLayoutRow4") ? document.getElementById("customLayoutRow4").value : "",
+            customLayoutRow5: document.getElementById("customLayoutRow5") ? document.getElementById("customLayoutRow5").value : "",
+            customLayoutMouse: document.getElementById("customLayoutMouse") ? document.getElementById("customLayoutMouse").value : "",
+        };
+    }
+
+    updateState() {
+        const settings = this.getCurrentSettings();
+        this.applyStyles(settings);
+
+        const layouts = {
+            keyboard: this.getKeyboardLayoutDef(settings),
+            mouse: this.getMouseLayoutDef(settings)
+        };
+
+        this.rebuildPreviewInterface(layouts);
+        this.restoreActiveStates();
+        this.applyContainerTransformations(settings);
+        this.updateGeneratedLink(settings);
+        this.adjustScrollDisplays();
+        this.adjustKeyFontSizes();
+
+        const linkInput = document.getElementsByClassName("link-container")[0];
+        linkInput.className = "link-container hint";
+        setTimeout(() => linkInput.className = "link-container", 1000);
+    }
+
+    //style
+
+    applyStyles(opts) {
+        const pressscalevalue = parseInt(opts.pressscale) / 100;
+        const animDuration = (0.15 * (100 / parseInt(opts.animationspeed))) + "s";
+
+        const activeColorRgb = this.hexToRgba(opts.activecolor, 1);
+        const activeColorForGradient = activeColorRgb.replace(/, [\d\.]+?\)/, ', 0.3)');
+
+        this.applyFontStyles(opts.fontfamily);
+
+        let styleEl = document.getElementById("dynamic-styles");
+        if (!styleEl) {
+            styleEl = document.createElement("style");
+            styleEl.id = "dynamic-styles";
+            document.head.appendChild(styleEl);
+        }
+
+        const css = `
+            :root {
+                --active-color: ${opts.activecolor};
+            }
+            .key, .mouse-btn, .scroll-display {
+                border-radius: ${opts.borderradius}px !important;
+                color: ${opts.inactivecolor} !important;
+                background: ${opts.backgroundcolor} !important;
+                border-color: ${opts.outlinecolor} !important;
+                transition: all ${animDuration} cubic-bezier(0.4,0,0.2,1) !important;
+                position: relative !important;
+            }
+            .key.active, .mouse-btn.active, .scroll-display.active {
+                border-color: ${opts.activecolor} !important;
+                box-shadow: 0 2px ${opts.glowradius}px ${opts.activecolor} !important;
+                color: ${opts.fontcolor} !important;
+                transform: translateY(-2px) scale(${pressscalevalue}) !important;
+                background: ${opts.activebgcolor} !important;
+            }
+            .key.active::before, .mouse-btn.active::before, .scroll-display.active::before {
+                background: linear-gradient(135deg, ${activeColorForGradient}, ${activeColorForGradient}) !important;
+            }
+
+            .mouse-btn.mouse-side {
+                padding: 5px;
+            }
+            .mouse-btn.mouse-side span {
+                background: ${opts.backgroundcolor} !important;
+                border-color: ${opts.outlinecolor} !important;
+                color: ${opts.inactivecolor} !important;
+                width: 18px !important;
+                transition: all ${animDuration} cubic-bezier(0.4,0,0.2,1) !important;
+            }
+            .mouse-btn.mouse-side span.active {
+                border-color: ${opts.activecolor} !important;
+                box-shadow: 0 0 ${opts.glowradius}px ${opts.activecolor} !important;
+                color: ${opts.fontcolor} !important;
+                background: ${opts.activebgcolor} !important;
+                transform: scale(${pressscalevalue}) !important;
+            }
+            
+            .scroll-count {
+                color: ${opts.fontcolor} !important;
+                display: ${opts.hidescrollcombo ? "none" : "flex"} !important;
+            }
+            .mouse-section {
+                display: ${opts.hidemouse ? "none" : "flex"} !important;
+            }
+        `;
+
+        styleEl.textContent = css;
+    }
+
+    applyFontStyles(fontfamily) {
+        if (fontfamily) {
+            const link = document.createElement("link");
+            const fontName = fontfamily.toLowerCase().replace(/ /g, "+");
+            link.href = `https://fonts.googleapis.com/css2?family=${fontName}&display=swap`;
+            link.rel = "stylesheet";
+
+            document.head.querySelectorAll("link[href*='fonts.googleapis']").forEach(el => el.remove());
+
+            if (fontName !== "") {
+                document.head.appendChild(link);
+                document.body.style.fontFamily = `"${fontfamily}", sans-serif`;
+            } else {
+                document.body.style.fontFamily = "";
+            }
+        } else {
+            document.head.querySelectorAll("link[href*='fonts.googleapis']").forEach(el => el.remove());
             document.body.style.fontFamily = "";
         }
-    } else {
-        document.head.querySelectorAll("link[href*='fonts.googleapis']").forEach(el => el.remove());
-        document.body.style.fontFamily = "";
     }
 
+    applyTransformations(targetElement, settings) {
+        const scaleVal = parseInt(settings.scale) / 100;
+        const opacityVal = parseInt(settings.opacity) / 100;
 
-    let styleEl = document.getElementById("dynamic-styles");
-    if (!styleEl) {
-        styleEl = document.createElement("style");
-        styleEl.id = "dynamic-styles";
-        document.head.appendChild(styleEl);
+        targetElement.style.transform = `scale(${scaleVal})`;
+        targetElement.style.opacity = opacityVal;
+        targetElement.style.transformOrigin = this.isOverlayMode ? "top left" : "center";
     }
 
-    const css = `
-        :root {
-            --active-color: ${opts.activecolor};
+    applyContainerTransformations(settings) {
+        const previewContainer = document.querySelector(".preview-container");
+        if (previewContainer) {
+            this.applyTransformations(previewContainer, settings);
         }
-        .key, .mouse-btn, .scroll-display {
-            border-radius: ${opts.borderradius}px !important;
-            color: ${opts.inactivecolor} !important;
-            background: ${opts.backgroundcolor} !important;
-            border-color: ${opts.outlinecolor} !important;
-            transition: all ${animDuration} cubic-bezier(0.4,0,0.2,1) !important;
-            position: relative !important;
-        }
-        .key.active, .mouse-btn.active, .scroll-display.active {
-            border-color: ${opts.activecolor} !important;
-            box-shadow: 0 2px ${opts.glowradius}px ${opts.activecolor} !important;
-            color: ${opts.fontcolor} !important;
-            transform: translateY(-2px) scale(${pressscalevalue}) !important;
-            background: ${opts.activebgcolor} !important;
-        }
-        .key.active::before, .mouse-btn.active::before, .scroll-display.active::before {
-            background: linear-gradient(135deg, ${activeColorForGradient}, ${activeColorForGradient}) !important;
-        }
+    }
 
-        .mouse-btn.mouse-side {
-            padding: 5px;
-        }
-        .mouse-btn.mouse-side span {
-            background: ${opts.backgroundcolor} !important;
-            border-color: ${opts.outlinecolor} !important;
-            color: ${opts.inactivecolor} !important;
-            width: 18px !important;
-            transition: all ${animDuration} cubic-bezier(0.4,0,0.2,1) !important;
-        }
-        .mouse-btn.mouse-side span.active {
-            border-color: ${opts.activecolor} !important;
-            box-shadow: 0 0 ${opts.glowradius}px ${opts.activecolor} !important;
-            color: ${opts.fontcolor} !important;
-            background: ${opts.activebgcolor} !important;
-            transform: scale(${pressscalevalue}) !important;
-        }
-        
-        .scroll-count {
-            color: ${opts.fontcolor} !important;
-            display: ${opts.hidescrollcombo ? "none" : "flex"} !important;
-        }
-        .mouse-section {
-            display: ${opts.hidemouse ? "none" : "flex"} !important;
-        }
-    `;
+    //custom layout
 
-    styleEl.textContent = css;
-}
+    parseKeyDef(keyString) {
+        if (!keyString) return null;
 
-function applyTransformations(targetElement, settings) {
-    const scaleVal = parseInt(settings.scale) / 100;
-    const opacityVal = parseInt(settings.opacity) / 100;
+        if (keyString === "invisible" || keyString === "dummy")
+            return { class: "dummy" };
 
-    targetElement.style.transform = `scale(${scaleVal})`;
-    targetElement.style.opacity = opacityVal;
-    targetElement.style.transformOrigin = isOverlayMode ? "top left" : "center";
-}
+        const parts = keyString.match(/^(\w+):"([^"]+)"(?::([-\w\.]+))?$/);
 
-function getCurrentSettings() {
-    return {
-        wsaddress: document.getElementById("wsaddress").value || "localhost",
-        wsport: document.getElementById("wsport").value || "16899",
-        activecolor: document.getElementById("activecolorhex").value,
-        inactivecolor: document.getElementById("inactivecolorhex").value,
-        backgroundcolor: document.getElementById("backgroundcolorhex").value,
-        activebgcolor: document.getElementById("activebgcolorhex").value,
-        outlinecolor: document.getElementById("outlinecolorhex").value,
-        fontcolor: document.getElementById("fontcolorhex").value,
-        glowradius: document.getElementById("glowradius").value,
-        borderradius: document.getElementById("borderradius").value,
-        pressscale: document.getElementById("pressscale").value,
-        animationspeed: document.getElementById("animationspeed").value,
-        scale: document.getElementById("scale").value,
-        opacity: document.getElementById("opacity").value,
-        fontfamily: document.getElementById("fontfamily").value,
-        hidemouse: document.getElementById("hidemouse").checked,
-        hidescrollcombo: document.getElementById("hidescrollcombo").checked,
-
-        customLayoutRow1: document.getElementById("customLayoutRow1") ? document.getElementById("customLayoutRow1").value : "",
-        customLayoutRow2: document.getElementById("customLayoutRow2") ? document.getElementById("customLayoutRow2").value : "",
-        customLayoutRow3: document.getElementById("customLayoutRow3") ? document.getElementById("customLayoutRow3").value : "",
-        customLayoutRow4: document.getElementById("customLayoutRow4") ? document.getElementById("customLayoutRow4").value : "",
-        customLayoutRow5: document.getElementById("customLayoutRow5") ? document.getElementById("customLayoutRow5").value : "",
-        customLayoutMouse: document.getElementById("customLayoutMouse") ? document.getElementById("customLayoutMouse").value : "",
-    };
-}
-
-const urlParams = new URLSearchParams(window.location.search);
-const isOverlayMode = urlParams.has("ws");
-
-if (isOverlayMode) {
-    document.getElementById("configurator").style.display = "none";
-    document.getElementById("overlay").classList.add("show");
-    initOverlayMode();
-} else {
-    initConfiguratorMode();
-}
-
-function initConfiguratorMode() {
-    const previewKeys = document.getElementById("preview-keyboard");
-    const previewMouse = document.getElementById("preview-mouse");
-
-    document.getElementById("customLayoutRow1").value = document.getElementById("customLayoutRow1").value || DEFAULT_LAYOUT_STRINGS.row1;
-    document.getElementById("customLayoutRow2").value = document.getElementById("customLayoutRow2").value || DEFAULT_LAYOUT_STRINGS.row2;
-    document.getElementById("customLayoutRow3").value = document.getElementById("customLayoutRow3").value || DEFAULT_LAYOUT_STRINGS.row3;
-    document.getElementById("customLayoutRow4").value = document.getElementById("customLayoutRow4").value || DEFAULT_LAYOUT_STRINGS.row4;
-    document.getElementById("customLayoutRow5").value = document.getElementById("customLayoutRow5").value || DEFAULT_LAYOUT_STRINGS.row5;
-
-    const customLayoutMouseInput = document.getElementById("customLayoutMouse");
-    customLayoutMouseInput.value = customLayoutMouseInput.value || DEFAULT_LAYOUT_STRINGS.mouse;
-
-
-    const settings = getCurrentSettings();
-    const keyboardLayout = getKeyboardLayoutDef(settings);
-    const mouseLayout = getMouseLayoutDef(settings);
-    previewElements = buildInterface(previewKeys, previewMouse, keyboardLayout, mouseLayout);
-
-    COLOR_PICKERS.forEach(cp => {
-        initPickrColorInput(cp.id, cp.defaultColor);
-    });
-
-    const inputs = document.querySelectorAll(".config-input");
-    inputs.forEach(input => {
-        input.addEventListener("input", () => {
-            if (input.type === "range") {
-                const label = document.getElementById(input.id + "value");
-                if (label) {
-                    let suffix = "";
-                    if (input.id.includes("radius")) suffix = "px";
-                    else if (input.id.includes("speed") || input.id.includes("scale")) suffix = "x";
-                    else if (input.id === "opacity") suffix = "%";
-
-                    let val = input.value;
-                    if (input.id.includes("scale") && !input.id.includes("pressscale")) val = (val / 100).toFixed(1);
-                    else if (input.id === "pressscale") val = (val / 100).toFixed(2);
-
-                    label.textContent = val + suffix;
-                }
-            } else if (input.classList.contains("color-hex-input")) {
-                return;
+        if (parts) {
+            const keyDef = { key: parts[1], label: parts[2] };
+            if (parts[3]) {
+                keyDef.class = parts[3];
+            } else if (keyDef.label === "invisible") {
+                keyDef.class = "invisible";
             }
-            updateState();
+            return keyDef;
+        }
+        return null;
+    }
+
+    parseMouseDef(mouseString) {
+        if (!mouseString) return null;
+
+        const standardMatch = mouseString.match(/^(\w+):"([^"]+)"(?::([-\w]+))?$/);
+        if (standardMatch) {
+            return {
+                key: standardMatch[1],
+                labels: [standardMatch[2]],
+                class: standardMatch[3] || 'mouse-btn'
+            };
+        }
+
+        const scrollerMatch = mouseString.match(/^(scroller):"([^"]+)":"([^"]+)":"([^"]+)"$/);
+        if (scrollerMatch) {
+            return {
+                key: scrollerMatch[1],
+                labels: [scrollerMatch[2], scrollerMatch[3], scrollerMatch[4]],
+                class: 'scroll-display'
+            };
+        }
+
+        const sideMatch = mouseString.match(/^(mouse_side):"([^"]+)":"([^"]+)"$/);
+        if (sideMatch) {
+            return {
+                key: sideMatch[1],
+                labels: [sideMatch[2], sideMatch[3]],
+                class: 'mouse-side'
+            };
+        }
+
+        return null;
+    }
+
+    parseCustomLayoutInput(inputString, isMouseLayout = false) {
+        if (!inputString) return [];
+
+        const parser = isMouseLayout ? this.parseMouseDef : this.parseKeyDef;
+
+        return inputString.split(/\s*,\s*/)
+            .map(parser.bind(this))
+            .filter(def => def !== null);
+    }
+
+    getKeyboardLayoutDef(settings) {
+        const customLayout = [];
+
+        const row1 = this.parseCustomLayoutInput(settings.customLayoutRow1);
+        const row2 = this.parseCustomLayoutInput(settings.customLayoutRow2);
+        const row3 = this.parseCustomLayoutInput(settings.customLayoutRow3);
+        const row4 = this.parseCustomLayoutInput(settings.customLayoutRow4);
+        const row5 = this.parseCustomLayoutInput(settings.customLayoutRow5);
+
+        if (row1.length > 0) customLayout.push(row1);
+        if (row2.length > 0) customLayout.push(row2);
+        if (row3.length > 0) customLayout.push(row3);
+        if (row4.length > 0) customLayout.push(row4);
+        if (row5.length > 0) customLayout.push(row5);
+
+        if (customLayout.length > 0) {
+            return customLayout;
+        }
+
+        const defaultLayoutFallback = [
+            this.parseCustomLayoutInput(DEFAULT_LAYOUT_STRINGS.row1),
+            this.parseCustomLayoutInput(DEFAULT_LAYOUT_STRINGS.row2),
+            this.parseCustomLayoutInput(DEFAULT_LAYOUT_STRINGS.row3),
+            this.parseCustomLayoutInput(DEFAULT_LAYOUT_STRINGS.row4),
+            this.parseCustomLayoutInput(DEFAULT_LAYOUT_STRINGS.row5)
+        ].filter(row => row.length > 0);
+
+        return defaultLayoutFallback;
+    }
+
+    getMouseLayoutDef(settings) {
+        const customLayout = this.parseCustomLayoutInput(settings.customLayoutMouse, true);
+        if (customLayout.length > 0) {
+            return customLayout;
+        }
+        return this.parseCustomLayoutInput(DEFAULT_LAYOUT_STRINGS.mouse, true);
+    }
+
+    //create elements
+
+    createKeyOrButtonElement(baseClass, keyName, label, customClass) {
+        const el = document.createElement("div");
+        el.className = baseClass + (customClass ? " " + customClass : "");
+        el.textContent = label;
+        el.dataset.key = keyName;
+        return el;
+    }
+
+    createScrollDisplay(labels) {
+        const scrollDisplay = document.createElement("div");
+        scrollDisplay.className = "scroll-display";
+        scrollDisplay.id = "scrolldisplay";
+        scrollDisplay.dataset.button = "mouse_middle";
+
+        const scrollArrow = document.createElement("span");
+        scrollArrow.className = "scroll-arrow";
+        scrollArrow.textContent = labels[0];
+
+        const scrollCount = document.createElement("span");
+        scrollCount.className = "scroll-count";
+
+        scrollDisplay.appendChild(scrollArrow);
+        scrollDisplay.appendChild(scrollCount);
+
+        scrollDisplay.dataset.defaultLabel = labels[0];
+        scrollDisplay.dataset.upLabel = labels[1];
+        scrollDisplay.dataset.downLabel = labels[2];
+
+        return { el: scrollDisplay, arrow: scrollArrow, count: scrollCount };
+    }
+
+    createSideMouseButton(labelM4, labelM5, customClass) {
+        const el = document.createElement("div");
+        el.className = 'mouse-btn mouse-side' + (customClass ? " " + customClass : "");
+
+        const m4El = document.createElement("span");
+        m4El.textContent = labelM4;
+        m4El.dataset.key = "mouse4";
+
+        const m5El = document.createElement("span");
+        m5El.textContent = labelM5;
+        m5El.dataset.key = "mouse5";
+        el.appendChild(m5El);
+        el.appendChild(m4El);
+
+        return { el, m4El, m5El };
+    }
+
+    buildInterface(keyboardContainer, mouseContainer, layoutDef, mouseLayoutDef) {
+        if (!keyboardContainer || !mouseContainer || !layoutDef) return null;
+
+        keyboardContainer.innerHTML = "";
+        mouseContainer.innerHTML = "";
+
+        const keyElements = new Map();
+        const mouseElements = new Map();
+        let scrollDisplay = null;
+        let scrollArrow = null;
+        let scrollCount = null;
+
+        layoutDef.forEach(row => {
+            const rowEl = document.createElement("div");
+            rowEl.className = "key-row";
+            row.forEach(item => {
+                const keyEl = this.createKeyOrButtonElement("key", item.key, item.label, item.class);
+                rowEl.appendChild(keyEl);
+                if (!item.class || item.class !== "invisible") {
+                    keyElements.set(item.key, keyEl);
+                }
+            });
+            keyboardContainer.appendChild(rowEl);
         });
-    });
 
-    document.getElementById("copybtn").addEventListener("click", copyLink);
-    document.addEventListener("keydown", e => handlePreviewInput(e, previewElements, "key_pressed"), { capture: true });
-    document.addEventListener("keyup", e => handlePreviewInput(e, previewElements, "key_released"), { capture: true });
+        const mouseRow = document.createElement("div");
+        mouseRow.className = "mouse-row";
 
-    const previewWrapper = document.getElementById("preview-wrapper");
-    if (previewWrapper) {
-        previewWrapper.addEventListener("mousedown", e => handlePreviewInput(e, previewElements, "mouse_pressed"));
-        previewWrapper.addEventListener("mouseup", e => handlePreviewInput(e, previewElements, "mouse_released"));
-        previewWrapper.addEventListener("wheel", e => handlePreviewInput(e, previewElements, "mouse_wheel"), { passive: false });
+        mouseLayoutDef.forEach(item => {
+            if (item.key === 'scroller') {
+                const display = this.createScrollDisplay(item.labels);
+                mouseRow.appendChild(display.el);
+                scrollDisplay = display.el;
+                scrollArrow = display.arrow;
+                scrollCount = display.count;
+                mouseElements.set("mouse_middle", display.el);
+            } else if (item.key === 'mouse_side') {
+                const sideBtn = this.createSideMouseButton(item.labels[0], item.labels[1], item.class);
+                mouseRow.appendChild(sideBtn.el);
+                mouseElements.set("mouse5", sideBtn.m5El);
+                mouseElements.set("mouse4", sideBtn.m4El);
+            } else {
+                const btnEl = this.createKeyOrButtonElement("mouse-btn", item.key, item.labels[0], item.class);
+                mouseRow.appendChild(btnEl);
+                mouseElements.set(item.key, btnEl);
+            }
+        });
+
+        const mouseSection = document.createElement("div");
+        mouseSection.className = "mouse-section";
+        mouseSection.appendChild(mouseRow);
+        mouseContainer.appendChild(mouseSection);
+
+        return { keyElements, mouseElements, scrollDisplay, scrollArrow, scrollCount };
     }
 
-    updateState();
-}
+    rebuildPreviewInterface(layouts) {
+        const previewKeys = document.getElementById("preview-keyboard");
+        const previewMouse = document.getElementById("preview-mouse");
 
-function updateState() {
-    const settings = getCurrentSettings();
+        this.previewElements = this.buildInterface(
+            previewKeys,
+            previewMouse,
+            layouts.keyboard,
+            layouts.mouse
+        );
+    }
 
-    applyStyles(settings);
+    restoreActiveStates() {
+        const oldActiveKeys = new Set(this.activeKeys);
+        const oldActiveMouseButtons = new Set(this.activeMouseButtons);
 
-    const previewKeys = document.getElementById("preview-keyboard");
-    const previewMouse = document.getElementById("preview-mouse");
-    const keyboardLayout = getKeyboardLayoutDef(settings);
-    const mouseLayout = getMouseLayoutDef(settings);
+        this.restoreActiveElements(oldActiveKeys, this.previewElements.keyElements, this.activeKeys);
+        this.restoreActiveElements(oldActiveMouseButtons, this.previewElements.mouseElements, this.activeMouseButtons);
+    }
 
-    const oldActiveKeys = new Set(activeKeys);
-    const oldActiveMouseButtons = new Set(activeMouseButtons);
+    restoreActiveElements(oldActive, elementMap, currentActive) {
+        oldActive.forEach(name => {
+            const el = elementMap.get(name);
+            if (el) {
+                el.style.zIndex = Z_INDEX_COUNTER++;
+                this.updateElementState(el, name, true, currentActive);
+            }
+        });
+    }
 
-    previewElements = buildInterface(previewKeys, previewMouse, keyboardLayout, mouseLayout);
+    //font size
 
-    oldActiveKeys.forEach(keyName => {
-        const el = previewElements.keyElements.get(keyName);
-        if (el) {
-            el.style.zIndex = zIndexCounter++;
-            updateElementState(el, keyName, true, activeKeys);
+    adjustScrollDisplays() {
+        document.querySelectorAll('.scroll-display').forEach(display => {
+            const arrow = display.querySelector('.scroll-arrow');
+            const containerWidth = display.clientWidth - 16;
+            const textWidth = arrow.scrollWidth;
+
+            if (textWidth > containerWidth) {
+                const scale = containerWidth / textWidth;
+                arrow.style.transform = `scale(${scale})`;
+            } else {
+                arrow.style.transform = '';
+            }
+        });
+    }
+
+    adjustKeyFontSizes() {
+        document.querySelectorAll('.key').forEach(key => {
+            key.style.fontSize = '';
+            const textWidth = this.measureTextWidth(key);
+            const containerWidth = key.clientWidth - 24;
+
+            if (textWidth > containerWidth) {
+                this.scaleKeyFontSize(key, containerWidth, textWidth);
+            }
+        });
+    }
+
+    measureTextWidth(element) {
+        const tempSpan = document.createElement('span');
+        const styles = window.getComputedStyle(element);
+
+        tempSpan.style.cssText = 'position: absolute; visibility: hidden; white-space: nowrap;';
+        tempSpan.style.fontSize = styles.fontSize;
+        tempSpan.style.fontWeight = styles.fontWeight;
+        tempSpan.style.fontFamily = styles.fontFamily;
+        tempSpan.textContent = element.textContent;
+
+        document.body.appendChild(tempSpan);
+        const width = tempSpan.offsetWidth;
+        document.body.removeChild(tempSpan);
+
+        return width;
+    }
+
+    scaleKeyFontSize(element, containerWidth, textWidth) {
+        const currentFontSize = parseFloat(window.getComputedStyle(element).fontSize);
+        const scaleFactor = containerWidth / textWidth;
+        const newFontSize = currentFontSize * scaleFactor;
+        element.style.fontSize = `${newFontSize}px`;
+    }
+
+    //cfg mode
+
+    setupBackgroundVideo() {
+        const video = document.getElementById("bgvideo");
+        const source = document.getElementById("bgsource");
+
+        if (video && source) {
+            const randomIndex = Math.floor(Math.random() * 2) + 1;
+            const path = `./media/preview_gameplay${randomIndex}.mp4`;
+
+            source.src = path;
+            video.load();
+            video.play();
         }
-    });
+    }
 
-    oldActiveMouseButtons.forEach(btnName => {
-        const el = previewElements.mouseElements.get(btnName);
-        if (el) {
-            el.style.zIndex = zIndexCounter++;
-            updateElementState(el, btnName, true, activeMouseButtons);
+    setupCheatSheetToggle() {
+        const detailsTag = document.getElementById('cheatSheetDetails');
+        const closeBtn = document.getElementById('closeCheatSheet');
+
+        if (detailsTag && closeBtn) {
+            closeBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                detailsTag.open = false;
+            });
+
+            const updateCloseButtonVisibility = () => {
+                closeBtn.style.display = detailsTag.open ? 'block' : 'none';
+                this.adjustKeyFontSizes();
+                this.adjustScrollDisplays();
+            };
+
+            updateCloseButtonVisibility();
+            detailsTag.addEventListener('toggle', updateCloseButtonVisibility);
         }
-    });
-
-    const previewContainer = document.querySelector(".preview-container");
-    if (previewContainer) {
-        applyTransformations(previewContainer, settings);
     }
 
-    const params = new URLSearchParams();
-    params.set("ws", settings.wsaddress + ":" + settings.wsport);
-    params.set("activecolor", settings.activecolor.toLowerCase());
-    params.set("inactivecolor", settings.inactivecolor.toLowerCase());
-    params.set("backgroundcolor", settings.backgroundcolor.toLowerCase());
-    params.set("activebgcolor", settings.activebgcolor.toLowerCase());
-    params.set("outlinecolor", settings.outlinecolor.toLowerCase());
-    params.set("fontcolor", settings.fontcolor.toLowerCase());
-    params.set("glow", settings.glowradius);
-    params.set("radius", settings.borderradius);
-    params.set("pressscale", settings.pressscale);
-    params.set("speed", settings.animationspeed);
-    params.set("scale", settings.scale);
-    params.set("opacity", settings.opacity);
-    if (settings.fontfamily) params.set("fontfamily", settings.fontfamily.toLowerCase());
-    if (settings.hidemouse) params.set("hidemouse", "1");
-    if (settings.hidescrollcombo) params.set("hidescrollcombo", "1");
+    initConfiguratorMode() {
+        const configuratorEl = document.getElementById("configurator");
+        configuratorEl.style.display = "block";
+        document.getElementById("overlay").classList.remove("show");
 
-    if (settings.customLayoutRow1) params.set("customLayoutRow1", settings.customLayoutRow1);
-    if (settings.customLayoutRow2) params.set("customLayoutRow2", settings.customLayoutRow2);
-    if (settings.customLayoutRow3) params.set("customLayoutRow3", settings.customLayoutRow3);
-    if (settings.customLayoutRow4) params.set("customLayoutRow4", settings.customLayoutRow4);
-    if (settings.customLayoutRow5) params.set("customLayoutRow5", settings.customLayoutRow5);
-    if (settings.customLayoutMouse) params.set("customLayoutMouse", settings.customLayoutMouse);
+        const previewKeys = document.getElementById("preview-keyboard");
+        const previewMouse = document.getElementById("preview-mouse");
 
-    const link = window.location.origin + window.location.pathname + "?" + params.toString();
-    document.getElementById("generatedlink").value = link;
-}
+        document.getElementById("customLayoutRow1").value = document.getElementById("customLayoutRow1").value || DEFAULT_LAYOUT_STRINGS.row1;
+        document.getElementById("customLayoutRow2").value = document.getElementById("customLayoutRow2").value || DEFAULT_LAYOUT_STRINGS.row2;
+        document.getElementById("customLayoutRow3").value = document.getElementById("customLayoutRow3").value || DEFAULT_LAYOUT_STRINGS.row3;
+        document.getElementById("customLayoutRow4").value = document.getElementById("customLayoutRow4").value || DEFAULT_LAYOUT_STRINGS.row4;
+        document.getElementById("customLayoutRow5").value = document.getElementById("customLayoutRow5").value || DEFAULT_LAYOUT_STRINGS.row5;
 
-async function copyLink() {
-    const linkInput = document.getElementById("generatedlink");
-    const copyBtn = document.getElementById("copybtn");
-    try {
-        await navigator.clipboard.writeText(linkInput.value);
-        copyBtn.textContent = "copied";
-        copyBtn.classList.add("copied");
-        setTimeout(() => {
-            copyBtn.textContent = "copy";
-            copyBtn.classList.remove("copied");
-        }, 2000);
-    } catch (err) {
-        linkInput.select();
-        document.execCommand("copy");
-    }
-}
+        const customLayoutMouseInput = document.getElementById("customLayoutMouse");
+        customLayoutMouseInput.value = customLayoutMouseInput.value || DEFAULT_LAYOUT_STRINGS.mouse;
 
-function updateElementState(el, keyName, isActive, activeSet) {
-    if (isActive) {
-        if (!activeSet.has(keyName)) {
-            el.classList.add("active");
-            activeSet.add(keyName);
-            zIndexCounter++;
-            el.style.zIndex = zIndexCounter;
-        }
-    } else {
-        el.classList.remove("active");
-        activeSet.delete(keyName);
-    }
-}
 
-function handleScroll(dir, els) {
-    if (dir === 0) return;
+        const settings = this.getCurrentSettings();
+        const keyboardLayout = this.getKeyboardLayoutDef(settings);
+        const mouseLayout = this.getMouseLayoutDef(settings);
+        this.previewElements = this.buildInterface(previewKeys, previewMouse, keyboardLayout, mouseLayout);
 
-    if (lastScrollDirection !== null && lastScrollDirection !== dir) {
-        currentScrollCount = 0;
-    }
-    lastScrollDirection = dir;
-    currentScrollCount++;
+        COLOR_PICKERS.forEach(cp => {
+            this.initPickrColorInput(cp.id, cp.defaultColor);
+        });
 
-    const upLabel = els.scrollDisplay ? els.scrollDisplay.dataset.upLabel : "↑";
-    const downLabel = els.scrollDisplay ? els.scrollDisplay.dataset.downLabel : "↓";
+        this.setupConfigInputs();
+        this.setupPreviewInputListeners();
 
-    els.scrollArrow.textContent = dir === -1 ? upLabel : downLabel;
-    if (els.scrollDisplay.dataset.button !== "mouse_middle") {
-        els.scrollDisplay.dataset.button = "mouse_middle";
+        this.setupBackgroundVideo();
+        this.setupCheatSheetToggle();
+
+        this.updateState();
     }
 
-    requestAnimationFrame(() => {
-        els.scrollCount.textContent = currentScrollCount + "x";
-        els.scrollCount.classList.remove("animate");
-        void els.scrollCount.offsetWidth;
-        els.scrollCount.classList.add("animate");
+    initPickrColorInput(pickrId, defaultColor) {
+        const pickrEl = document.getElementById(pickrId);
+        const hexInput = document.getElementById(pickrId + "hex");
 
-        if (!els.scrollDisplay.classList.contains("active")) {
-            zIndexCounter++;
-            els.scrollDisplay.style.zIndex = zIndexCounter;
-        }
+        if (!pickrEl || !hexInput) return;
 
-        els.scrollDisplay.classList.add("active");
-    });
+        const pickr = Pickr.create({
+            el: pickrEl,
+            theme: "classic",
+            default: hexInput.value || defaultColor,
+            components: {
+                preview: true,
+                opacity: true,
+                hue: true,
+                interaction: {
+                    hex: true,
+                    rgba: true,
+                    hsva: true,
+                    input: true,
+                    clear: false,
+                    save: true
+                }
+            },
+            strings: {
+                save: "Apply"
+            },
+            swatches: []
+        });
 
-    clearTimeout(scrollTimeout);
-    scrollTimeout = setTimeout(() => {
-        const defaultLabel = els.scrollDisplay ? els.scrollDisplay.dataset.defaultLabel : "-";
-        els.scrollArrow.textContent = defaultLabel;
-        els.scrollCount.textContent = "";
-        els.scrollDisplay.classList.remove("active");
-        lastScrollDirection = null;
-        currentScrollCount = 0;
-    }, 250);
-}
+        pickr.on("change", (color) => {
+            const hexA = color.toHEXA().toString();
+            hexInput.value = hexA.toLowerCase();
+            pickr.applyColor();
+            this.updateState();
+        });
 
+        hexInput.addEventListener("input", (e) => {
+            let val = e.target.value.toLowerCase().replace(/[^0-9a-f#]/g, "");
+            if (!val.startsWith("#")) val = "#" + val;
+            if (val.length > 9) val = val.substring(0, 9);
+            e.target.value = val;
 
-function handlePreviewInput(event, els, type) {
-    if (!els) return;
+            if (val.length === 7 || val.length === 9) {
+                try {
+                    pickr.setColor(val, true);
+                } catch (error) { }
+                this.updateState();
+            }
+        });
 
-    const settings = getCurrentSettings();
-    const isTypingField = event.target.matches("input[type='text'], input[type='number'], textarea, .color-hex-input");
+        try {
+            pickr.setColor(hexInput.value || defaultColor, true);
+        } catch (error) { }
+    }
 
-    if (type === "key_pressed" || type === "key_released") {
-        let keyName = browserCodeToKeyName[event.code.toLowerCase()];
-        let el = els.keyElements.get(keyName);
+    setupConfigInputs() {
+        const inputs = document.querySelectorAll(".config-input");
+        inputs.forEach(input => {
+            input.addEventListener("input", () => {
+                if (input.type === "range") {
+                    const label = document.getElementById(input.id + "value");
+                    if (label) {
+                        let suffix = "";
+                        if (input.id.includes("radius")) suffix = "px";
+                        else if (input.id.includes("speed") || input.id.includes("scale")) suffix = "x";
+                        else if (input.id === "opacity") suffix = "%";
 
-        if (!el && event.key) {
-            const keyLabel = event.key.toUpperCase();
-            for (const [key, element] of els.keyElements.entries()) {
-                if (element.textContent === keyLabel) {
-                    keyName = key;
-                    el = element;
-                    break;
+                        let val = input.value;
+                        if (input.id.includes("scale") && !input.id.includes("pressscale")) val = (val / 100).toFixed(1);
+                        else if (input.id === "pressscale") val = (val / 100).toFixed(2);
+
+                        label.textContent = val + suffix;
+                    }
+                } else if (input.classList.contains("color-hex-input")) {
+                    return;
+                }
+                this.updateState();
+            });
+        });
+        document.getElementById("copybtn").addEventListener("click", this.copyLink.bind(this));
+    }
+
+    setupPreviewInputListeners() {
+        document.addEventListener("keydown", e => this.handlePreviewInput(e, "key_pressed"), { capture: true });
+        document.addEventListener("keyup", e => this.handlePreviewInput(e, "key_released"), { capture: true });
+        document.addEventListener("mousedown", e => this.handlePreviewInput(e, "mouse_pressed"));
+        document.addEventListener("mouseup", e => this.handlePreviewInput(e, "mouse_released"));
+        document.addEventListener("wheel", e => this.handlePreviewInput(e, "mouse_wheel"), { passive: false });
+    }
+
+    handlePreviewInput(event, type) {
+        if (!this.previewElements) return;
+
+        const isTypingField = event.target.matches("input[type='text'], input[type='number'], textarea, .color-hex-input");
+
+        if (type === "key_pressed" || type === "key_released") {
+            let keyName = BROWSER_CODE_TO_KEY_NAME[event.code.toLowerCase()];
+            let el = this.previewElements.keyElements.get(keyName);
+
+            if (!el && event.key) {
+                const keyLabel = event.key.toUpperCase();
+                for (const [key, element] of this.previewElements.keyElements.entries()) {
+                    if (element.textContent === keyLabel) {
+                        keyName = key;
+                        el = element;
+                        break;
+                    }
+                }
+            }
+
+            if (el) {
+                this.updateElementState(el, keyName, type === "key_pressed", this.activeKeys);
+
+                if (!isTypingField) {
+                    event.preventDefault();
+                } else if (keyName === "key_tab" || keyName === "key_escape") {
+                    event.preventDefault();
                 }
             }
         }
-
-        if (el) {
-            updateElementState(el, keyName, type === "key_pressed", activeKeys);
-
-            if (!isTypingField) {
-                event.preventDefault();
-            } else if (keyName === "key_tab" || keyName === "key_escape") {
-                event.preventDefault();
+        else if (type === "mouse_pressed" || type === "mouse_released") {
+            const btnName = BROWSER_BUTTON_TO_KEY_NAME[event.button];
+            if (btnName) {
+                const el = this.previewElements.mouseElements.get(btnName);
+                if (el) {
+                    this.updateElementState(el, btnName, type === "mouse_pressed", this.activeMouseButtons);
+                }
+            }
+        }
+        else if (type === "mouse_wheel") {
+            event.preventDefault();
+            const dir = Math.sign(event.deltaY);
+            if (this.previewElements.scrollDisplay) {
+                this.handleScroll(dir);
             }
         }
     }
-    else if (type === "mouse_pressed" || type === "mouse_released") {
-        const btnName = browserButtonToKeyName[event.button];
-        if (btnName) {
-            const el = els.mouseElements.get(btnName);
-            if (el) {
-                updateElementState(el, btnName, type === "mouse_pressed", activeMouseButtons);
+
+    //url copy
+
+    updateGeneratedLink(settings) {
+        const params = this.buildURLParams(settings);
+        const link = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+        document.getElementById("generatedlink").value = link;
+    }
+
+    buildURLParams(settings) {
+        const params = new URLSearchParams();
+
+        params.set("ws", `${settings.wsaddress}:${settings.wsport}`);
+
+        const colorSettings = {
+            activecolor: settings.activecolor,
+            inactivecolor: settings.inactivecolor,
+            backgroundcolor: settings.backgroundcolor,
+            activebgcolor: settings.activebgcolor,
+            outlinecolor: settings.outlinecolor,
+            fontcolor: settings.fontcolor
+        };
+
+        Object.entries(colorSettings).forEach(([key, value]) => {
+            params.set(key, value.toLowerCase());
+        });
+
+        params.set("glow", settings.glowradius);
+        params.set("radius", settings.borderradius);
+        params.set("pressscale", settings.pressscale);
+        params.set("speed", settings.animationspeed);
+        params.set("scale", settings.scale);
+        params.set("opacity", settings.opacity);
+
+        if (settings.fontfamily) {
+            params.set("fontfamily", settings.fontfamily.toLowerCase());
+        }
+
+        if (settings.hidemouse) {
+            params.set("hidemouse", "1");
+        }
+
+        if (settings.hidescrollcombo) {
+            params.set("hidescrollcombo", "1");
+        }
+
+        this.addCustomLayoutParams(params, settings);
+
+        return params;
+    }
+
+    addCustomLayoutParams(params, settings) {
+        const layoutRows = [
+            'customLayoutRow1', 'customLayoutRow2', 'customLayoutRow3', 'customLayoutRow4', 'customLayoutRow5', 'customLayoutMouse'
+        ];
+        layoutRows.forEach(row => {
+            if (settings[row]) {
+                params.set(row, settings[row]);
             }
+        });
+    }
+
+    async copyLink() {
+        const linkInput = document.getElementById("generatedlink");
+        const copyBtn = document.getElementById("copybtn");
+        try {
+            await navigator.clipboard.writeText(linkInput.value);
+            copyBtn.textContent = "copied";
+            copyBtn.classList.add("copied");
+            setTimeout(() => {
+                copyBtn.textContent = "copy";
+                copyBtn.classList.remove("copied");
+            }, 2000);
+        } catch (err) {
+            linkInput.select();
+            document.execCommand("copy");
         }
     }
-    else if (type === "mouse_wheel") {
-        event.preventDefault();
-        const dir = -Math.sign(event.deltaY);
-        if (els.scrollDisplay) {
-            handleScroll(dir, els, settings.animationspeed);
+
+    //scroll
+
+    handleScroll(dir) {
+        const els = this.previewElements;
+        if (dir === 0) return;
+
+        if (this.lastScrollDirection !== null && this.lastScrollDirection !== dir) {
+            this.currentScrollCount = 0;
         }
+        this.lastScrollDirection = dir;
+        this.currentScrollCount++;
+
+        const upLabel = els.scrollDisplay ? els.scrollDisplay.dataset.upLabel : "↑";
+        const downLabel = els.scrollDisplay ? els.scrollDisplay.dataset.downLabel : "↓";
+
+        els.scrollArrow.textContent = dir === -1 ? upLabel : downLabel;
+
+        const containerWidth = els.scrollDisplay.clientWidth - 16;
+        els.scrollArrow.style.transform = 'scale(1.75)';
+        const textWidth = els.scrollArrow.scrollWidth;
+        if (textWidth > containerWidth) {
+            els.scrollArrow.style.transform = `scale(${containerWidth / textWidth})`;
+        }
+
+        if (els.scrollDisplay.dataset.button !== "mouse_middle") {
+            els.scrollDisplay.dataset.button = "mouse_middle";
+        }
+
+        requestAnimationFrame(() => {
+            els.scrollCount.textContent = this.currentScrollCount + "x";
+            els.scrollCount.classList.remove("animate");
+
+            if (dir === -1) {
+                els.scrollCount.classList.remove("scroll-down");
+                els.scrollCount.classList.add("scroll-up");
+            } else {
+                els.scrollCount.classList.remove("scroll-up");
+                els.scrollCount.classList.add("scroll-down");
+            }
+
+            void els.scrollCount.offsetWidth;
+            els.scrollCount.classList.add("animate");
+
+            if (!els.scrollDisplay.classList.contains("active")) {
+                Z_INDEX_COUNTER++;
+                els.scrollDisplay.style.zIndex = Z_INDEX_COUNTER;
+            }
+
+            els.scrollDisplay.classList.add("active");
+        });
+
+        clearTimeout(this.scrollTimeout);
+        this.scrollTimeout = setTimeout(() => {
+            const defaultLabel = els.scrollDisplay ? els.scrollDisplay.dataset.defaultLabel : "-";
+            els.scrollArrow.textContent = defaultLabel;
+
+            const containerWidth = els.scrollDisplay.clientWidth - 16;
+            els.scrollArrow.style.transform = 'scale(1.75)';
+            const textWidth = els.scrollArrow.scrollWidth;
+            if (textWidth > containerWidth) {
+                els.scrollArrow.style.transform = `scale(${containerWidth / textWidth})`;
+            }
+
+            els.scrollCount.textContent = "";
+            els.scrollDisplay.classList.remove("active");
+            this.lastScrollDirection = null;
+            this.currentScrollCount = 0;
+        }, 250);
     }
+
+    //overlay
+
+    initOverlayMode() {
+        document.getElementById("configurator").style.display = "none";
+        document.getElementById("overlay").classList.add("show");
+        const statusEl = document.getElementById("status");
+
+        const settings = this.getOverlaySettings();
+
+        this.applyTransformations(document.body, settings);
+        this.applyStyles(settings);
+
+        const keyboardTarget = document.getElementById("keyboard-target");
+        const mouseTarget = document.getElementById("mouse-target");
+        const keyboardLayout = this.getKeyboardLayoutDef(settings);
+        const mouseLayout = this.getMouseLayoutDef(settings);
+        this.previewElements = this.buildInterface(keyboardTarget, mouseTarget, keyboardLayout, mouseLayout);
+
+        const wsConfig = (this.urlParams.get("ws") || "").split(":");
+        const wsAddress = wsConfig[0] || "localhost";
+        const wsPort = wsConfig[1] || "16899";
+        const wsUrl = `ws://${wsAddress}:${wsPort}/`;
+
+        this.websocketManager = new WebSocketManager(wsUrl, statusEl, this.previewElements, this);
+        this.websocketManager.connect();
+        this.adjustScrollDisplays();
+        this.adjustKeyFontSizes();
+    }
+
+    getOverlaySettings() {
+        return {
+            activecolor: this.urlParams.get("activecolor") || "#8b5cf6",
+            inactivecolor: this.urlParams.get("inactivecolor") || "#808080",
+            backgroundcolor: this.urlParams.get("backgroundcolor") || "#1a1a1a",
+            activebgcolor: this.urlParams.get("activebgcolor") || "#202020",
+            outlinecolor: this.urlParams.get("outlinecolor") || "#4f4f4f",
+            fontcolor: this.urlParams.get("fontcolor") || "#ffffff",
+            glowradius: this.urlParams.get("glow") || "24",
+            borderradius: this.urlParams.get("radius") || "8",
+            pressscale: this.urlParams.get("pressscale") || "105",
+            animationspeed: this.urlParams.get("speed") || "100",
+            scale: this.urlParams.get("scale") || "100",
+            opacity: this.urlParams.get("opacity") || "100",
+            fontfamily: this.urlParams.get("fontfamily") || "",
+            hidemouse: this.urlParams.get("hidemouse") === "1",
+            hidescrollcombo: this.urlParams.get("hidescrollcombo") === "1",
+
+            customLayoutRow1: this.urlParams.get("customLayoutRow1") || DEFAULT_LAYOUT_STRINGS.row1,
+            customLayoutRow2: this.urlParams.get("customLayoutRow2") || DEFAULT_LAYOUT_STRINGS.row2,
+            customLayoutRow3: this.urlParams.get("customLayoutRow3") || DEFAULT_LAYOUT_STRINGS.row3,
+            customLayoutRow4: this.urlParams.get("customLayoutRow4") || DEFAULT_LAYOUT_STRINGS.row4,
+            customLayoutRow5: this.urlParams.get("customLayoutRow5") || DEFAULT_LAYOUT_STRINGS.row5,
+            customLayoutMouse: this.urlParams.get("customLayoutMouse") || DEFAULT_LAYOUT_STRINGS.mouse,
+        };
+    }
+
+
 }
 
-
-function initOverlayMode() {
-    const statusEl = document.getElementById("status");
-
-    const settings = {
-        activecolor: urlParams.get("activecolor") || "#8b5cf6",
-        inactivecolor: urlParams.get("inactivecolor") || "#808080",
-        backgroundcolor: urlParams.get("backgroundcolor") || "#1a1a1a",
-        activebgcolor: urlParams.get("activebgcolor") || "#202020",
-        outlinecolor: urlParams.get("outlinecolor") || "#4f4f4f",
-        fontcolor: urlParams.get("fontcolor") || "#ffffff",
-        glowradius: urlParams.get("glow") || "24",
-        borderradius: urlParams.get("radius") || "8",
-        pressscale: urlParams.get("pressscale") || "105",
-        animationspeed: urlParams.get("speed") || "100",
-        scale: urlParams.get("scale") || "100",
-        opacity: urlParams.get("opacity") || "100",
-        fontfamily: urlParams.get("fontfamily") || "",
-        hidemouse: urlParams.get("hidemouse") === "1",
-        hidescrollcombo: urlParams.get("hidescrollcombo") === "1",
-
-        customLayoutRow1: urlParams.get("customLayoutRow1") || DEFAULT_LAYOUT_STRINGS.row1,
-        customLayoutRow2: urlParams.get("customLayoutRow2") || DEFAULT_LAYOUT_STRINGS.row2,
-        customLayoutRow3: urlParams.get("customLayoutRow3") || DEFAULT_LAYOUT_STRINGS.row3,
-        customLayoutRow4: urlParams.get("customLayoutRow4") || DEFAULT_LAYOUT_STRINGS.row4,
-        customLayoutRow5: urlParams.get("customLayoutRow5") || DEFAULT_LAYOUT_STRINGS.row5,
-        customLayoutMouse: urlParams.get("customLayoutMouse") || DEFAULT_LAYOUT_STRINGS.mouse,
-    };
-
-    applyTransformations(document.body, settings);
-    applyStyles(settings);
-
-    const keyboardTarget = document.getElementById("keyboard-target");
-    const mouseTarget = document.getElementById("mouse-target");
-    const keyboardLayout = getKeyboardLayoutDef(settings);
-    const mouseLayout = getMouseLayoutDef(settings);
-    const elements = buildInterface(keyboardTarget, mouseTarget, keyboardLayout, mouseLayout);
-
-    const wsConfig = (urlParams.get("ws") || "").split(":");
-    const wsAddress = wsConfig[0] || "localhost";
-    const wsPort = wsConfig[1] || "16899";
-    const wsUrl = `ws://${wsAddress}:${wsPort}/`;
-
-    let ws;
-    let connectionAttempts = 0;
-
-    function connect() {
-        connectionAttempts++;
-        statusEl.textContent = `connecting to ${wsUrl} (attempt ${connectionAttempts})...`;
-        statusEl.className = "status connecting";
-
-        ws = new WebSocket(wsUrl);
-
-        ws.onopen = () => {
-            connectionAttempts = 0;
-            statusEl.textContent = "connected";
-            statusEl.className = "status connected";
-            clearStuckKeys();
-        };
-
-        ws.onmessage = (e) => {
-            handleOverlayInput(e.data, elements, activeKeys, activeMouseButtons, settings.animationspeed);
-        };
-
-        ws.onerror = () => {
-            statusEl.textContent = "connection failed";
-            statusEl.className = "status error";
-        };
-
-        ws.onclose = () => {
-            statusEl.textContent = "disconnected. reconnecting...";
-            statusEl.className = "status connecting";
-            clearStuckKeys();
-            setTimeout(connect, 2000);
-        };
+class WebSocketManager {
+    constructor(url, statusEl, elements, visualizer) {
+        this.wsUrl = url;
+        this.statusEl = statusEl;
+        this.elements = elements;
+        this.visualizer = visualizer;
+        this.ws = null;
+        this.connectionAttempts = 0;
     }
 
-    function clearStuckKeys() {
-        elements.keyElements.forEach(el => {
+    connect() {
+        this.connectionAttempts++;
+        this.statusEl.textContent = `connecting to ${this.wsUrl} (attempt ${this.connectionAttempts})...`;
+        this.statusEl.className = "status connecting";
+
+        this.ws = new WebSocket(this.wsUrl);
+
+        this.ws.onopen = this.onOpen.bind(this);
+        this.ws.onmessage = this.onMessage.bind(this);
+        this.ws.onerror = this.onError.bind(this);
+        this.ws.onclose = this.onClose.bind(this);
+    }
+
+    onOpen() {
+        this.connectionAttempts = 0;
+        this.statusEl.textContent = "connected";
+        this.statusEl.className = "status connected";
+        this.clearStuckKeys();
+    }
+
+    onMessage(e) {
+        this.handleOverlayInput(e.data);
+    }
+
+    onError() {
+        this.statusEl.textContent = "connection failed";
+        this.statusEl.className = "status error";
+    }
+
+    onClose() {
+        this.statusEl.textContent = "disconnected. reconnecting...";
+        this.statusEl.className = "status connecting";
+        this.clearStuckKeys();
+        setTimeout(() => this.connect(), 2000);
+    }
+
+    clearStuckKeys() {
+        this.elements.keyElements.forEach(el => {
             el.classList.remove("active");
         });
-        elements.mouseElements.forEach(el => {
+        this.elements.mouseElements.forEach(el => {
             if (el.dataset.key === 'mouse4' || el.dataset.key === 'mouse5') {
                 el.classList.remove("active");
             } else {
                 el.classList.remove("active");
             }
         });
-        activeKeys.clear();
-        activeMouseButtons.clear();
-        if (elements.scrollDisplay) {
-            elements.scrollDisplay.classList.remove("active");
-            elements.scrollArrow.textContent = elements.scrollDisplay.dataset.defaultLabel || "-";
-            elements.scrollCount.textContent = "";
+        this.visualizer.activeKeys.clear();
+        this.visualizer.activeMouseButtons.clear();
+        if (this.elements.scrollDisplay) {
+            this.elements.scrollDisplay.classList.remove("active");
+            this.elements.scrollArrow.textContent = this.elements.scrollDisplay.dataset.defaultLabel || "-";
+            this.elements.scrollCount.textContent = "";
         }
-        currentScrollCount = 0;
+        this.visualizer.currentScrollCount = 0;
 
-        for (const key in keyReleaseTimers) {
-            clearTimeout(keyReleaseTimers[key]);
+        for (const key in KEY_RELEASE_TIMERS) {
+            clearTimeout(KEY_RELEASE_TIMERS[key]);
         }
-        keyReleaseTimers = {};
+        KEY_RELEASE_TIMERS = {};
     }
 
-    function handleOverlayInput(data, els, keys, buttons, speed) {
+    handleOverlayInput(data) {
         try {
             const event = JSON.parse(data);
 
             if (event.event_type === "key_pressed" || event.event_type === "key_released") {
-                const keyName = rawcodeToKeyName[event.rawcode];
+                const keyName = RAW_CODE_TO_KEY_NAME[event.rawcode];
                 if (keyName) {
-                    const el = els.keyElements.get(keyName);
+                    const el = this.elements.keyElements.get(keyName);
 
                     if (el) {
                         if (event.event_type === "key_pressed") {
-                            if (!keys.has(keyName)) {
-                                updateElementState(el, keyName, true, keys);
+                            if (!this.visualizer.activeKeys.has(keyName)) {
+                                this.visualizer.updateElementState(el, keyName, true, this.visualizer.activeKeys);
                             }
                         } else {
-                            updateElementState(el, keyName, false, keys);
+                            this.visualizer.updateElementState(el, keyName, false, this.visualizer.activeKeys);
                         }
                     }
                 }
             }
             else if (event.event_type === "mouse_pressed" || event.event_type === "mouse_released") {
-                const btnName = mouseButtonMap[event.button];
+                const btnName = MOUSE_BUTTON_MAP[event.button];
                 if (btnName) {
-                    const el = els.mouseElements.get(btnName);
+                    const el = this.elements.mouseElements.get(btnName);
                     if (el) {
                         if (event.event_type === "mouse_pressed") {
-                            if (!buttons.has(btnName)) {
-                                updateElementState(el, btnName, true, buttons);
+                            if (!this.visualizer.activeMouseButtons.has(btnName)) {
+                                this.visualizer.updateElementState(el, btnName, true, this.visualizer.activeMouseButtons);
                             }
                         } else {
-                            updateElementState(el, btnName, false, buttons);
+                            this.visualizer.updateElementState(el, btnName, false, this.visualizer.activeMouseButtons);
                         }
                     }
                 }
             }
             else if (event.event_type === "mouse_wheel") {
                 const dir = event.rotation;
-                if (els.scrollDisplay) {
-                    handleScroll(dir, els, speed);
+                if (this.elements.scrollDisplay) {
+                    this.visualizer.handleScroll(dir);
                 }
             }
         } catch (err) {
             console.error("parse error", err);
         }
     }
-
-    connect();
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    new InputOverlay();
+});

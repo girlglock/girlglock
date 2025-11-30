@@ -8,6 +8,7 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/ekmas/cs16.css@main/css/cs16.min.css">
     <link rel="stylesheet" type="text/css" href="style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/classic.min.css" />
+
     <script src="https://cdn.counter.dev/script.js" data-id="8990aad5-58d6-440b-9322-f04502f4214f"
         data-utcoffset="1"></script>
 </head>
@@ -23,7 +24,7 @@
         </div>
     </div>
 
-    <div class="centered" id="configurator">
+    <div class="centered" id="configurator" style="margin-left: 25%;">
         <div class="cs-dialog">
             <div class="heading">
                 <div class="wrapper">
@@ -196,13 +197,62 @@
                             </div>
                         </div>
                     </fieldset>
-                    <div class="link-result full-width">
+                    <div class="full-width">
                         <label class="cs-input__label" style="margin-bottom: 5px; display: block;">obs browser source
                             url</label>
                         <div class="link-container">
                             <input class="cs-input" id="generatedlink" readonly type="text">
                             <button class="cs-btn" id="copybtn">copy</button>
                         </div>
+                        <details class="fullscreen-details" id="cheatSheetDetails" style="margin-top: 10px;">
+                            <summary style="color: #394533;">patch notes<summary class="close-btn" id="closeCheatSheet">x</summary></summary>
+                            
+
+                            <div class="patchnotes">
+                                <h1>2025-11-30</h1>
+                                <br>
+
+                                <h3>bug fixes</h3>
+                                <ul>
+                                    <li>fixed mouse label not scaling correctly inside its element.</li>
+                                    <li>added a dedicated “dummy” string to remove rows without needing
+                                        <code>invisible</code> tags.</li>
+                                </ul>
+                                <br>
+
+                                <h3>quality of life</h3>
+                                <ul>
+                                    <li>added patch notes viewer.</li>
+                                    <li>added glow highlight indicating when the url has been updated.</li>
+                                    <li>separated scroll-up and scroll-down into distinct combo options.</li>
+                                    <li>mouse preview now works everywhere on the page.</li>
+                                    <li>default scroll arrows updated to a thicker style.</li>
+                                </ul>
+                                <br>
+
+                                <h3>custom mouse row</h3>
+                                <ul>
+                                    <li>added fully customizable mouse row.</li>
+                                    <li>implemented wide left mouse button: <code>mouse_left:"m1":mouse-wide</code>.
+                                    </li>
+                                    <li>added improved 3-label scroller: <code>scroller:"-":"↑":"↓"</code>.</li>
+                                    <li>added right mouse button: <code>mouse_right:"m2"</code>.</li>
+                                </ul>
+                                <br>
+
+                                <h3>cheat sheets</h3>
+                                <ul>
+                                    <li>added cheat sheet support for custom configuration elements.</li>
+                                </ul>
+                                <br>
+
+                                <h3>key styling</h3>
+                                <ul>
+                                    <li>refactored internal key width styling system.</li>
+                                </ul>
+                            </div>
+                        </details>
+
                     </div>
                 </div>
                 <div class="config-column">
@@ -222,13 +272,15 @@
                     </fieldset>
                     <fieldset class="cs-fieldset">
                         <legend>custom layout</legend>
-                        <details class="fullscreen-details" id="cheatSheetDetails" style="margin-top: -10px; margin-left: 10px; margin-bottom: 10px;">
+                        <details class="fullscreen-details" id="cheatSheetDetails"
+                            style="margin-top: -10px; margin-left: 10px; margin-bottom: 10px;">
                             <summary>cheat sheet</summary>
                             <summary class="close-btn" id="closeCheatSheet">x</summary>
 
                             <div style="margin-left: 10px; margin-top: 30px; padding: 5px;">
                                 <h2>key naming conventions</h2>
-                                <p>use the <b>internal name</b> when defining a key in your custom layout string. the basic
+                                <p>use the <b>internal name</b> when defining a key in your custom layout string. the
+                                    basic
                                     syntax is:</p>
                                 <blockquote class="cs-note"
                                     style="border-left: 5px solid #8b5cf6; padding: 10px; margin: 15px 0;">
@@ -582,41 +634,8 @@
             </div>
         </div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
-    <script src="script.js"></script>
-    <script>
-        const video = document.getElementById("bgvideo");
-        const source = document.getElementById("bgsource");
-
-        const randomIndex = Math.floor(Math.random() * 2) + 1;
-        const path = `./media/preview_gameplay${randomIndex}.mp4`;
-
-        source.src = path;
-        video.load();
-        video.play();
-
-
-        const detailsTag = document.getElementById('cheatSheetDetails');
-        const closeBtn = document.getElementById('closeCheatSheet');
-
-        if (closeBtn) {
-            closeBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                if (detailsTag) {
-                    detailsTag.open = false;
-                }
-            });
-        }
-
-        if (detailsTag) {
-            const updateCloseButtonVisibility = () => {
-                closeBtn.style.display = detailsTag.open ? 'block' : 'none';
-            };
-            updateCloseButtonVisibility();
-            detailsTag.addEventListener('toggle', updateCloseButtonVisibility);
-        }
-    </script>
+    <script type="module" src="script.js"></script>
 </body>
 
 </html>
