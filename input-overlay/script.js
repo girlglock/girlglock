@@ -146,8 +146,8 @@ class InputOverlay {
         };
     }
 
-    updateState() {
-        const settings = this.getCurrentSettings();
+    updateState(settings = null) {
+        if (!settings) settings = this.getCurrentSettings();
         this.applyStyles(settings);
 
         const layouts = {
@@ -775,18 +775,32 @@ class InputOverlay {
     }
 
     updateGeneratedLink(settings) {
-        const params = this.buildURLParams(settings);
+        const paramsString = this.buildURLParams(settings);
         const baseURL = `${window.location.origin}${window.location.pathname}`;
 
-        window.history.replaceState({}, "", `${baseURL}?${params}`);
+        window.history.replaceState({}, "", `${baseURL}?${paramsString}`);
 
-        params.set("ws", `${settings.wsaddress}:${settings.wsport}`);
+        const wsParam = `ws=${settings.wsaddress || "localhost"}:${settings.wsport || "16899"}`;
         const linkInput = document.getElementById("generatedlink");
-        linkInput.value = `${baseURL}?${params}`;
+        linkInput.value = `${baseURL}?${paramsString}&${wsParam}`;
 
         const container = linkInput.closest(".link-container") || document.querySelector(".link-container");
         container.classList.add("hint");
         setTimeout(() => container.classList.remove("hint"), 1000);
+    }
+
+    normalizeColorValue(value) {
+        if (!value) return value;
+
+        if (value.startsWith('#')) {
+            return value.toLowerCase();
+        }
+
+        if (value.startsWith('%23')) {
+            return '#' + value.substring(3).toLowerCase();
+        }
+
+        return '#' + value.toLowerCase();
     }
 
     applySettings(settings) {
@@ -842,12 +856,11 @@ class InputOverlay {
         const linkInput = document.getElementById("generatedlink");
         const loadBtn = document.getElementById("loadbtn");
 
-        let urlString = fromCurrentUrl
+        let urlString = fromCurrentUrl === true
             ? window.location.href
             : linkInput.value;
 
         if (!urlString || urlString.trim() === "") {
-            console.warn("Link field is empty. Cannot load settings.");
             loadBtn.textContent = "empty";
             loadBtn.classList.add("copied");
             setTimeout(() => {
@@ -867,15 +880,18 @@ class InputOverlay {
             const settings = {};
 
             for (const key of params.keys()) {
-                const value = params.get(key);
+                let value = params.get(key);
                 if (key !== 'ws' && value !== null && value !== "") {
+                    if (key.includes('color')) {
+                        value = this.normalizeColorValue(value);
+                    }
                     settings[key] = value;
                 }
             }
 
             if (Object.keys(settings).length > 0) {
                 this.applySettings(settings);
-                this.updateState();
+                this.updateState(settings);
 
                 loadBtn.textContent = "loaded";
                 loadBtn.classList.add("copied");
@@ -884,7 +900,6 @@ class InputOverlay {
                     loadBtn.classList.remove("copied");
                 }, 2000);
             } else {
-                console.warn("No settings found in the link's query parameters.");
                 loadBtn.textContent = "no params";
                 loadBtn.classList.add("copied");
                 setTimeout(() => {
@@ -892,7 +907,6 @@ class InputOverlay {
                     loadBtn.classList.remove("copied");
                 }, 2000);
             }
-
         } catch (e) {
             console.error("Invalid URL format:", e);
             loadBtn.textContent = "error";
@@ -906,7 +920,13 @@ class InputOverlay {
 
 
     buildURLParams(settings) {
-        const params = new URLSearchParams();
+        const params = [];
+
+        const addParam = (key, value) => {
+            if (value !== undefined && value !== null && value !== "") {
+                params.push(`${key}=${value}`);
+            }
+        };
 
         const colorSettings = {
             activecolor: settings.activecolor,
@@ -918,42 +938,48 @@ class InputOverlay {
         };
 
         Object.entries(colorSettings).forEach(([key, value]) => {
-            params.set(key, value.toLowerCase());
+            if (value !== undefined && value !== null && value !== "") {
+                addParam(key, value.toLowerCase().replace('#', ''));
+            }
         });
 
-        params.set("glow", settings.glowradius);
-        params.set("radius", settings.borderradius);
-        params.set("pressscale", settings.pressscale);
-        params.set("speed", settings.animationspeed);
-        params.set("scale", settings.scale);
-        params.set("opacity", settings.opacity);
+        addParam('glow', settings.glowradius);
+        addParam('radius', settings.borderradius);
+        addParam('pressscale', settings.pressscale);
+        addParam('speed', settings.animationspeed);
+        addParam('scale', settings.scale);
+        addParam('opacity', settings.opacity);
 
-        if (settings.fontfamily) {
-            params.set("fontfamily", settings.fontfamily.toLowerCase());
+        if (settings.fontfamily && settings.fontfamily.trim() !== "") {
+            addParam('fontfamily', settings.fontfamily.toLowerCase().replace(/ /g, '+'));
         }
 
-        if (settings.hidemouse) {
-            params.set("hidemouse", "1");
+        if (settings.hidemouse === true || settings.hidemouse === "true" || settings.hidemouse === "1") {
+            params.push("hidemouse=1");
         }
 
-        if (settings.hidescrollcombo) {
-            params.set("hidescrollcombo", "1");
+        if (settings.hidescrollcombo === true || settings.hidescrollcombo === "true" || settings.hidescrollcombo === "1") {
+            params.push("hidescrollcombo=1");
         }
 
         this.addCustomLayoutParams(params, settings);
 
-        return params;
+        return params.join('&');
     }
 
     addCustomLayoutParams(params, settings) {
-        const layoutRows = [
-            'customLayoutRow1', 'customLayoutRow2', 'customLayoutRow3', 'customLayoutRow4', 'customLayoutRow5', 'customLayoutMouse'
-        ];
-        layoutRows.forEach(row => {
-            if (settings[row]) {
-                params.set(row, settings[row]);
+        const addParam = (key, value) => {
+            if (value !== undefined && value !== null && value !== "") {
+                params.push(`${key}=${value.replace(/, /g, ",")}`);
             }
-        });
+        };
+
+        const layoutRows = [
+            'customLayoutRow1', 'customLayoutRow2', 'customLayoutRow3',
+            'customLayoutRow4', 'customLayoutRow5', 'customLayoutMouse'
+        ];
+
+        layoutRows.forEach(row => addParam(row, settings[row]));
     }
 
     async copyLink() {
@@ -1062,12 +1088,12 @@ class InputOverlay {
 
     getOverlaySettings() {
         return {
-            activecolor: this.urlParams.get("activecolor") || "#8b5cf6",
-            inactivecolor: this.urlParams.get("inactivecolor") || "#808080",
-            backgroundcolor: this.urlParams.get("backgroundcolor") || "#1a1a1a",
-            activebgcolor: this.urlParams.get("activebgcolor") || "#202020",
-            outlinecolor: this.urlParams.get("outlinecolor") || "#4f4f4f",
-            fontcolor: this.urlParams.get("fontcolor") || "#ffffff",
+            activecolor: this.normalizeColorValue(this.urlParams.get("activecolor")) || "#8b5cf6",
+            inactivecolor: this.normalizeColorValue(this.urlParams.get("inactivecolor")) || "#808080",
+            backgroundcolor: this.normalizeColorValue(this.urlParams.get("backgroundcolor")) || "#1a1a1a",
+            activebgcolor: this.normalizeColorValue(this.urlParams.get("activebgcolor")) || "#202020",
+            outlinecolor: this.normalizeColorValue(this.urlParams.get("outlinecolor")) || "#4f4f4f",
+            fontcolor: this.normalizeColorValue(this.urlParams.get("fontcolor")) || "#ffffff",
             glowradius: this.urlParams.get("glow") || "24",
             borderradius: this.urlParams.get("radius") || "8",
             pressscale: this.urlParams.get("pressscale") || "105",
@@ -1086,8 +1112,6 @@ class InputOverlay {
             customLayoutMouse: this.urlParams.get("customLayoutMouse") || DEFAULT_LAYOUT_STRINGS.mouse,
         };
     }
-
-
 }
 
 class WebSocketManager {
@@ -1165,7 +1189,9 @@ class WebSocketManager {
     handleOverlayInput(data) {
         try {
             const event = JSON.parse(data);
-
+            if (event.event_type === "mouse_wheel") {
+                console.log(event);
+            }
             if (event.event_type === "key_pressed" || event.event_type === "key_released") {
                 const keyName = RAW_CODE_TO_KEY_NAME[event.rawcode];
                 if (keyName) {
