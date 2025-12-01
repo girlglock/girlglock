@@ -796,7 +796,7 @@ class InputOverlay {
             const el = document.getElementById(id);
             if (el && value !== undefined) {
                 if (el.type === 'checkbox') {
-                    el.checked = value === 'true';
+                    el.checked = value === 'true' || value === '1' || value === true;
                 } else {
                     el.value = value;
                     if (id.includes('colorhex')) {
