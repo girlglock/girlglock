@@ -782,6 +782,8 @@ class InputOverlay {
         const linkInput = document.getElementsByClassName("link-container")[0];
         linkInput.className = "link-container hint";
         setTimeout(() => linkInput.className = "link-container", 1000);
+
+        window.history.replaceState({}, "", link);
     }
 
     applySettings(settings) {
