@@ -701,7 +701,7 @@ class InputOverlay {
                         let suffix = "";
                         if (input.id.includes("radius")) suffix = "px";
                         else if (input.id.includes("scale")) suffix = "x";
-                        else if (input.id === "opacity" || input.id.includes("speed")) suffix = "%"; 
+                        else if (input.id === "opacity" || input.id.includes("speed")) suffix = "%";
 
                         let val = input.value;
                         if (input.id.includes("scale") && !input.id.includes("pressscale")) val = (val / 100).toFixed(1);
