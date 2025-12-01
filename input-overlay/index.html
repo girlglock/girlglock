@@ -36,7 +36,7 @@
                 <div class="config-column">
                     <fieldset class="cs-fieldset preview-fieldset">
                         <legend>instructions</legend>
-                        <div style="margin-left: 18px; margin-top: -14px;">
+                        <div style="margin-left: 18px; margin-top: -20px;">
                             <ol>
                                 <li>install <a href="https://github.com/univrsal/input-overlay"
                                         target="_blank">input-overlay
@@ -44,9 +44,12 @@
                                 <li>enable websocket server in plugin settings (not obs websocket, the plugin one)</li>
                                 <li>check the port number (usually 16899)</li>
                                 <li>restart obs</li>
-                                <li>generate the overlay link</li>
+                                <li>copy the overlay url (⎘ copy url)</li>
                                 <li>create a new browser source in obs</li>
-                                <li>paste the link into the browser source</li>
+                                <li>paste the url into the browser source</li>
+                                <ul style="margin-top: 10px;">
+                                    <li>tip: you can also load previously saved urls using <b>load url</b> button</li>
+                                </ul>
                             </ol>
                         </div>
                     </fieldset>
@@ -201,13 +204,14 @@
                         <label class="cs-input__label" style="margin-bottom: 5px; display: block;">obs browser source
                             url</label>
                         <div class="link-container">
-                            <input class="cs-input" id="generatedlink" readonly type="text">
-                            <button class="cs-btn" id="copybtn">copy</button>
+                            <input class="cs-input" id="generatedlink" type="text">
+                            <button class="cs-btn" id="loadbtn" style="min-width: 100px;">⟳ load url</button>
+                            <button class="cs-btn" id="copybtn" style="min-width: 100px;">⎘ copy url</button>
                         </div>
                         <details class="fullscreen-details" id="patchSheetDetails" style="margin-top: 10px;">
                             <summary style="color: #394533;">patch notes</summary>
                             <summary class="close-btn" id="closePatchSheet">x</summary>
-                            
+
 
                             <div class="patchnotes">
                                 <h1>2025-12-01</h1>
@@ -219,13 +223,19 @@
                                     <li>fix cheat sheet not scrolling</li>
                                 </ul>
                                 <br>
+                                <h3>quality of life</h3>
+                                <ul>
+                                    <li>added settings loading from url to allow sharing and loading of previously configured urls</li>
+                                </ul>
+                                <br>
                                 <h1>2025-11-30</h1>
                                 <br>
                                 <h3>bug fixes</h3>
                                 <ul>
                                     <li>fixed mouse label not scaling correctly inside its element.</li>
                                     <li>added a dedicated “dummy” string to remove rows without needing
-                                        <code>invisible</code> tags.</li>
+                                        <code>invisible</code> tags.
+                                    </li>
                                 </ul>
                                 <br>
 
@@ -595,7 +605,7 @@
                                             <td>full size space bar.</td>
                                         </tr>
                                         <tr>
-                                            <td><code>super-wide</code></td>
+                                            <td><code>w-3u</code></td>
                                             <td>3u</td>
                                             <td>used specifically for the tiny spacebar.</td>
                                         </tr>

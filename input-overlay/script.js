@@ -722,6 +722,7 @@ class InputOverlay {
             });
         });
         document.getElementById("copybtn").addEventListener("click", this.copyLink.bind(this));
+        document.getElementById("loadbtn").addEventListener("click", this.loadSettingsFromLink.bind(this));
     }
 
     setupPreviewInputListeners() {
@@ -772,7 +773,6 @@ class InputOverlay {
             }
         }
         else if (type === "mouse_wheel") {
-            event.preventDefault();
             const dir = Math.sign(event.deltaY);
             if (this.previewElements.scrollDisplay) {
                 this.handleScroll(dir);
@@ -784,6 +784,118 @@ class InputOverlay {
         const params = this.buildURLParams(settings);
         const link = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
         document.getElementById("generatedlink").value = link;
+    }
+
+    applySettings(settings) {
+        if (!settings) return;
+
+        const applyValue = (id, value) => {
+            const el = document.getElementById(id);
+            if (el && value !== undefined) {
+                if (el.type === 'checkbox') {
+                    el.checked = value === 'true';
+                } else {
+                    el.value = value;
+                    if (id.includes('colorhex')) {
+                        const pickrTargetId = id.replace('hex', '');
+                        const pickrTarget = document.getElementById(pickrTargetId);
+                        if (pickrTarget && pickrTarget._pickr) {
+                            pickrTarget._pickr.setColor(value);
+                        }
+                    }
+                }
+                if (el.type === 'range') {
+                    el.dispatchEvent(new Event('input'));
+                }
+            }
+        };
+
+        applyValue("wsaddress", settings.wsaddress);
+        applyValue("wsport", settings.wsport);
+        applyValue("activecolorhex", settings.activecolor);
+        applyValue("inactivecolorhex", settings.inactivecolor);
+        applyValue("backgroundcolorhex", settings.backgroundcolor);
+        applyValue("activebgcolorhex", settings.activebgcolor);
+        applyValue("outlinecolorhex", settings.outlinecolor);
+        applyValue("fontcolorhex", settings.fontcolor);
+        applyValue("glowradius", settings.glowradius);
+        applyValue("borderradius", settings.borderradius);
+        applyValue("pressscale", settings.pressscale);
+        applyValue("animationspeed", settings.animationspeed);
+        applyValue("scale", settings.scale);
+        applyValue("opacity", settings.opacity);
+        applyValue("fontfamily", settings.fontfamily);
+        applyValue("hidemouse", settings.hidemouse);
+        applyValue("hidescrollcombo", settings.hidescrollcombo);
+        applyValue("customLayoutRow1", settings.customLayoutRow1);
+        applyValue("customLayoutRow2", settings.customLayoutRow2);
+        applyValue("customLayoutRow3", settings.customLayoutRow3);
+        applyValue("customLayoutRow4", settings.customLayoutRow4);
+        applyValue("customLayoutRow5", settings.customLayoutRow5);
+        applyValue("customLayoutMouse", settings.customLayoutMouse);
+    }
+
+    loadSettingsFromLink() {
+        const linkInput = document.getElementById("generatedlink");
+        let urlString = linkInput.value;
+        const loadBtn = document.getElementById("loadbtn");
+
+        if (!urlString || urlString.trim() === "") {
+            console.warn("Link field is empty. Cannot load settings.");
+            loadBtn.textContent = "empty";
+            loadBtn.classList.add("copied"); 
+            setTimeout(() => {
+                loadBtn.textContent = "load";
+                loadBtn.classList.remove("copied");
+            }, 2000);
+            return;
+        }
+
+        if (!urlString.startsWith('http')) {
+            urlString = window.location.origin + urlString;
+        }
+
+        try {
+            const url = new URL(urlString);
+            const params = url.searchParams;
+            const settings = {};
+
+            for (const key of params.keys()) {
+                const value = params.get(key);
+                if (key !== 'ws' && value !== null && value !== "") {
+                    settings[key] = value;
+                }
+            }
+
+            if (Object.keys(settings).length > 0) {
+                this.applySettings(settings);
+                this.updateState();
+
+                loadBtn.textContent = "loaded";
+                loadBtn.classList.add("copied");
+                setTimeout(() => {
+                    loadBtn.textContent = "load";
+                    loadBtn.classList.remove("copied");
+                }, 2000);
+            } else {
+                console.warn("No settings found in the link's query parameters.");
+                loadBtn.textContent = "no params";
+                loadBtn.classList.add("copied"); 
+                setTimeout(() => {
+                    loadBtn.textContent = "load";
+                    loadBtn.classList.remove("copied");
+                }, 2000);
+            }
+
+        } catch (e) {
+            console.error("Invalid URL format:", e);
+            loadBtn.textContent = "error";
+            loadBtn.classList.add("copied");
+            setTimeout(() => {
+                loadBtn.textContent = "load";
+                loadBtn.classList.remove("copied");
+            }, 2000);
+        }
     }
 
     buildURLParams(settings) {
