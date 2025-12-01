@@ -776,14 +776,17 @@ class InputOverlay {
 
     updateGeneratedLink(settings) {
         const params = this.buildURLParams(settings);
-        const link = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
-        document.getElementById("generatedlink").value = link;
+        const baseURL = `${window.location.origin}${window.location.pathname}`;
 
-        const linkInput = document.getElementsByClassName("link-container")[0];
-        linkInput.className = "link-container hint";
-        setTimeout(() => linkInput.className = "link-container", 1000);
+        window.history.replaceState({}, "", `${baseURL}?${params}`);
 
-        window.history.replaceState({}, "", link);
+        params.set("ws", `${settings.wsaddress}:${settings.wsport}`);
+        const linkInput = document.getElementById("generatedlink");
+        linkInput.value = `${baseURL}?${params}`;
+
+        const container = linkInput.closest(".link-container") || document.querySelector(".link-container");
+        container.classList.add("hint");
+        setTimeout(() => container.classList.remove("hint"), 1000);
     }
 
     applySettings(settings) {
@@ -904,8 +907,6 @@ class InputOverlay {
 
     buildURLParams(settings) {
         const params = new URLSearchParams();
-
-        params.set("ws", `${settings.wsaddress}:${settings.wsport}`);
 
         const colorSettings = {
             activecolor: settings.activecolor,
