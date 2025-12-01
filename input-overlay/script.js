@@ -635,6 +635,7 @@ class InputOverlay {
 
         this.setupBackgroundVideo();
         this.setupCheatSheetToggle();
+        this.loadSettingsFromLink(true);
 
         this.updateState();
     }
