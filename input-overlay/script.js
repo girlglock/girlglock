@@ -597,9 +597,6 @@ class InputOverlay {
 
             const updateCloseButtonVisibility = () => {
                 closeBtn.style.display = detailsTag.open ? 'inline' : 'none';
-
-                this.adjustKeyFontSizes?.();
-                this.adjustScrollDisplays?.();
             };
 
             updateCloseButtonVisibility();
@@ -835,15 +832,18 @@ class InputOverlay {
         applyValue("customLayoutMouse", settings.customLayoutMouse);
     }
 
-    loadSettingsFromLink() {
+    loadSettingsFromLink(fromCurrentUrl = false) {
         const linkInput = document.getElementById("generatedlink");
-        let urlString = linkInput.value;
         const loadBtn = document.getElementById("loadbtn");
+
+        let urlString = fromCurrentUrl
+            ? window.location.href
+            : linkInput.value;
 
         if (!urlString || urlString.trim() === "") {
             console.warn("Link field is empty. Cannot load settings.");
             loadBtn.textContent = "empty";
-            loadBtn.classList.add("copied"); 
+            loadBtn.classList.add("copied");
             setTimeout(() => {
                 loadBtn.textContent = "load";
                 loadBtn.classList.remove("copied");
@@ -880,7 +880,7 @@ class InputOverlay {
             } else {
                 console.warn("No settings found in the link's query parameters.");
                 loadBtn.textContent = "no params";
-                loadBtn.classList.add("copied"); 
+                loadBtn.classList.add("copied");
                 setTimeout(() => {
                     loadBtn.textContent = "load";
                     loadBtn.classList.remove("copied");
@@ -897,6 +897,7 @@ class InputOverlay {
             }, 2000);
         }
     }
+
 
     buildURLParams(settings) {
         const params = new URLSearchParams();
