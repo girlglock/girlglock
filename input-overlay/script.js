@@ -161,10 +161,6 @@ class InputOverlay {
         this.updateGeneratedLink(settings);
         this.adjustScrollDisplays();
         this.adjustKeyFontSizes();
-
-        const linkInput = document.getElementsByClassName("link-container")[0];
-        linkInput.className = "link-container hint";
-        setTimeout(() => linkInput.className = "link-container", 1000);
     }
 
     applyStyles(opts) {
@@ -782,6 +778,10 @@ class InputOverlay {
         const params = this.buildURLParams(settings);
         const link = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
         document.getElementById("generatedlink").value = link;
+
+        const linkInput = document.getElementsByClassName("link-container")[0];
+        linkInput.className = "link-container hint";
+        setTimeout(() => linkInput.className = "link-container", 1000);
     }
 
     applySettings(settings) {
