@@ -65,7 +65,6 @@ const COLOR_PICKERS = [
 ];
 
 let Z_INDEX_COUNTER = 100;
-let KEY_RELEASE_TIMERS = {};
 
 class InputOverlay {
     constructor() {
@@ -77,6 +76,7 @@ class InputOverlay {
         this.scrollTimeout = null;
         this.urlParams = new URLSearchParams(window.location.search);
         this.isOverlayMode = this.urlParams.has("ws");
+        this.pickrInstances = {};
 
         if (this.isOverlayMode) {
             this.initOverlayMode();
@@ -665,6 +665,8 @@ class InputOverlay {
             swatches: []
         });
 
+        this.pickrInstances[pickrId] = pickr;
+
         pickr.on("change", (color) => {
             const hexA = color.toHEXA().toString();
             hexInput.value = hexA.toLowerCase();
@@ -810,14 +812,16 @@ class InputOverlay {
             const el = document.getElementById(id);
             if (el && value !== undefined) {
                 if (el.type === 'checkbox') {
-                    el.checked = value === 'true' || value === '1' || value === true; //force gh actions grr
+                    el.checked = value === 'true' || value === '1' || value === true;
                 } else {
                     el.value = value;
                     if (id.includes('colorhex')) {
-                        const pickrTargetId = id.replace('hex', '');
-                        const pickrTarget = document.getElementById(pickrTargetId);
-                        if (pickrTarget && pickrTarget._pickr) {
-                            pickrTarget._pickr.setColor(value);
+                        const pickrId = id.replace('hex', '');
+                        const pickr = this.pickrInstances[pickrId];
+                        if (pickr) {
+                            try {
+                                pickr.setColor(value, true);
+                            } catch (error) {}
                         }
                     }
                 }
@@ -990,7 +994,7 @@ class InputOverlay {
             copyBtn.textContent = "copied";
             copyBtn.classList.add("copied");
             setTimeout(() => {
-                copyBtn.textContent = "copy";
+                copyBtn.textContent = "⎘ copy url";
                 copyBtn.classList.remove("copied");
             }, 2000);
         } catch (err) {
@@ -1015,20 +1019,22 @@ class InputOverlay {
         els.scrollArrow.textContent = dir === -1 ? upLabel : downLabel;
 
         const containerWidth = els.scrollDisplay.clientWidth - 16;
-        els.scrollArrow.style.transform = 'none';
         const textWidth = els.scrollArrow.scrollWidth;
 
-        let finalScaleActive = 1;
-
-        if (textWidth > containerWidth) {
-            finalScaleActive = containerWidth / textWidth;
-        }
+        const finalScaleActive =
+            textWidth > containerWidth ? containerWidth / textWidth : 1;
 
         els.scrollArrow.style.transform = `scale(${finalScaleActive})`;
 
         if (els.scrollDisplay.dataset.button !== "mouse_middle") {
             els.scrollDisplay.dataset.button = "mouse_middle";
         }
+
+        if (!els.scrollDisplay.classList.contains("active")) {
+            Z_INDEX_COUNTER++;
+            els.scrollDisplay.style.zIndex = Z_INDEX_COUNTER;
+        }
+        els.scrollDisplay.classList.add("active");
 
         requestAnimationFrame(() => {
             els.scrollCount.textContent = this.currentScrollCount + "x";
@@ -1044,20 +1050,15 @@ class InputOverlay {
 
             void els.scrollCount.offsetWidth;
             els.scrollCount.classList.add("animate");
-
-            if (!els.scrollDisplay.classList.contains("active")) {
-                Z_INDEX_COUNTER++;
-                els.scrollDisplay.style.zIndex = Z_INDEX_COUNTER;
-            }
-
-            els.scrollDisplay.classList.add("active");
         });
 
         clearTimeout(this.scrollTimeout);
         this.scrollTimeout = setTimeout(() => {
             this.adjustScrollDisplays();
+            els.scrollDisplay.classList.remove("active");
         }, 250);
     }
+
 
     initOverlayMode() {
         document.getElementById("configurator").style.display = "none";
@@ -1082,6 +1083,13 @@ class InputOverlay {
 
         this.websocketManager = new WebSocketManager(wsUrl, statusEl, this.previewElements, this);
         this.websocketManager.connect();
+
+        window.addEventListener('focus', () => {
+            if (this.websocketManager) {
+                this.websocketManager.clearStuckKeys();
+            }
+        });
+
         this.adjustScrollDisplays();
         this.adjustKeyFontSizes();
     }
@@ -1122,6 +1130,10 @@ class WebSocketManager {
         this.visualizer = visualizer;
         this.ws = null;
         this.connectionAttempts = 0;
+
+        this.messageHistory = [];
+        this.keyStates = {};
+        this.HISTORY_MAX_LENGTH = 100;
     }
 
     connect() {
@@ -1160,19 +1172,109 @@ class WebSocketManager {
         setTimeout(() => this.connect(), 2000);
     }
 
+    getMappedKeyId(event) {
+        if (event.event_type.startsWith("key_")) {
+            return {
+                id: `k_${event.rawcode}`,
+                name: RAW_CODE_TO_KEY_NAME[event.rawcode],
+                type: 'key'
+            };
+        } else if (event.event_type.startsWith("mouse_") && event.button) {
+            return {
+                id: `m_${event.button}`,
+                name: MOUSE_BUTTON_MAP[event.button],
+                type: 'mouse'
+            };
+        }
+        return null;
+    }
+
+    recalculateKeyStates() {
+        const tempStates = {};
+        const isKeyActive = {};
+
+        for (const event of this.messageHistory) {
+            const keyInfo = this.getMappedKeyId(event);
+            if (!keyInfo || !keyInfo.name) continue;
+
+            const elementMap = keyInfo.type === 'key' ? this.elements.keyElements : this.elements.mouseElements;
+            if (!elementMap.get(keyInfo.name)) {
+                continue;
+            }
+
+            if (event.event_type.endsWith("_pressed")) {
+                isKeyActive[keyInfo.id] = true;
+            } else if (event.event_type.endsWith("_released")) {
+                isKeyActive[keyInfo.id] = false;
+            }
+        }
+
+        const keysToCheck = new Set([...Object.keys(isKeyActive), ...Object.keys(this.keyStates)]);
+
+        for (const keyId of keysToCheck) {
+            const isActive = isKeyActive[keyId] !== undefined ? isKeyActive[keyId] : false;
+            const wasActive = this.keyStates[keyId] === true;
+
+            if (isActive !== wasActive) {
+                const type = keyId.startsWith('k_') ? 'key' : 'mouse';
+                const idValue = parseInt(keyId.substring(2));
+                const keyName = type === 'key' ? RAW_CODE_TO_KEY_NAME[idValue] : MOUSE_BUTTON_MAP[idValue];
+
+                const el = type === 'key' ? this.elements.keyElements.get(keyName) : this.elements.mouseElements.get(keyName);
+                const activeSet = type === 'key' ? this.visualizer.activeKeys : this.visualizer.activeMouseButtons;
+
+                if (el) {
+                    this.visualizer.updateElementState(el, keyName, isActive, activeSet);
+                }
+            }
+            tempStates[keyId] = isActive;
+        }
+
+        this.keyStates = Object.fromEntries(
+            Object.entries(tempStates).filter(([keyId, isActive]) => isActive || Object.hasOwn(isKeyActive, keyId))
+        );
+    }
+
+    handleOverlayInput(data) {
+        try {
+            const event = JSON.parse(data);
+            // not needed for now
+            if (event.event_type === "mouse_moved" || event.event_type === "mouse_dragged") {
+                return;
+            }
+
+            if (event.event_type === "mouse_wheel") {
+                const dir = event.rotation;
+                if (this.elements.scrollDisplay) {
+                    this.visualizer.handleScroll(dir);
+                }
+            }
+
+            this.messageHistory.push(event);
+            if (this.messageHistory.length > this.HISTORY_MAX_LENGTH) {
+                this.messageHistory.shift();
+            }
+
+            if (event.event_type.startsWith("key_") || event.event_type.startsWith("mouse_")) {
+                this.recalculateKeyStates();
+            }
+
+        } catch (err) {
+            console.error("parse error", err);
+        }
+    }
+
     clearStuckKeys() {
         this.elements.keyElements.forEach(el => {
             el.classList.remove("active");
         });
         this.elements.mouseElements.forEach(el => {
-            if (el.dataset.key === 'mouse4' || el.dataset.key === 'mouse5') {
-                el.classList.remove("active");
-            } else {
-                el.classList.remove("active");
-            }
+            el.classList.remove("active");
         });
+
         this.visualizer.activeKeys.clear();
         this.visualizer.activeMouseButtons.clear();
+
         if (this.elements.scrollDisplay) {
             this.elements.scrollDisplay.classList.remove("active");
             this.elements.scrollArrow.textContent = this.elements.scrollDisplay.dataset.defaultLabel || "-";
@@ -1180,58 +1282,8 @@ class WebSocketManager {
         }
         this.visualizer.currentScrollCount = 0;
 
-        for (const key in KEY_RELEASE_TIMERS) {
-            clearTimeout(KEY_RELEASE_TIMERS[key]);
-        }
-        KEY_RELEASE_TIMERS = {};
-    }
-
-    handleOverlayInput(data) {
-        try {
-            const event = JSON.parse(data);
-            if (event.event_type === "mouse_wheel") {
-                console.log(event);
-            }
-            if (event.event_type === "key_pressed" || event.event_type === "key_released") {
-                const keyName = RAW_CODE_TO_KEY_NAME[event.rawcode];
-                if (keyName) {
-                    const el = this.elements.keyElements.get(keyName);
-
-                    if (el) {
-                        if (event.event_type === "key_pressed") {
-                            if (!this.visualizer.activeKeys.has(keyName)) {
-                                this.visualizer.updateElementState(el, keyName, true, this.visualizer.activeKeys);
-                            }
-                        } else {
-                            this.visualizer.updateElementState(el, keyName, false, this.visualizer.activeKeys);
-                        }
-                    }
-                }
-            }
-            else if (event.event_type === "mouse_pressed" || event.event_type === "mouse_released") {
-                const btnName = MOUSE_BUTTON_MAP[event.button];
-                if (btnName) {
-                    const el = this.elements.mouseElements.get(btnName);
-                    if (el) {
-                        if (event.event_type === "mouse_pressed") {
-                            if (!this.visualizer.activeMouseButtons.has(btnName)) {
-                                this.visualizer.updateElementState(el, btnName, true, this.visualizer.activeMouseButtons);
-                            }
-                        } else {
-                            this.visualizer.updateElementState(el, btnName, false, this.visualizer.activeMouseButtons);
-                        }
-                    }
-                }
-            }
-            else if (event.event_type === "mouse_wheel") {
-                const dir = event.rotation;
-                if (this.elements.scrollDisplay) {
-                    this.visualizer.handleScroll(dir);
-                }
-            }
-        } catch (err) {
-            console.error("parse error", err);
-        }
+        this.messageHistory = [];
+        this.keyStates = {};
     }
 }
 

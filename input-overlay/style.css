@@ -1,5 +1,6 @@
 * {
     box-sizing: border-box;
+    user-select: text;
 }
 
 body {
@@ -8,7 +9,6 @@ body {
     min-height: 100vh;
     display: flex;
     color: #fff;
-    user-select: all;
 }
 
 .centered {
@@ -518,10 +518,11 @@ body {
 
 .fullscreen-details[open] {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 70vw;
+    height: 70vh;
     background: #1a1a1a;
     color: #fff;
     z-index: 9999;

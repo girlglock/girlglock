@@ -212,8 +212,24 @@
                             <summary style="color: #394533;">patch notes</summary>
                             <summary class="close-btn" id="closePatchSheet">x</summary>
 
-
                             <div class="patchnotes">
+                                <h1>2025-12-02</h1>
+                                <br>
+                                <h3>bug fixes</h3>
+                                <ul>
+                                    <li>fix color pickers not updating when loading settings from url</li>
+                                    <li>fix copy button label inconsistency</li>
+                                    <li>fix text not being selectable</li>
+                                </ul>
+                                <br>
+                                <h3>quality of life</h3>
+                                <ul>
+                                    <li>rework how key states are handled to compare against an array of previous
+                                        websocket messages to prevent stuck keys on unfocused or busy (lagging) browser
+                                        src</li>
+                                    <li>make sheet flyouts smaller</li>
+                                </ul>
+                                <br>
                                 <h1>2025-12-01</h1>
                                 <br>
                                 <h3>bug fixes</h3>
@@ -226,8 +242,10 @@
                                 <br>
                                 <h3>quality of life</h3>
                                 <ul>
-                                    <li>added settings loading from url to allow sharing and loading of previously configured urls</li>
-                                    <li>url bar now updates on settings change, this is useful to share unfinished configurations (obs url still needs to be obtained through the copy button)</li>
+                                    <li>added settings loading from url to allow sharing and loading of previously
+                                        configured urls</li>
+                                    <li>url bar now updates on settings change, this is useful to share unfinished
+                                        configurations (obs url still needs to be obtained through the copy button)</li>
                                 </ul>
                                 <br>
                                 <h1>2025-11-30</h1>
