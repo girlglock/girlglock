@@ -821,12 +821,12 @@ class InputOverlay {
                         if (pickr) {
                             try {
                                 pickr.setColor(value, true);
-                            } catch (error) {}
+                            } catch (error) { }
                         }
                     }
                 }
                 if (el.type === 'range') {
-                    el.dispatchEvent(new Event('input'));
+                    el.dispatchEvent(new Event('input', { bubbles: true }));
                 }
             }
         };
@@ -839,10 +839,10 @@ class InputOverlay {
         applyValue("activebgcolorhex", settings.activebgcolor);
         applyValue("outlinecolorhex", settings.outlinecolor);
         applyValue("fontcolorhex", settings.fontcolor);
-        applyValue("glowradius", settings.glowradius);
-        applyValue("borderradius", settings.borderradius);
+        applyValue("glowradius", settings.glow || settings.glowradius);
+        applyValue("borderradius", settings.radius || settings.borderradius);
         applyValue("pressscale", settings.pressscale);
-        applyValue("animationspeed", settings.animationspeed);
+        applyValue("animationspeed", settings.speed || settings.animationspeed);
         applyValue("scale", settings.scale);
         applyValue("opacity", settings.opacity);
         applyValue("fontfamily", settings.fontfamily);
@@ -895,7 +895,7 @@ class InputOverlay {
 
             if (Object.keys(settings).length > 0) {
                 this.applySettings(settings);
-                this.updateState(settings);
+                this.updateState();
 
                 loadBtn.textContent = "loaded";
                 loadBtn.classList.add("copied");
@@ -921,7 +921,6 @@ class InputOverlay {
             }, 2000);
         }
     }
-
 
     buildURLParams(settings) {
         const params = [];
