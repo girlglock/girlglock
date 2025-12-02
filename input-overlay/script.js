@@ -622,16 +622,16 @@ class InputOverlay {
         const mouseLayout = this.getMouseLayoutDef(settings);
         this.previewElements = this.buildInterface(previewKeys, previewMouse, keyboardLayout, mouseLayout);
 
-        COLOR_PICKERS.forEach(cp => {
-            this.initPickrColorInput(cp.id, cp.defaultColor);
-        });
-
         this.setupConfigInputs();
         this.setupPreviewInputListeners();
 
         this.setupBackgroundVideo();
         this.setupCheatSheetToggle();
         this.loadSettingsFromLink(true);
+
+        COLOR_PICKERS.forEach(cp => {
+            this.initPickrColorInput(cp.id, cp.defaultColor);
+        });
 
         this.updateState();
     }
