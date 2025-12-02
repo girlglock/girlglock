@@ -592,7 +592,7 @@ class InputOverlay {
             });
 
             const updateCloseButtonVisibility = () => {
-                closeBtn.style.display = detailsTag.open ? 'inline' : 'none';
+                closeBtn.style.display = detailsTag.open ? 'block' : 'none';
             };
 
             updateCloseButtonVisibility();
@@ -776,15 +776,50 @@ class InputOverlay {
         }
     }
 
+    compressSettings(paramsString) {
+        try {
+            const compressed = pako.deflate(paramsString, { level: 9 });
+            const base64 = btoa(String.fromCharCode.apply(null, compressed));
+            return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+        } catch (e) {
+            console.error("compression failed:", e);
+            return null;
+        }
+    }
+
+    decompressSettings(compressed) {
+        try {
+            const base64 = compressed.replace(/-/g, '+').replace(/_/g, '/');
+            const padding = '='.repeat((4 - base64.length % 4) % 4);
+            const binary = atob(base64 + padding);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) {
+                bytes[i] = binary.charCodeAt(i);
+            }
+            const decompressed = pako.inflate(bytes, { to: 'string' });
+            console.log(decompressed);
+            return decompressed;
+        } catch (e) {
+            console.error("decompression failed:", e);
+            return null;
+        }
+    }
+
     updateGeneratedLink(settings) {
         const paramsString = this.buildURLParams(settings);
         const baseURL = `${window.location.origin}${window.location.pathname}`;
 
-        window.history.replaceState({}, "", `${baseURL}?${paramsString}`);
-
         const wsParam = `ws=${settings.wsaddress || "localhost"}:${settings.wsport || "16899"}`;
         const linkInput = document.getElementById("generatedlink");
-        linkInput.value = `${baseURL}?${paramsString}&${wsParam}`;
+
+        const compressed = this.compressSettings(paramsString);
+        if (compressed) {
+            window.history.replaceState({}, "", `${baseURL}?cfg=${compressed}`);
+            linkInput.value = `${baseURL}?cfg=${compressed}&${wsParam}`;
+        } else {
+            window.history.replaceState({}, "", `${baseURL}?${paramsString}`);
+            linkInput.value = `${baseURL}?${paramsString}&${wsParam}`;
+        }
 
         const container = linkInput.closest(".link-container") || document.querySelector(".link-container");
         container.classList.add("hint");
@@ -883,13 +918,39 @@ class InputOverlay {
             const params = url.searchParams;
             const settings = {};
 
-            for (const key of params.keys()) {
-                let value = params.get(key);
-                if (key !== 'ws' && value !== null && value !== "") {
-                    if (key.includes('color')) {
-                        value = this.normalizeColorValue(value);
+            if (params.has('cfg')) {
+                const compressed = params.get('cfg');
+                const decompressed = this.decompressSettings(compressed);
+
+                if (decompressed) {
+                    const decompressedParams = new URLSearchParams(decompressed);
+                    for (const key of decompressedParams.keys()) {
+                        let value = decompressedParams.get(key);
+                        if (key !== 'ws' && value !== null && value !== "") {
+                            if (key.includes('color')) {
+                                value = this.normalizeColorValue(value);
+                            }
+                            settings[key] = value;
+                        }
                     }
-                    settings[key] = value;
+                } else {
+                    loadBtn.textContent = "decompress error";
+                    loadBtn.classList.add("copied");
+                    setTimeout(() => {
+                        loadBtn.textContent = "load";
+                        loadBtn.classList.remove("copied");
+                    }, 2000);
+                    return;
+                }
+            } else {
+                for (const key of params.keys()) {
+                    let value = params.get(key);
+                    if (key !== 'ws' && value !== null && value !== "") {
+                        if (key.includes('color')) {
+                            value = this.normalizeColorValue(value);
+                        }
+                        settings[key] = value;
+                    }
                 }
             }
 
@@ -1094,29 +1155,61 @@ class InputOverlay {
     }
 
     getOverlaySettings() {
-        return {
-            activecolor: this.normalizeColorValue(this.urlParams.get("activecolor")) || "#8b5cf6",
-            inactivecolor: this.normalizeColorValue(this.urlParams.get("inactivecolor")) || "#808080",
-            backgroundcolor: this.normalizeColorValue(this.urlParams.get("backgroundcolor")) || "#1a1a1a",
-            activebgcolor: this.normalizeColorValue(this.urlParams.get("activebgcolor")) || "#202020",
-            outlinecolor: this.normalizeColorValue(this.urlParams.get("outlinecolor")) || "#4f4f4f",
-            fontcolor: this.normalizeColorValue(this.urlParams.get("fontcolor")) || "#ffffff",
-            glowradius: this.urlParams.get("glow") || "24",
-            borderradius: this.urlParams.get("radius") || "8",
-            pressscale: this.urlParams.get("pressscale") || "105",
-            animationspeed: this.urlParams.get("speed") || "100",
-            scale: this.urlParams.get("scale") || "100",
-            opacity: this.urlParams.get("opacity") || "100",
-            fontfamily: this.urlParams.get("fontfamily") || "",
-            hidemouse: this.urlParams.get("hidemouse") === "1",
-            hidescrollcombo: this.urlParams.get("hidescrollcombo") === "1",
+        const params = this.urlParams;
+        if (params.has('cfg')) {
+            const compressed = params.get('cfg');
+            const decompressed = this.decompressSettings(compressed);
 
-            customLayoutRow1: this.urlParams.get("customLayoutRow1") || DEFAULT_LAYOUT_STRINGS.row1,
-            customLayoutRow2: this.urlParams.get("customLayoutRow2") || DEFAULT_LAYOUT_STRINGS.row2,
-            customLayoutRow3: this.urlParams.get("customLayoutRow3") || DEFAULT_LAYOUT_STRINGS.row3,
-            customLayoutRow4: this.urlParams.get("customLayoutRow4") || DEFAULT_LAYOUT_STRINGS.row4,
-            customLayoutRow5: this.urlParams.get("customLayoutRow5") || DEFAULT_LAYOUT_STRINGS.row5,
-            customLayoutMouse: this.urlParams.get("customLayoutMouse") || DEFAULT_LAYOUT_STRINGS.mouse,
+            if (decompressed) {
+                const decompressedParams = new URLSearchParams(decompressed);
+                return {
+                    activecolor: this.normalizeColorValue(decompressedParams.get("activecolor")) || "#8b5cf6",
+                    inactivecolor: this.normalizeColorValue(decompressedParams.get("inactivecolor")) || "#808080",
+                    backgroundcolor: this.normalizeColorValue(decompressedParams.get("backgroundcolor")) || "#1a1a1a",
+                    activebgcolor: this.normalizeColorValue(decompressedParams.get("activebgcolor")) || "#202020",
+                    outlinecolor: this.normalizeColorValue(decompressedParams.get("outlinecolor")) || "#4f4f4f",
+                    fontcolor: this.normalizeColorValue(decompressedParams.get("fontcolor")) || "#ffffff",
+                    glowradius: decompressedParams.get("glow") || "24",
+                    borderradius: decompressedParams.get("radius") || "8",
+                    pressscale: decompressedParams.get("pressscale") || "105",
+                    animationspeed: decompressedParams.get("speed") || "100",
+                    scale: decompressedParams.get("scale") || "100",
+                    opacity: decompressedParams.get("opacity") || "100",
+                    fontfamily: decompressedParams.get("fontfamily") || "",
+                    hidemouse: decompressedParams.get("hidemouse") === "1",
+                    hidescrollcombo: decompressedParams.get("hidescrollcombo") === "1",
+                    customLayoutRow1: decompressedParams.get("customLayoutRow1") || DEFAULT_LAYOUT_STRINGS.row1,
+                    customLayoutRow2: decompressedParams.get("customLayoutRow2") || DEFAULT_LAYOUT_STRINGS.row2,
+                    customLayoutRow3: decompressedParams.get("customLayoutRow3") || DEFAULT_LAYOUT_STRINGS.row3,
+                    customLayoutRow4: decompressedParams.get("customLayoutRow4") || DEFAULT_LAYOUT_STRINGS.row4,
+                    customLayoutRow5: decompressedParams.get("customLayoutRow5") || DEFAULT_LAYOUT_STRINGS.row5,
+                    customLayoutMouse: decompressedParams.get("customLayoutMouse") || DEFAULT_LAYOUT_STRINGS.mouse,
+                };
+            }
+        }
+
+        return {
+            activecolor: this.normalizeColorValue(params.get("activecolor")) || "#8b5cf6",
+            inactivecolor: this.normalizeColorValue(params.get("inactivecolor")) || "#808080",
+            backgroundcolor: this.normalizeColorValue(params.get("backgroundcolor")) || "#1a1a1a",
+            activebgcolor: this.normalizeColorValue(params.get("activebgcolor")) || "#202020",
+            outlinecolor: this.normalizeColorValue(params.get("outlinecolor")) || "#4f4f4f",
+            fontcolor: this.normalizeColorValue(params.get("fontcolor")) || "#ffffff",
+            glowradius: params.get("glow") || "24",
+            borderradius: params.get("radius") || "8",
+            pressscale: params.get("pressscale") || "105",
+            animationspeed: params.get("speed") || "100",
+            scale: params.get("scale") || "100",
+            opacity: params.get("opacity") || "100",
+            fontfamily: params.get("fontfamily") || "",
+            hidemouse: params.get("hidemouse") === "1",
+            hidescrollcombo: params.get("hidescrollcombo") === "1",
+            customLayoutRow1: params.get("customLayoutRow1") || DEFAULT_LAYOUT_STRINGS.row1,
+            customLayoutRow2: params.get("customLayoutRow2") || DEFAULT_LAYOUT_STRINGS.row2,
+            customLayoutRow3: params.get("customLayoutRow3") || DEFAULT_LAYOUT_STRINGS.row3,
+            customLayoutRow4: params.get("customLayoutRow4") || DEFAULT_LAYOUT_STRINGS.row4,
+            customLayoutRow5: params.get("customLayoutRow5") || DEFAULT_LAYOUT_STRINGS.row5,
+            customLayoutMouse: params.get("customLayoutMouse") || DEFAULT_LAYOUT_STRINGS.mouse,
         };
     }
 }

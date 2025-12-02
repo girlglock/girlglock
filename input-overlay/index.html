@@ -15,6 +15,10 @@
 
 <body>
     <div class="overlay-container" id="overlay">
+        <div class="return status" id="return" style="margin-bottom: 60px">
+            <button class="return-button" style="background: none; border: none; color:aliceblue; cursor:pointer;"
+                id="return-button">edit this overlay</button>
+        </div>
         <div class="container">
             <div class="top-section">
                 <div class="status" id="status">connecting...</div>
@@ -216,7 +220,7 @@
                                 <h1>2025-12-02</h1>
                                 <br>
                                 <h3>bug fixes</h3>
-                                <ul>
+                                <ul> 
                                     <li>fix color pickers not updating when loading settings from url</li>
                                     <li>fix copy button label inconsistency</li>
                                     <li>fix text not being selectable</li>
@@ -224,6 +228,8 @@
                                 <br>
                                 <h3>quality of life</h3>
                                 <ul>
+                                    <li>add url cfg compression to save 50% size, legacy params should continue to work fine</li>
+                                    <li>add "edit this layout" button inside the overlay mode that shows on mouse hover</li>
                                     <li>rework how key states are handled to compare against an array of previous
                                         websocket messages to prevent stuck keys on unfocused or busy (lagging) browser
                                         src</li>
@@ -674,7 +680,29 @@
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
     <script type="module" src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let timer;
+            const box = document.getElementById("return");
+
+            document.addEventListener("mousemove", () => {
+                box.classList.add("show");
+
+                clearTimeout(timer);
+                timer = setTimeout(() => {
+                    box.classList.remove("show");
+                }, 1500);
+            });
+
+            document.getElementById("return-button").addEventListener("click", () => {
+                const url = new URL(window.location.href);
+                url.searchParams.delete("ws");
+                window.location.href = url.toString();
+            });
+        });
+    </script>
 </body>
 
 </html>

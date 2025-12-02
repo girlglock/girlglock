@@ -226,7 +226,7 @@ body {
 .container {
     display: flex;
     gap: 15px;
-    width: fit-content; 
+    width: fit-content;
     flex-direction: column;
 }
 
@@ -327,6 +327,7 @@ body {
 .key.dummy {
     display: none;
 }
+
 .bottom-section,
 .mouse-section {
     display: flex;
@@ -453,6 +454,15 @@ body {
     }
 }
 
+.return {
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.return.show {
+    opacity: 1;
+}
+
 .status {
     background: rgba(0, 0, 0, 0.7);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -527,7 +537,7 @@ body {
     color: #fff;
     z-index: 9999;
     overflow-y: auto;
-    padding: 20px;
+    padding: 60px;
 }
 
 .fullscreen-details[open] summary {
@@ -542,9 +552,7 @@ body {
 .fullscreen-details[open] summary.close-btn {
     width: 55px;
     height: 55px;
-    padding: 15px;
     left: 100%;
-    text-align: center;
 }
 
 .close-btn {
@@ -553,18 +561,20 @@ body {
     right: 20px;
     font-size: 24px;
     cursor: pointer;
-    background: #f00;
-    color: #fff;
-    border: 0;
-    padding: 5px 10px;
+    color: #ff0000;
+    border: 1px solid #ff0000;
+    padding: 10px 10px;
     border-radius: 0;
     line-height: 1;
     opacity: 0.5;
     transition: opacity 0.2s;
+    text-align: center;
 }
 
 .close-btn:hover {
     opacity: 1;
+    background: #ff0000;
+    color: #fff;
 }
 
 .key-list-table {
