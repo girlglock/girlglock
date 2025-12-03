@@ -48,10 +48,10 @@ const BROWSER_BUTTON_TO_KEY_NAME = {
 
 const DEFAULT_LAYOUT_STRINGS = {
     row1: "key_escape:\"ESC\":invisible, key_1:\"1\", key_2:\"2\", key_3:\"3\", key_4:\"4\"",
-    row2: "key_tab:\"TAB\":w-1-5u, key_q:\"Q\", key_w:\"W\", key_e:\"E\", key_r:\"R\"",
-    row3: "key_leftshift:\"SHIFT\":w-2u, key_a:\"A\", key_s:\"S\", key_d:\"D\", key_f:\"F\"",
+    row2: "key_tab:\"TAB\":u1-5, key_q:\"Q\", key_w:\"W\", key_e:\"E\", key_r:\"R\"",
+    row3: "key_leftshift:\"SHIFT\":u2, key_a:\"A\", key_s:\"S\", key_d:\"D\", key_f:\"F\"",
     row4: "",
-    row5: "key_leftctrl:\"CTRL\":w-1-5u, key_leftalt:\"ALT\":w-1-5u, key_space:\"SPACE\":super-wide",
+    row5: "key_leftctrl:\"CTRL\":u1-5, key_leftalt:\"ALT\":u1-5, key_space:\"SPACE\":super-wide",
     mouse: "mouse_left:\"M1\":mouse-wide, scroller:\"M3\":\"🡅\":\"🡇\", mouse_right:\"M2\":mouse-wide"
 };
 
@@ -168,7 +168,7 @@ class InputOverlay {
         const animDuration = (0.15 * (100 / parseInt(opts.animationspeed))) + "s";
 
         const activeColorRgb = this.hexToRgba(opts.activecolor, 1);
-        const activeColorForGradient = activeColorRgb.replace(/, [\d\.]+?\)/, ', 0.3)');
+        const activeColorForGradient = activeColorRgb.replace(/, [\d\.]+?\)/, ", 0.3)");
 
         this.applyFontStyles(opts.fontfamily);
 
@@ -269,66 +269,69 @@ class InputOverlay {
         }
     }
 
-    parseKeyDef(keyString) {
-        if (!keyString) return null;
+    parseElementDef(elementString) {
+        if (!elementString) return null;
 
-        if (keyString === "invisible" || keyString === "dummy")
+        if (elementString === "invisible" || elementString === "dummy")
             return { class: "dummy" };
 
-        const parts = keyString.match(/^(\w+):"([^"]+)"(?::([-\w\.]+))?$/);
-
-        if (parts) {
-            const keyDef = { key: parts[1], label: parts[2] };
-            if (parts[3]) {
-                keyDef.class = parts[3];
-            } else if (keyDef.label === "invisible") {
-                keyDef.class = "invisible";
-            }
-            return keyDef;
-        }
-        return null;
-    }
-
-    parseMouseDef(mouseString) {
-        if (!mouseString) return null;
-
-        const standardMatch = mouseString.match(/^(\w+):"([^"]+)"(?::([-\w]+))?$/);
-        if (standardMatch) {
-            return {
-                key: standardMatch[1],
-                labels: [standardMatch[2]],
-                class: standardMatch[3] || 'mouse-btn'
-            };
-        }
-
-        const scrollerMatch = mouseString.match(/^(scroller):"([^"]+)":"([^"]+)":"([^"]+)"$/);
+        //scroller:"label":"up":"down":class
+        const scrollerMatch = elementString.match(/^(scroller):"([^"]+)":"([^"]+)":"([^"]+)"(?::([-\w\.]+))?$/);
         if (scrollerMatch) {
             return {
                 key: scrollerMatch[1],
                 labels: [scrollerMatch[2], scrollerMatch[3], scrollerMatch[4]],
-                class: 'scroll-display'
+                class: scrollerMatch[5] || "",
+                type: "scroller"
             };
         }
 
-        const sideMatch = mouseString.match(/^(mouse_side):"([^"]+)":"([^"]+)"$/);
+        //mouse_side:"m4":"m5":class
+        const sideMatch = elementString.match(/^(mouse_side):"([^"]+)":"([^"]+)"(?::([-\w\.]+))?$/);
         if (sideMatch) {
             return {
                 key: sideMatch[1],
                 labels: [sideMatch[2], sideMatch[3]],
-                class: 'mouse-side'
+                class: sideMatch[4] || "",
+                type: "mouse_side"
             };
+        }
+
+        //key:"label" or key:"label":class
+        const standardMatch = elementString.match(/^(\w+):"([^"]+)"(?::([-\w\.]+))?$/);
+        if (standardMatch) {
+            const key = standardMatch[1];
+            const label = standardMatch[2];
+            const customClass = standardMatch[3];
+
+            let type = "key";
+            if (key.startsWith("mouse_") || key === "scroller") {
+                type = "mouse";
+            }
+
+            const elementDef = {
+                key: key,
+                label: label,
+                type: type
+            };
+
+            if (customClass) {
+                elementDef.class = customClass;
+            } else if (label === "invisible") {
+                elementDef.class = "invisible";
+            }
+
+            return elementDef;
         }
 
         return null;
     }
 
-    parseCustomLayoutInput(inputString, isMouseLayout = false) {
+    parseCustomLayoutInput(inputString) {
         if (!inputString) return [];
 
-        const parser = isMouseLayout ? this.parseMouseDef : this.parseKeyDef;
-
         return inputString.split(/\s*,\s*/)
-            .map(parser.bind(this))
+            .map(this.parseElementDef.bind(this))
             .filter(def => def !== null);
     }
 
@@ -363,24 +366,31 @@ class InputOverlay {
     }
 
     getMouseLayoutDef(settings) {
-        const customLayout = this.parseCustomLayoutInput(settings.customLayoutMouse, true);
+        const customLayout = this.parseCustomLayoutInput(settings.customLayoutMouse);
         if (customLayout.length > 0) {
             return customLayout;
         }
-        return this.parseCustomLayoutInput(DEFAULT_LAYOUT_STRINGS.mouse, true);
+        return this.parseCustomLayoutInput(DEFAULT_LAYOUT_STRINGS.mouse);
     }
 
-    createKeyOrButtonElement(baseClass, keyName, label, customClass) {
+    createKeyOrButtonElement(elementDef) {
         const el = document.createElement("div");
-        el.className = baseClass + (customClass ? " " + customClass : "");
-        el.textContent = label;
-        el.dataset.key = keyName;
+
+        let baseClass = "key";
+        if (elementDef.type === "mouse" || elementDef.type === "scroller" || elementDef.type === "mouse_side") {
+            baseClass = "mouse-btn";
+        }
+
+        el.className = baseClass + (elementDef.class ? " " + elementDef.class : "");
+        el.textContent = elementDef.label;
+        el.dataset.key = elementDef.key;
+
         return el;
     }
 
-    createScrollDisplay(labels) {
+    createScrollDisplay(labels, customClass) {
         const scrollDisplay = document.createElement("div");
-        scrollDisplay.className = "scroll-display";
+        scrollDisplay.className = "scroll-display" + (customClass ? " " + customClass : "");
         scrollDisplay.id = "scrolldisplay";
         scrollDisplay.dataset.button = "mouse_middle";
 
@@ -403,7 +413,7 @@ class InputOverlay {
 
     createSideMouseButton(labelM4, labelM5, customClass) {
         const el = document.createElement("div");
-        el.className = 'mouse-btn mouse-side' + (customClass ? " " + customClass : "");
+        el.className = "mouse-btn mouse-side" + (customClass ? " " + customClass : "");
 
         const m4El = document.createElement("span");
         m4El.textContent = labelM4;
@@ -426,52 +436,80 @@ class InputOverlay {
 
         const keyElements = new Map();
         const mouseElements = new Map();
-        let scrollDisplay = null;
-        let scrollArrow = null;
-        let scrollCount = null;
+        let scrollDisplays = [];
+        let scrollArrows = [];
+        let scrollCounts = [];
 
-        layoutDef.forEach(row => {
+        const allRows = [...layoutDef];
+        if (mouseLayoutDef && mouseLayoutDef.length > 0) {
+            allRows.push({ isMouse: true, items: mouseLayoutDef });
+        }
+
+        allRows.forEach(row => {
+            const items = row.isMouse ? row.items : row;
             const rowEl = document.createElement("div");
-            rowEl.className = "key-row";
-            row.forEach(item => {
-                const keyEl = this.createKeyOrButtonElement("key", item.key, item.label, item.class);
-                rowEl.appendChild(keyEl);
-                if (!item.class || item.class !== "invisible") {
-                    keyElements.set(item.key, keyEl);
+            rowEl.className = row.isMouse ? "mouse-row" : "key-row";
+
+            items.forEach(item => {
+                if (item.type === "scroller") {
+                    const display = this.createScrollDisplay(item.labels, item.class);
+                    rowEl.appendChild(display.el);
+                    scrollDisplays.push(display.el);
+                    scrollArrows.push(display.arrow);
+                    scrollCounts.push(display.count);
+
+                    if (!mouseElements.has("mouse_middle")) {
+                        mouseElements.set("mouse_middle", []);
+                    }
+                    mouseElements.get("mouse_middle").push(display.el);
+                } else if (item.type === "mouse_side") {
+                    const sideBtn = this.createSideMouseButton(item.labels[0], item.labels[1], item.class);
+                    rowEl.appendChild(sideBtn.el);
+
+                    if (!mouseElements.has("mouse5")) {
+                        mouseElements.set("mouse5", []);
+                    }
+                    mouseElements.get("mouse5").push(sideBtn.m5El);
+
+                    if (!mouseElements.has("mouse4")) {
+                        mouseElements.set("mouse4", []);
+                    }
+                    mouseElements.get("mouse4").push(sideBtn.m4El);
+                } else {
+                    const el = this.createKeyOrButtonElement(item);
+                    rowEl.appendChild(el);
+
+                    if (!item.class || (item.class !== "invisible" && item.class !== "dummy")) {
+                        const targetMap = item.type === "mouse" ? mouseElements : keyElements;
+
+                        if (!targetMap.has(item.key)) {
+                            targetMap.set(item.key, []);
+                        }
+                        targetMap.get(item.key).push(el);
+                    }
                 }
             });
-            keyboardContainer.appendChild(rowEl);
-        });
 
-        const mouseRow = document.createElement("div");
-        mouseRow.className = "mouse-row";
-
-        mouseLayoutDef.forEach(item => {
-            if (item.key === 'scroller') {
-                const display = this.createScrollDisplay(item.labels);
-                mouseRow.appendChild(display.el);
-                scrollDisplay = display.el;
-                scrollArrow = display.arrow;
-                scrollCount = display.count;
-                mouseElements.set("mouse_middle", display.el);
-            } else if (item.key === 'mouse_side') {
-                const sideBtn = this.createSideMouseButton(item.labels[0], item.labels[1], item.class);
-                mouseRow.appendChild(sideBtn.el);
-                mouseElements.set("mouse5", sideBtn.m5El);
-                mouseElements.set("mouse4", sideBtn.m4El);
+            if (row.isMouse) {
+                const mouseSection = document.createElement("div");
+                mouseSection.className = "mouse-section";
+                mouseSection.appendChild(rowEl);
+                mouseContainer.appendChild(mouseSection);
             } else {
-                const btnEl = this.createKeyOrButtonElement("mouse-btn", item.key, item.labels[0], item.class);
-                mouseRow.appendChild(btnEl);
-                mouseElements.set(item.key, btnEl);
+                keyboardContainer.appendChild(rowEl);
             }
         });
 
-        const mouseSection = document.createElement("div");
-        mouseSection.className = "mouse-section";
-        mouseSection.appendChild(mouseRow);
-        mouseContainer.appendChild(mouseSection);
-
-        return { keyElements, mouseElements, scrollDisplay, scrollArrow, scrollCount };
+        return {
+            keyElements,
+            mouseElements,
+            scrollDisplay: scrollDisplays[0] || null,
+            scrollDisplays: scrollDisplays,
+            scrollArrow: scrollArrows[0] || null,
+            scrollArrows: scrollArrows,
+            scrollCount: scrollCounts[0] || null,
+            scrollCounts: scrollCounts
+        };
     }
 
     rebuildPreviewInterface(layouts) {
@@ -496,20 +534,22 @@ class InputOverlay {
 
     restoreActiveElements(oldActive, elementMap, currentActive) {
         oldActive.forEach(name => {
-            const el = elementMap.get(name);
-            if (el) {
-                el.style.zIndex = Z_INDEX_COUNTER++;
-                this.updateElementState(el, name, true, currentActive);
+            const elements = elementMap.get(name);
+            if (elements && elements.length > 0) {
+                elements.forEach(el => {
+                    el.style.zIndex = Z_INDEX_COUNTER++;
+                    this.updateElementState(el, name, true, currentActive);
+                });
             }
         });
     }
 
     adjustScrollDisplays() {
-        document.querySelectorAll('.scroll-display').forEach(display => {
-            const arrow = display.querySelector('.scroll-arrow');
-            const count = display.querySelector('.scroll-count');
+        document.querySelectorAll(".scroll-display").forEach(display => {
+            const arrow = display.querySelector(".scroll-arrow");
+            const count = display.querySelector(".scroll-count");
 
-            arrow.style.transform = 'none';
+            arrow.style.transform = "none";
             count.textContent = "";
             display.classList.remove("active");
             this.lastScrollDirection = null;
@@ -530,8 +570,8 @@ class InputOverlay {
     }
 
     adjustKeyFontSizes() {
-        document.querySelectorAll('.key').forEach(key => {
-            key.style.fontSize = '';
+        document.querySelectorAll(".key").forEach(key => {
+            key.style.fontSize = "";
             const textWidth = this.measureTextWidth(key);
             const containerWidth = key.clientWidth - 24;
 
@@ -542,10 +582,10 @@ class InputOverlay {
     }
 
     measureTextWidth(element) {
-        const tempSpan = document.createElement('span');
+        const tempSpan = document.createElement("span");
         const styles = window.getComputedStyle(element);
 
-        tempSpan.style.cssText = 'position: absolute; visibility: hidden; white-space: nowrap;';
+        tempSpan.style.cssText = "position: absolute; visibility: hidden; white-space: nowrap;";
         tempSpan.style.fontSize = styles.fontSize;
         tempSpan.style.fontWeight = styles.fontWeight;
         tempSpan.style.fontFamily = styles.fontFamily;
@@ -580,23 +620,23 @@ class InputOverlay {
     }
 
     setupCheatSheetToggle() {
-        const allDetails = document.querySelectorAll('.fullscreen-details');
+        const allDetails = document.querySelectorAll(".fullscreen-details");
 
         allDetails.forEach(detailsTag => {
-            const closeBtn = detailsTag.querySelector('.close-btn');
+            const closeBtn = detailsTag.querySelector(".close-btn");
             if (!closeBtn) return;
 
-            closeBtn.addEventListener('click', e => {
+            closeBtn.addEventListener("click", e => {
                 e.preventDefault();
                 detailsTag.open = false;
             });
 
             const updateCloseButtonVisibility = () => {
-                closeBtn.style.display = detailsTag.open ? 'block' : 'none';
+                closeBtn.style.display = detailsTag.open ? "block" : "none";
             };
 
             updateCloseButtonVisibility();
-            detailsTag.addEventListener('toggle', updateCloseButtonVisibility);
+            detailsTag.addEventListener("toggle", updateCloseButtonVisibility);
         });
     }
 
@@ -736,21 +776,23 @@ class InputOverlay {
 
         if (type === "key_pressed" || type === "key_released") {
             let keyName = BROWSER_CODE_TO_KEY_NAME[event.code.toLowerCase()];
-            let el = this.previewElements.keyElements.get(keyName);
+            let elements = this.previewElements.keyElements.get(keyName);
 
-            if (!el && event.key) {
+            if (!elements && event.key) {
                 const keyLabel = event.key.toUpperCase();
-                for (const [key, element] of this.previewElements.keyElements.entries()) {
-                    if (element.textContent === keyLabel) {
+                for (const [key, els] of this.previewElements.keyElements.entries()) {
+                    if (els.some(el => el.textContent === keyLabel)) {
                         keyName = key;
-                        el = element;
+                        elements = els;
                         break;
                     }
                 }
             }
 
-            if (el) {
-                this.updateElementState(el, keyName, type === "key_pressed", this.activeKeys);
+            if (elements && elements.length > 0) {
+                elements.forEach(el => {
+                    this.updateElementState(el, keyName, type === "key_pressed", this.activeKeys);
+                });
 
                 if (!isTypingField) {
                     event.preventDefault();
@@ -762,15 +804,17 @@ class InputOverlay {
         else if (type === "mouse_pressed" || type === "mouse_released") {
             const btnName = BROWSER_BUTTON_TO_KEY_NAME[event.button];
             if (btnName) {
-                const el = this.previewElements.mouseElements.get(btnName);
-                if (el) {
-                    this.updateElementState(el, btnName, type === "mouse_pressed", this.activeMouseButtons);
+                const elements = this.previewElements.mouseElements.get(btnName);
+                if (elements && elements.length > 0) {
+                    elements.forEach(el => {
+                        this.updateElementState(el, btnName, type === "mouse_pressed", this.activeMouseButtons);
+                    });
                 }
             }
         }
         else if (type === "mouse_wheel") {
             const dir = Math.sign(event.deltaY);
-            if (this.previewElements.scrollDisplay) {
+            if (this.previewElements.scrollDisplays && this.previewElements.scrollDisplays.length > 0) {
                 this.handleScroll(dir);
             }
         }
@@ -780,7 +824,7 @@ class InputOverlay {
         try {
             const compressed = pako.deflate(paramsString, { level: 9 });
             const base64 = btoa(String.fromCharCode.apply(null, compressed));
-            return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+            return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
         } catch (e) {
             console.error("compression failed:", e);
             return null;
@@ -789,14 +833,14 @@ class InputOverlay {
 
     decompressSettings(compressed) {
         try {
-            const base64 = compressed.replace(/-/g, '+').replace(/_/g, '/');
-            const padding = '='.repeat((4 - base64.length % 4) % 4);
+            const base64 = compressed.replace(/-/g, "+").replace(/_/g, "/");
+            const padding = "=".repeat((4 - base64.length % 4) % 4);
             const binary = atob(base64 + padding);
             const bytes = new Uint8Array(binary.length);
             for (let i = 0; i < binary.length; i++) {
                 bytes[i] = binary.charCodeAt(i);
             }
-            const decompressed = pako.inflate(bytes, { to: 'string' });
+            const decompressed = pako.inflate(bytes, { to: "string" });
             console.log(decompressed);
             return decompressed;
         } catch (e) {
@@ -829,15 +873,15 @@ class InputOverlay {
     normalizeColorValue(value) {
         if (!value) return value;
 
-        if (value.startsWith('#')) {
+        if (value.startsWith("#")) {
             return value.toLowerCase();
         }
 
-        if (value.startsWith('%23')) {
-            return '#' + value.substring(3).toLowerCase();
+        if (value.startsWith("%23")) {
+            return "#" + value.substring(3).toLowerCase();
         }
 
-        return '#' + value.toLowerCase();
+        return "#" + value.toLowerCase();
     }
 
     applySettings(settings) {
@@ -846,12 +890,12 @@ class InputOverlay {
         const applyValue = (id, value) => {
             const el = document.getElementById(id);
             if (el && value !== undefined) {
-                if (el.type === 'checkbox') {
-                    el.checked = value === 'true' || value === '1' || value === true;
+                if (el.type === "checkbox") {
+                    el.checked = value === "true" || value === "1" || value === true;
                 } else {
                     el.value = value;
-                    if (id.includes('colorhex')) {
-                        const pickrId = id.replace('hex', '');
+                    if (id.includes("colorhex")) {
+                        const pickrId = id.replace("hex", "");
                         const pickr = this.pickrInstances[pickrId];
                         if (pickr) {
                             try {
@@ -860,8 +904,8 @@ class InputOverlay {
                         }
                     }
                 }
-                if (el.type === 'range') {
-                    el.dispatchEvent(new Event('input', { bubbles: true }));
+                if (el.type === "range") {
+                    el.dispatchEvent(new Event("input", { bubbles: true }));
                 }
             }
         };
@@ -909,7 +953,7 @@ class InputOverlay {
             return;
         }
 
-        if (!urlString.startsWith('http')) {
+        if (!urlString.startsWith("http")) {
             urlString = window.location.origin + urlString;
         }
 
@@ -918,16 +962,16 @@ class InputOverlay {
             const params = url.searchParams;
             const settings = {};
 
-            if (params.has('cfg')) {
-                const compressed = params.get('cfg');
+            if (params.has("cfg")) {
+                const compressed = params.get("cfg");
                 const decompressed = this.decompressSettings(compressed);
 
                 if (decompressed) {
                     const decompressedParams = new URLSearchParams(decompressed);
                     for (const key of decompressedParams.keys()) {
                         let value = decompressedParams.get(key);
-                        if (key !== 'ws' && value !== null && value !== "") {
-                            if (key.includes('color')) {
+                        if (key !== "ws" && value !== null && value !== "") {
+                            if (key.includes("color")) {
                                 value = this.normalizeColorValue(value);
                             }
                             settings[key] = value;
@@ -945,8 +989,8 @@ class InputOverlay {
             } else {
                 for (const key of params.keys()) {
                     let value = params.get(key);
-                    if (key !== 'ws' && value !== null && value !== "") {
-                        if (key.includes('color')) {
+                    if (key !== "ws" && value !== null && value !== "") {
+                        if (key.includes("color")) {
                             value = this.normalizeColorValue(value);
                         }
                         settings[key] = value;
@@ -1003,19 +1047,19 @@ class InputOverlay {
 
         Object.entries(colorSettings).forEach(([key, value]) => {
             if (value !== undefined && value !== null && value !== "") {
-                addParam(key, value.toLowerCase().replace('#', ''));
+                addParam(key, value.toLowerCase().replace("#", ""));
             }
         });
 
-        addParam('glow', settings.glowradius);
-        addParam('radius', settings.borderradius);
-        addParam('pressscale', settings.pressscale);
-        addParam('speed', settings.animationspeed);
-        addParam('scale', settings.scale);
-        addParam('opacity', settings.opacity);
+        addParam("glow", settings.glowradius);
+        addParam("radius", settings.borderradius);
+        addParam("pressscale", settings.pressscale);
+        addParam("speed", settings.animationspeed);
+        addParam("scale", settings.scale);
+        addParam("opacity", settings.opacity);
 
         if (settings.fontfamily && settings.fontfamily.trim() !== "") {
-            addParam('fontfamily', settings.fontfamily.toLowerCase().replace(/ /g, '+'));
+            addParam("fontfamily", settings.fontfamily.toLowerCase().replace(/ /g, "+"));
         }
 
         if (settings.hidemouse === true || settings.hidemouse === "true" || settings.hidemouse === "1") {
@@ -1028,7 +1072,7 @@ class InputOverlay {
 
         this.addCustomLayoutParams(params, settings);
 
-        return params.join('&');
+        return params.join("&");
     }
 
     addCustomLayoutParams(params, settings) {
@@ -1039,8 +1083,8 @@ class InputOverlay {
         };
 
         const layoutRows = [
-            'customLayoutRow1', 'customLayoutRow2', 'customLayoutRow3',
-            'customLayoutRow4', 'customLayoutRow5', 'customLayoutMouse'
+            "customLayoutRow1", "customLayoutRow2", "customLayoutRow3",
+            "customLayoutRow4", "customLayoutRow5", "customLayoutMouse"
         ];
 
         layoutRows.forEach(row => addParam(row, settings[row]));
@@ -1065,7 +1109,7 @@ class InputOverlay {
 
     handleScroll(dir) {
         const els = this.previewElements;
-        if (dir === 0 || !els.scrollDisplay) return;
+        if (dir === 0 || !els.scrollDisplays || els.scrollDisplays.length === 0) return;
 
         if (this.lastScrollDirection !== null && this.lastScrollDirection !== dir) {
             this.currentScrollCount = 0;
@@ -1073,49 +1117,56 @@ class InputOverlay {
         this.lastScrollDirection = dir;
         this.currentScrollCount++;
 
-        const upLabel = els.scrollDisplay.dataset.upLabel || "↑";
-        const downLabel = els.scrollDisplay.dataset.downLabel || "↓";
+        els.scrollDisplays.forEach((scrollDisplay, index) => {
+            const scrollArrow = els.scrollArrows[index];
+            const scrollCount = els.scrollCounts[index];
 
-        els.scrollArrow.textContent = dir === -1 ? upLabel : downLabel;
+            const upLabel = scrollDisplay.dataset.upLabel || "↑";
+            const downLabel = scrollDisplay.dataset.downLabel || "↓";
 
-        const containerWidth = els.scrollDisplay.clientWidth - 16;
-        const textWidth = els.scrollArrow.scrollWidth;
+            scrollArrow.textContent = dir === -1 ? upLabel : downLabel;
 
-        const finalScaleActive =
-            textWidth > containerWidth ? containerWidth / textWidth : 1;
+            const containerWidth = scrollDisplay.clientWidth - 16;
+            const textWidth = scrollArrow.scrollWidth;
 
-        els.scrollArrow.style.transform = `scale(${finalScaleActive})`;
+            const finalScaleActive =
+                textWidth > containerWidth ? containerWidth / textWidth : 1;
 
-        if (els.scrollDisplay.dataset.button !== "mouse_middle") {
-            els.scrollDisplay.dataset.button = "mouse_middle";
-        }
+            scrollArrow.style.transform = `scale(${finalScaleActive})`;
 
-        if (!els.scrollDisplay.classList.contains("active")) {
-            Z_INDEX_COUNTER++;
-            els.scrollDisplay.style.zIndex = Z_INDEX_COUNTER;
-        }
-        els.scrollDisplay.classList.add("active");
-
-        requestAnimationFrame(() => {
-            els.scrollCount.textContent = this.currentScrollCount + "x";
-            els.scrollCount.classList.remove("animate");
-
-            if (dir === -1) {
-                els.scrollCount.classList.remove("scroll-down");
-                els.scrollCount.classList.add("scroll-up");
-            } else {
-                els.scrollCount.classList.remove("scroll-up");
-                els.scrollCount.classList.add("scroll-down");
+            if (scrollDisplay.dataset.button !== "mouse_middle") {
+                scrollDisplay.dataset.button = "mouse_middle";
             }
 
-            void els.scrollCount.offsetWidth;
-            els.scrollCount.classList.add("animate");
+            if (!scrollDisplay.classList.contains("active")) {
+                Z_INDEX_COUNTER++;
+                scrollDisplay.style.zIndex = Z_INDEX_COUNTER;
+            }
+            scrollDisplay.classList.add("active");
+
+            requestAnimationFrame(() => {
+                scrollCount.textContent = this.currentScrollCount + "x";
+                scrollCount.classList.remove("animate");
+
+                if (dir === -1) {
+                    scrollCount.classList.remove("scroll-down");
+                    scrollCount.classList.add("scroll-up");
+                } else {
+                    scrollCount.classList.remove("scroll-up");
+                    scrollCount.classList.add("scroll-down");
+                }
+
+                void scrollCount.offsetWidth;
+                scrollCount.classList.add("animate");
+            });
         });
 
         clearTimeout(this.scrollTimeout);
         this.scrollTimeout = setTimeout(() => {
             this.adjustScrollDisplays();
-            els.scrollDisplay.classList.remove("active");
+            els.scrollDisplays.forEach(display => {
+                display.classList.remove("active");
+            });
         }, 250);
     }
 
@@ -1127,7 +1178,7 @@ class InputOverlay {
 
         const settings = this.getOverlaySettings();
 
-        this.applyTransformations(document.body, settings);
+        this.applyTransformations(document.getElementById("inner-overlay-container"), settings);
         this.applyStyles(settings);
 
         const keyboardTarget = document.getElementById("keyboard-target");
@@ -1144,7 +1195,7 @@ class InputOverlay {
         this.websocketManager = new WebSocketManager(wsUrl, statusEl, this.previewElements, this);
         this.websocketManager.connect();
 
-        window.addEventListener('focus', () => {
+        window.addEventListener("focus", () => {
             if (this.websocketManager) {
                 this.websocketManager.clearStuckKeys();
             }
@@ -1156,8 +1207,8 @@ class InputOverlay {
 
     getOverlaySettings() {
         const params = this.urlParams;
-        if (params.has('cfg')) {
-            const compressed = params.get('cfg');
+        if (params.has("cfg")) {
+            const compressed = params.get("cfg");
             const decompressed = this.decompressSettings(compressed);
 
             if (decompressed) {
@@ -1269,13 +1320,13 @@ class WebSocketManager {
             return {
                 id: `k_${event.rawcode}`,
                 name: RAW_CODE_TO_KEY_NAME[event.rawcode],
-                type: 'key'
+                type: "key"
             };
         } else if (event.event_type.startsWith("mouse_") && event.button) {
             return {
                 id: `m_${event.button}`,
                 name: MOUSE_BUTTON_MAP[event.button],
-                type: 'mouse'
+                type: "mouse"
             };
         }
         return null;
@@ -1289,8 +1340,9 @@ class WebSocketManager {
             const keyInfo = this.getMappedKeyId(event);
             if (!keyInfo || !keyInfo.name) continue;
 
-            const elementMap = keyInfo.type === 'key' ? this.elements.keyElements : this.elements.mouseElements;
-            if (!elementMap.get(keyInfo.name)) {
+            const elementMap = keyInfo.type === "key" ? this.elements.keyElements : this.elements.mouseElements;
+            const elements = elementMap.get(keyInfo.name);
+            if (!elements || elements.length === 0) {
                 continue;
             }
 
@@ -1308,15 +1360,17 @@ class WebSocketManager {
             const wasActive = this.keyStates[keyId] === true;
 
             if (isActive !== wasActive) {
-                const type = keyId.startsWith('k_') ? 'key' : 'mouse';
+                const type = keyId.startsWith("k_") ? "key" : "mouse";
                 const idValue = parseInt(keyId.substring(2));
-                const keyName = type === 'key' ? RAW_CODE_TO_KEY_NAME[idValue] : MOUSE_BUTTON_MAP[idValue];
+                const keyName = type === "key" ? RAW_CODE_TO_KEY_NAME[idValue] : MOUSE_BUTTON_MAP[idValue];
 
-                const el = type === 'key' ? this.elements.keyElements.get(keyName) : this.elements.mouseElements.get(keyName);
-                const activeSet = type === 'key' ? this.visualizer.activeKeys : this.visualizer.activeMouseButtons;
+                const elements = type === "key" ? this.elements.keyElements.get(keyName) : this.elements.mouseElements.get(keyName);
+                const activeSet = type === "key" ? this.visualizer.activeKeys : this.visualizer.activeMouseButtons;
 
-                if (el) {
-                    this.visualizer.updateElementState(el, keyName, isActive, activeSet);
+                if (elements && elements.length > 0) {
+                    elements.forEach(el => {
+                        this.visualizer.updateElementState(el, keyName, isActive, activeSet);
+                    });
                 }
             }
             tempStates[keyId] = isActive;
@@ -1357,20 +1411,22 @@ class WebSocketManager {
     }
 
     clearStuckKeys() {
-        this.elements.keyElements.forEach(el => {
-            el.classList.remove("active");
+        this.elements.keyElements.forEach(elements => {
+            elements.forEach(el => el.classList.remove("active"));
         });
-        this.elements.mouseElements.forEach(el => {
-            el.classList.remove("active");
+        this.elements.mouseElements.forEach(elements => {
+            elements.forEach(el => el.classList.remove("active"));
         });
 
         this.visualizer.activeKeys.clear();
         this.visualizer.activeMouseButtons.clear();
 
-        if (this.elements.scrollDisplay) {
-            this.elements.scrollDisplay.classList.remove("active");
-            this.elements.scrollArrow.textContent = this.elements.scrollDisplay.dataset.defaultLabel || "-";
-            this.elements.scrollCount.textContent = "";
+        if (this.elements.scrollDisplays && this.elements.scrollDisplays.length > 0) {
+            this.elements.scrollDisplays.forEach((display, index) => {
+                display.classList.remove("active");
+                this.elements.scrollArrows[index].textContent = display.dataset.defaultLabel || "-";
+                this.elements.scrollCounts[index].textContent = "";
+            });
         }
         this.visualizer.currentScrollCount = 0;
 
@@ -1379,6 +1435,6 @@ class WebSocketManager {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
     new InputOverlay();
 });

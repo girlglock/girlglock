@@ -19,9 +19,9 @@
             <button class="return-button" style="background: none; border: none; color:aliceblue; cursor:pointer;"
                 id="return-button">edit this overlay</button>
         </div>
-        <div class="container">
+        <div class="status" id="status">connecting...</div>
+        <div class="container" id="inner-overlay-container">
             <div class="top-section">
-                <div class="status" id="status">connecting...</div>
                 <div class="keyboard-section" id="keyboard-target"></div>
             </div>
             <div class="bottom-section" id="mouse-target"></div>
@@ -217,10 +217,24 @@
                             <summary class="close-btn" id="closePatchSheet">x</summary>
 
                             <div class="patchnotes">
+                                <h1>2025-12-03</h1>
+                                <br>
+                                <h3>bug fixes</h3>
+                                <ul>
+                                    <li>fix scale scaling wrong document element</li>
+                                    <li>fix mouse buttons not working outside the mouse row</li>
+                                </ul>
+                                <br>
+                                <h3>quality of life</h3>
+                                <ul>
+                                    <li>added a wider range of width classes (see cheat sheet)</li>
+                                    <li>mouse buttons support width classes including scroller</li>
+                                </ul>
+                                <br>
                                 <h1>2025-12-02</h1>
                                 <br>
                                 <h3>bug fixes</h3>
-                                <ul> 
+                                <ul>
                                     <li>fix color pickers not updating when loading settings from url</li>
                                     <li>fix copy button label inconsistency</li>
                                     <li>fix text not being selectable</li>
@@ -228,8 +242,10 @@
                                 <br>
                                 <h3>quality of life</h3>
                                 <ul>
-                                    <li>add url cfg compression to save 50% size, legacy params should continue to work fine</li>
-                                    <li>add "edit this layout" button inside the overlay mode that shows on mouse hover</li>
+                                    <li>add url cfg compression to save 50% size, legacy params should continue to work
+                                        fine</li>
+                                    <li>add "edit this layout" button inside the overlay mode that shows on mouse hover
+                                    </li>
                                     <li>rework how key states are handled to compare against an array of previous
                                         websocket messages to prevent stuck keys on unfocused or busy (lagging) browser
                                         src</li>
@@ -591,6 +607,10 @@
 
                                 <h3 style="margin-top: 20px;">width classes</h3>
                                 <p>use these for the optional <code>[width class]</code> part of the key definition:</p>
+                                <blockquote class="cs-note"
+                                    style="border-left: 5px solid #8b5cf6; padding: 10px; margin: 15px 0;">
+                                    🛈 <code>u0-01</code> to <code>u7</code><br>increments of 0.01u
+                                </blockquote>
                                 <table class="key-list-table">
                                     <thead>
                                         <tr>
@@ -606,38 +626,38 @@
                                             <td>default width.</td>
                                         </tr>
                                         <tr>
-                                            <td><code>w-1-25u</code></td>
+                                            <td><code>u1-25</code></td>
                                             <td>1.25u</td>
                                             <td></td>
                                         </tr>
                                         <tr>
-                                            <td><code>w-1-5u</code></td>
+                                            <td><code>u1-5u</code></td>
                                             <td>1.5u</td>
                                             <td>common for tab, ctrl, alt.</td>
                                         </tr>
                                         <tr>
-                                            <td><code>w-1-75u</code></td>
+                                            <td><code>u1-75</code></td>
                                             <td>1.75u</td>
                                             <td></td>
                                         </tr>
                                         <tr>
-                                            <td><code>w-2u</code></td>
+                                            <td><code>u2</code></td>
                                             <td>2u</td>
                                             <td>common for shift.</td>
                                         </tr>
                                         <tr>
-                                            <td><code>w-6-25u</code></td>
+                                            <td><code>u6-25</code></td>
                                             <td>6.25u</td>
                                             <td>full size space bar.</td>
                                         </tr>
                                         <tr>
-                                            <td><code>w-3u</code></td>
+                                            <td><code>u3</code></td>
                                             <td>3u</td>
                                             <td>used specifically for the tiny spacebar.</td>
                                         </tr>
                                         <tr>
                                             <td><code>invisible</code></td>
-                                            <td>1u (or other)</td>
+                                            <td>1u</td>
                                             <td>key exists for press detection but is hidden.</td>
                                         </tr>
                                     </tbody>
