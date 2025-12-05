@@ -1,3 +1,4 @@
+//guh
 import {BROWSER_BUTTON_TO_KEY_NAME, BROWSER_CODE_TO_KEY_NAME, COLOR_PICKERS, DEFAULT_LAYOUT_STRINGS} from "../consts.js";
 
 export class ConfiguratorMode {

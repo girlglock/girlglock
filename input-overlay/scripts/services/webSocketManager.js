@@ -1,3 +1,4 @@
+//guh
 import {RAW_CODE_TO_KEY_NAME, MOUSE_BUTTON_MAP} from "../consts.js";
 
 export class WebSocketManager {
