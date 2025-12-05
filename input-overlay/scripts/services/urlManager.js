@@ -29,6 +29,7 @@ export class UrlManager {
             }
             return pako.inflate(bytes, {to: "string"});
         } catch (e) {
+            console.error("decompression error:", e);
             return null;
         }
     }
