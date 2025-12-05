@@ -184,7 +184,7 @@ export class ConfiguratorMode {
             loadBtn.textContent = "empty";
             loadBtn.classList.add("copied");
             setTimeout(() => {
-                loadBtn.textContent = "load";
+                loadBtn.textContent = "⟳ load url";
                 loadBtn.classList.remove("copied");
             }, 2000);
             return;
@@ -218,7 +218,7 @@ export class ConfiguratorMode {
                     loadBtn.textContent = "decompress error";
                     loadBtn.classList.add("copied");
                     setTimeout(() => {
-                        loadBtn.textContent = "load";
+                        loadBtn.textContent = "⟳ load url";
                         loadBtn.classList.remove("copied");
                     }, 2000);
                     return;
@@ -242,14 +242,14 @@ export class ConfiguratorMode {
                 loadBtn.textContent = "loaded";
                 loadBtn.classList.add("copied");
                 setTimeout(() => {
-                    loadBtn.textContent = "load";
+                    loadBtn.textContent = "⟳ load url";
                     loadBtn.classList.remove("copied");
                 }, 2000);
             } else {
                 loadBtn.textContent = "no params";
                 loadBtn.classList.add("copied");
                 setTimeout(() => {
-                    loadBtn.textContent = "load";
+                    loadBtn.textContent = "⟳ load url";
                     loadBtn.classList.remove("copied");
                 }, 2000);
             }
@@ -257,7 +257,7 @@ export class ConfiguratorMode {
             loadBtn.textContent = "error";
             loadBtn.classList.add("copied");
             setTimeout(() => {
-                loadBtn.textContent = "load";
+                loadBtn.textContent = "⟳ load url";
                 loadBtn.classList.remove("copied");
             }, 2000);
         }
