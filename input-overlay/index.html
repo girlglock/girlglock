@@ -37,7 +37,7 @@
             </div>
 
             <div class="content config-layout">
-                <div class="config-column">
+                <div class="config-column" style="min-width: 400px">
                     <fieldset class="cs-fieldset preview-fieldset">
                         <legend>instructions</legend>
                         <div style="margin-left: 18px; margin-top: -20px;">
@@ -61,273 +61,12 @@
                         <legend>connection</legend>
                         <div class="nested-grid-2">
                             <div class="cs-form-group">
-                                <label class="cs-input__label">address</label>
+                                <label class="cs-input__label" for="wsaddress">address</label>
                                 <input class="cs-input config-input" id="wsaddress" type="text" value="localhost">
                             </div>
                             <div class="cs-form-group">
-                                <label class="cs-input__label">port</label>
+                                <label class="cs-input__label" for="wsport">port</label>
                                 <input class="cs-input config-input" id="wsport" type="number" value="16899">
-                            </div>
-                        </div>
-                    </fieldset>
-
-                    <fieldset class="cs-fieldset">
-                        <legend>style & animation</legend>
-                        <div class="nested-grid-2">
-                            <div class="cs-form-group">
-                                <label class="cs-input__label">active color (glow)</label>
-                                <div class="color-input-group">
-                                    <div id="activecolor" class="config-input pickr-target"
-                                        data-initial-color="#8b5cf6"></div>
-                                    <input id="activecolorhex" class="cs-input config-input color-hex-input" type="text"
-                                        maxlength="9" value="#8b5cf6">
-                                </div>
-                            </div>
-                            <div class="cs-form-group">
-                                <label class="cs-input__label">key background color</label>
-                                <div class="color-input-group">
-                                    <div id="backgroundcolor" class="config-input pickr-target"
-                                        data-initial-color="#1a1a1a"></div>
-                                    <input id="backgroundcolorhex" class="cs-input config-input color-hex-input"
-                                        type="text" maxlength="9" value="#1a1a1a">
-                                </div>
-                            </div>
-                            <div class="cs-form-group">
-                                <label class="cs-input__label">active key background</label>
-                                <div class="color-input-group">
-                                    <div id="activebgcolor" class="config-input pickr-target"
-                                        data-initial-color="#202020"></div>
-                                    <input id="activebgcolorhex" class="cs-input config-input color-hex-input"
-                                        type="text" maxlength="9" value="#202020">
-                                </div>
-                            </div>
-                            <div class="cs-form-group">
-                                <label class="cs-input__label">outline color</label>
-                                <div class="color-input-group">
-                                    <div id="outlinecolor" class="config-input pickr-target"
-                                        data-initial-color="#4f4f4f"></div>
-                                    <input id="outlinecolorhex" class="cs-input config-input color-hex-input"
-                                        type="text" maxlength="9" value="#4f4f4f">
-                                </div>
-                            </div>
-                            <div class="cs-form-group">
-                                <label class="cs-input__label">active font color</label>
-                                <div class="color-input-group">
-                                    <div id="fontcolor" class="config-input pickr-target" data-initial-color="#ffffff">
-                                    </div>
-                                    <input id="fontcolorhex" class="cs-input config-input color-hex-input" type="text"
-                                        maxlength="9" value="#ffffff">
-                                </div>
-                            </div>
-                            <div class="cs-form-group">
-                                <label class="cs-input__label">inactive font color</label>
-                                <div class="color-input-group">
-                                    <div id="inactivecolor" class="config-input pickr-target"
-                                        data-initial-color="#808080"></div>
-                                    <input id="inactivecolorhex" class="cs-input config-input color-hex-input"
-                                        type="text" maxlength="9" value="#808080">
-                                </div>
-                            </div>
-                            <div class="cs-form-group">
-                                <label class="cs-input__label">font family</label>
-                                <select class="cs-select config-input" id="fontfamily"
-                                    style="max-height: 23px; font-size: 12px;">
-                                    <option value="">system default</option>
-                                    <option value="roboto">roboto</option>
-                                    <option value="open sans">open sans</option>
-                                    <option value="lato">lato</option>
-                                    <option value="montserrat">montserrat</option>
-                                    <option value="poppins">poppins</option>
-                                </select>
-                            </div>
-                        </div>
-                        <br>
-                        <div class="nested-grid-2">
-                            <div class="cs-slider">
-                                <div id="glowradiusvalue" class="value">24px</div>
-                                <div class="cs-ruler"></div>
-                                <input id="glowradius" class="config-input" max="80" min="0" step="2" type="range"
-                                    value="24">
-                                <label>glow radius</label>
-                            </div>
-
-                            <div class="cs-slider">
-                                <div id="borderradiusvalue" class="value">8px</div>
-                                <div class="cs-ruler"></div>
-                                <input id="borderradius" class="config-input" max="40" min="0" step="1" type="range"
-                                    value="8">
-                                <label>border radius</label>
-                            </div>
-
-                            <div class="cs-slider">
-                                <div id="pressscalevalue" class="value">1.05x</div>
-                                <div class="cs-ruler"></div>
-                                <input id="pressscale" class="config-input" max="250" min="100" step="5" type="range"
-                                    value="105">
-                                <label>press scale</label>
-                            </div>
-
-                            <div class="cs-slider">
-                                <div id="animationspeedvalue" class="value">1.0x</div>
-                                <div class="cs-ruler"></div>
-                                <input id="animationspeed" class="config-input" max="300" min="50" step="10"
-                                    type="range" value="100">
-                                <label>speed</label>
-                            </div>
-
-                            <div class="cs-slider">
-                                <div id="scalevalue" class="value">1.0x</div>
-                                <div class="cs-ruler"></div>
-                                <input id="scale" class="config-input" max="200" min="50" step="10" type="range"
-                                    value="100">
-                                <label>global scale</label>
-                            </div>
-
-                            <div class="cs-slider">
-                                <div id="opacityvalue" class="value">100%</div>
-                                <div class="cs-ruler"></div>
-                                <input id="opacity" class="config-input" max="100" min="0" step="5" type="range"
-                                    value="100">
-                                <label>opacity</label>
-                            </div>
-                            <div class="cs-form-group" style="margin-top: 5px;">
-                                <div class="cs-checkbox">
-                                    <input type="checkbox" class="config-input" id="hidemouse">
-                                    <label for="hidemouse" class="cs-checkbox__label">hide mouse buttons</label>
-                                </div>
-                            </div>
-                            <div class="cs-form-group" style="margin-top: 5px;">
-                                <div class="cs-checkbox">
-                                    <input type="checkbox" class="config-input" id="hidescrollcombo">
-                                    <label for="hidescrollcombo" class="cs-checkbox__label">hide scroll combo</label>
-                                </div>
-                            </div>
-                        </div>
-                    </fieldset>
-                    <div class="full-width">
-                        <label class="cs-input__label" style="margin-bottom: 5px; display: block;">obs browser source
-                            url</label>
-                        <div class="link-container">
-                            <input class="cs-input" id="generatedlink" type="text">
-                            <button class="cs-btn" id="loadbtn" style="min-width: 100px;">⟳ load url</button>
-                            <button class="cs-btn" id="copybtn" style="min-width: 100px;">⎘ copy url</button>
-                        </div>
-                        <details class="fullscreen-details" id="patchSheetDetails" style="margin-top: 10px;">
-                            <summary style="color: #394533;">patch notes</summary>
-                            <summary class="close-btn" id="closePatchSheet">x</summary>
-
-                            <div class="patchnotes">
-                                <h1>2025-12-03</h1>
-                                <br>
-                                <h3>bug fixes</h3>
-                                <ul>
-                                    <li>fix scale scaling wrong document element</li>
-                                    <li>fix mouse buttons not working outside the mouse row</li>
-                                </ul>
-                                <br>
-                                <h3>quality of life</h3>
-                                <ul>
-                                    <li>added a wider range of width classes (see cheat sheet)</li>
-                                    <li>mouse buttons support width classes including scroller</li>
-                                </ul>
-                                <br>
-                                <h1>2025-12-02</h1>
-                                <br>
-                                <h3>bug fixes</h3>
-                                <ul>
-                                    <li>fix color pickers not updating when loading settings from url</li>
-                                    <li>fix copy button label inconsistency</li>
-                                    <li>fix text not being selectable</li>
-                                </ul>
-                                <br>
-                                <h3>quality of life</h3>
-                                <ul>
-                                    <li>add url cfg compression to save 50% size, legacy params should continue to work
-                                        fine</li>
-                                    <li>add "edit this layout" button inside the overlay mode that shows on mouse hover
-                                    </li>
-                                    <li>rework how key states are handled to compare against an array of previous
-                                        websocket messages to prevent stuck keys on unfocused or busy (lagging) browser
-                                        src</li>
-                                    <li>make sheet flyouts smaller</li>
-                                </ul>
-                                <br>
-                                <h1>2025-12-01</h1>
-                                <br>
-                                <h3>bug fixes</h3>
-                                <ul>
-                                    <li>fix scroll label scale for good (?)</li>
-                                    <li>fix sheet flyouts</li>
-                                    <li>fix cheat sheet not scrolling</li>
-                                    <li>fix speed suffix being x instead of %</li>
-                                </ul>
-                                <br>
-                                <h3>quality of life</h3>
-                                <ul>
-                                    <li>added settings loading from url to allow sharing and loading of previously
-                                        configured urls</li>
-                                    <li>url bar now updates on settings change, this is useful to share unfinished
-                                        configurations (obs url still needs to be obtained through the copy button)</li>
-                                </ul>
-                                <br>
-                                <h1>2025-11-30</h1>
-                                <br>
-                                <h3>bug fixes</h3>
-                                <ul>
-                                    <li>fixed mouse label not scaling correctly inside its element.</li>
-                                    <li>added a dedicated “dummy” string to remove rows without needing
-                                        <code>invisible</code> tags.
-                                    </li>
-                                </ul>
-                                <br>
-
-                                <h3>quality of life</h3>
-                                <ul>
-                                    <li>added patch notes viewer.</li>
-                                    <li>added glow highlight indicating when the url has been updated.</li>
-                                    <li>separated scroll-up and scroll-down into distinct combo options.</li>
-                                    <li>mouse preview now works everywhere on the page.</li>
-                                    <li>default scroll arrows updated to a thicker style.</li>
-                                </ul>
-                                <br>
-
-                                <h3>custom mouse row</h3>
-                                <ul>
-                                    <li>added fully customizable mouse row.</li>
-                                    <li>implemented wide left mouse button: <code>mouse_left:"m1":mouse-wide</code>.
-                                    </li>
-                                    <li>added improved 3-label scroller: <code>scroller:"-":"↑":"↓"</code>.</li>
-                                    <li>added right mouse button: <code>mouse_right:"m2"</code>.</li>
-                                </ul>
-                                <br>
-
-                                <h3>cheat sheets</h3>
-                                <ul>
-                                    <li>added cheat sheet support for custom configuration elements.</li>
-                                </ul>
-                                <br>
-
-                                <h3>key styling</h3>
-                                <ul>
-                                    <li>refactored internal key width styling system.</li>
-                                </ul>
-                            </div>
-                        </details>
-
-                    </div>
-                </div>
-                <div class="config-column">
-                    <fieldset class="cs-fieldset preview-fieldset">
-                        <legend>live preview</legend>
-                        <div class="preview-wrapper" id="preview-wrapper">
-                            <video class="preview-bg" autoplay muted loop playsinline id="bgvideo">
-                                <source id="bgsource" type="video/mp4">
-                            </video>
-                            <div style="scale: 0.75;">
-                                <div class="preview-container">
-                                    <div id="preview-keyboard" class="keyboard-section"></div>
-                                    <div id="preview-mouse" class="mouse-section"></div>
-                                </div>
                             </div>
                         </div>
                     </fieldset>
@@ -665,43 +404,386 @@
                             </div>
                         </details>
                         <div class="cs-form-group">
-                            <label class="cs-input__label">top row</label>
+                            <label class="cs-input__label" for="customLayoutRow1">top row</label>
                             <textarea class="cs-input config-input" id="customLayoutRow1" rows="2"
                                 spellcheck="false"></textarea>
                         </div>
                         <div class="cs-form-group">
-                            <label class="cs-input__label">qwery row</label>
+                            <label class="cs-input__label" for="customLayoutRow2">qwery row</label>
                             <textarea class="cs-input config-input" id="customLayoutRow2" rows="2"
                                 spellcheck="false"></textarea>
                         </div>
                         <div class="cs-form-group">
-                            <label class="cs-input__label">asdf row</label>
+                            <label class="cs-input__label" for="customLayoutRow3">asdf row</label>
                             <textarea class="cs-input config-input" id="customLayoutRow3" rows="2"
                                 spellcheck="false"></textarea>
                         </div>
                         <div class="cs-form-group">
-                            <label class="cs-input__label">zxcv row</label>
+                            <label class="cs-input__label" for="customLayoutRow4">zxcv row</label>
                             <textarea class="cs-input config-input" id="customLayoutRow4" rows="2"
                                 spellcheck="false"></textarea>
                         </div>
                         <div class="cs-form-group">
-                            <label class="cs-input__label">space row</label>
+                            <label class="cs-input__label" for="customLayoutRow5">space row</label>
                             <textarea class="cs-input config-input" id="customLayoutRow5" rows="2"
                                 spellcheck="false"></textarea>
                         </div>
                         <div class="cs-form-group">
-                            <label class="cs-input__label">mouse row</label>
+                            <label class="cs-input__label" for="customLayoutMouse">mouse row</label>
                             <textarea class="cs-input config-input" id="customLayoutMouse" rows="2"
                                 spellcheck="false"></textarea>
                         </div>
                     </fieldset>
+                </div>
+                <div class="config-column">
+                    <fieldset class="cs-fieldset preview-fieldset">
+                        <legend>live preview</legend>
+                        <div class="preview-wrapper" id="preview-wrapper">
+                            <video class="preview-bg" autoplay muted loop playsinline id="bgvideo">
+                                <source src="" id="bgsource" type="video/mp4">
+                            </video>
+                            <div style="scale: 0.75;">
+                                <div class="preview-container">
+                                    <div id="preview-keyboard" class="keyboard-section"></div>
+                                    <div id="preview-mouse" class="mouse-section"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </fieldset>
+                    <fieldset class="cs-fieldset">
+                        <legend>style & animation</legend>
+                        <div class="nested-grid-3">
+                            <div class="cs-form-group">
+                                <label class="cs-input__label" for="activecolorhex">glow color</label>
+                                <div class="color-input-group">
+                                    <div id="activecolor" class="config-input pickr-target"
+                                        data-initial-color="#8b5cf6"></div>
+                                    <input id="activecolorhex" class="cs-input config-input color-hex-input" type="text"
+                                        maxlength="9" value="#8b5cf6">
+                                </div>
+                            </div>
+                            <div class="cs-slider">
+                                <div id="glowradiusvalue" class="value">24px</div>
+                                <div class="cs-ruler"></div>
+                                <input id="glowradius" class="config-input" max="80" min="0" step="2" type="range"
+                                    value="24">
+                                <label for="glowradius">glow radius</label>
+                            </div>
+                            <div class="cs-form-group">
+                                <label class="cs-input__label" for="fontfamily">font family</label>
+                                <select class="cs-select config-input" id="fontfamily"
+                                    style="max-height: 22px; font-size: 12px; margin-top:4px">
+                                    <option value="">system default</option>
+                                    <option value="bitcount-prop-single">Bitcount Prop Single</option>
+                                    <option value="bungee">Bungee</option>
+                                    <option value="comfortaa">Comfortaa</option>
+                                    <option value="fredoka">Fredoka</option>
+                                    <option value="lexend">Lexend</option>
+                                    <option value="lexend-giga">Lexend Giga</option>
+                                    <option value="lilita-one">Lilita One</option>
+                                    <option value="press-start-2p">Press Start 2P</option>
+                                    <option value="smooch-sans">Smooch Sans</option>
+                                    <option value="sora">Sora</option>
+                                    <option value="special-elite">Special Elite</option>
+                                    <option value="abel">Abel
+                                    </option>
+                                    <option value="archivo-black">
+                                        Archivo Black</option>
+                                    <option value="arimo">
+                                        Arimo</option>
+                                    <option value="bebas-neue">
+                                        Bebas Neue</option>
+                                    <option value="caveat-brush">
+                                        Caveat Brush</option>
+                                    <option value="chewy">Chewy
+                                    </option>
+                                    <option value="cinzel">
+                                        Cinzel</option>
+                                    <option value="fjalla-one">
+                                        Fjalla One</option>
+                                    <option value="inter">
+                                        Inter</option>
+                                    <option value="josefin-sans">
+                                        Josefin Sans</option>
+                                    <option value="knewave">
+                                        Knewave</option>
+                                    <option value="lato">
+                                        Lato</option>
+                                    <option value="montserrat">
+                                        Montserrat</option>
+                                    <option value="noto-sans">
+                                        Noto Sans</option>
+                                    <option value="open-sans">
+                                        Open Sans</option>
+                                    <option value="orbitron">
+                                        Orbitron</option>
+                                    <option value="oswald">
+                                        Oswald</option>
+                                    <option value="pacifico">
+                                        Pacifico</option>
+                                    <option value="raleway">
+                                        Raleway</option>
+                                    <option value="roboto-condensed">
+                                        Roboto Condensed</option>
+                                    <option value="roboto-mono">
+                                        Roboto Mono</option>
+                                    <option value="roboto">
+                                        Roboto</option>
+                                    <option value="share-tech">
+                                        Share Tech</option>
+                                    <option value="titan-one">
+                                        Titan One</option>
+                                    <option value="ubuntu">
+                                        Ubuntu</option>
+                                </select>
+                            </div>
+                            <div class="cs-form-group">
+                                <label class="cs-input__label" for="backgroundcolorhex">inactive key background</label>
+                                <div class="color-input-group">
+                                    <div id="backgroundcolor" class="config-input pickr-target"
+                                        data-initial-color="#1a1a1ad1"></div>
+                                    <input id="backgroundcolorhex" class="cs-input config-input color-hex-input"
+                                        type="text" maxlength="9" value="#1a1a1ad1">
+                                </div>
+                            </div>
+                            <div class="cs-slider">
+                                <div id="borderradiusvalue" class="value">8px</div>
+                                <div class="cs-ruler"></div>
+                                <input id="borderradius" class="config-input" max="40" min="0" step="1" type="range"
+                                    value="8">
+                                <label for="borderradius">border radius</label>
+                            </div>
+                            <div class="cs-form-group">
+                                <div class="cs-checkbox">
+                                    <input type="checkbox" class="config-input" id="boldfont">
+                                    <label for="boldfont" class="cs-checkbox__label">bold font</label>
+                                </div>
+                            </div>
+                            <div class="cs-form-group">
+                                <label class="cs-input__label" for="activebgcolorhex">active key background</label>
+                                <div class="color-input-group">
+                                    <div id="activebgcolor" class="config-input pickr-target"
+                                        data-initial-color="#202020"></div>
+                                    <input id="activebgcolorhex" class="cs-input config-input color-hex-input"
+                                        type="text" maxlength="9" value="#202020">
+                                </div>
+                            </div>
+                            <div class="cs-slider">
+                                <div id="pressscalevalue" class="value">1.05x</div>
+                                <div class="cs-ruler"></div>
+                                <input id="pressscale" class="config-input" max="300" min="0" step="5" type="range"
+                                    value="100">
+                                <label for="pressscale">press scale</label>
+                            </div>
+                            <div class="cs-form-group" >
+                                <div class="cs-checkbox">
+                                    <input type="checkbox" class="config-input" id="hidemouse">
+                                    <label for="hidemouse" class="cs-checkbox__label">hide mouse buttons</label>
+                                </div>
+                            </div>
+                            <div class="cs-form-group">
+                                <label class="cs-input__label" for="outlinecolorhex">outline color</label>
+                                <div class="color-input-group">
+                                    <div id="outlinecolor" class="config-input pickr-target"
+                                        data-initial-color="#4f4f4f"></div>
+                                    <input id="outlinecolorhex" class="cs-input config-input color-hex-input"
+                                        type="text" maxlength="9" value="#4f4f4f">
+                                </div>
+                            </div>
+                            <div class="cs-slider">
+                                <div id="animationspeedvalue" class="value">1.0x</div>
+                                <div class="cs-ruler"></div>
+                                <input id="animationspeed" class="config-input" max="300" min="0" step="10"
+                                    type="range" value="100">
+                                <label for="animationspeed">speed</label>
+                            </div>
+                            <div class="cs-form-group">
+                                <div class="cs-checkbox">
+                                    <input type="checkbox" class="config-input" id="hidescrollcombo">
+                                    <label for="hidescrollcombo" class="cs-checkbox__label">hide scroll combo</label>
+                                </div>
+                            </div>
+                            <div class="cs-form-group">
+                                <label class="cs-input__label" for="fontcolorhex">active font color</label>
+                                <div class="color-input-group">
+                                    <div id="fontcolor" class="config-input pickr-target" data-initial-color="#ffffff">
+                                    </div>
+                                    <input id="fontcolorhex" class="cs-input config-input color-hex-input" type="text"
+                                        maxlength="9" value="#ffffff">
+                                </div>
+                            </div>
+                            <div class="cs-slider">
+                                <div id="scalevalue" class="value">1.0x</div>
+                                <div class="cs-ruler"></div>
+                                <input id="scale" class="config-input" max="200" min="50" step="10" type="range"
+                                    value="100">
+                                <label for="scale">global scale</label>
+                            </div>
+                            <div class="cs-form-group"></div>
+                            <div class="cs-form-group">
+                                <label class="cs-input__label" for="inactivecolorhex">inactive font color</label>
+                                <div class="color-input-group">
+                                    <div id="inactivecolor" class="config-input pickr-target"
+                                        data-initial-color="#808080"></div>
+                                    <input id="inactivecolorhex" class="cs-input config-input color-hex-input"
+                                        type="text" maxlength="9" value="#808080">
+                                </div>
+                            </div>
+                            <div class="cs-slider">
+                                <div id="opacityvalue" class="value">100%</div>
+                                <div class="cs-ruler"></div>
+                                <input id="opacity" class="config-input" max="100" min="0" step="5" type="range"
+                                    value="100">
+                                <label for="opacity">opacity</label>
+                            </div>
+                            <div class="cs-form-group"></div>
+                            <div class="cs-form-group"></div>
+                            <div class="cs-slider">
+                                <div id="gapmodifiervalue" class="value">100%</div>
+                                <div class="cs-ruler"></div>
+                                <input id="gapmodifier" class="config-input" max="300" min="1" step="1" type="range"
+                                    value="100">
+                                <label for="gapmodifier">gap</label>
+                            </div>
+                        </div>
+                    </fieldset>
+                </div>
+                <div class="full-width">
+                    <label class="cs-input__label" for="generatedlink" style="margin-bottom: 5px; display: block;">obs
+                        browser source
+                        url</label>
+                    <div class="link-container">
+                        <input class="cs-input" id="generatedlink" type="text">
+                        <button class="cs-btn" id="loadbtn" style="min-width: 100px;">⟳ load url</button>
+                        <button class="cs-btn" id="copybtn" style="min-width: 100px;">⎘ copy url</button>
+                    </div>
+                    <details class="fullscreen-details" id="patchSheetDetails" style="margin-top: 10px;">
+                        <summary style="color: #394533;">patch notes</summary>
+                        <summary class="close-btn" id="closePatchSheet">x</summary>
+
+                        <div class="patchnotes">
+                            <h1>2025-12-04</h1>
+                            <br>
+                            <h3>bug fixes</h3>
+                            <ul>
+                                <li>fix mouse element scaling</li>
+                            </ul>
+                            <br>
+                            <h3>new config variables</h3>
+                            <ul>
+                                <li>added key gap modifier</li>
+                                <li>added bold font checkbox</li>
+                            </ul>
+                            <br>
+                            <h3>quality of life</h3>
+                            <ul>
+                                <li>invisible keys now support width classes <i>(key_escape:"invis":u2-25)</i></li>
+                            </ul>
+                            <br>
+                            <h1>2025-12-03</h1>
+                            <br>
+                            <h3>bug fixes</h3>
+                            <ul>
+                                <li>fix scale scaling wrong document element</li>
+                                <li>fix mouse buttons not working outside the mouse row</li>
+                                <li>fix fonts</li>
+                            </ul>
+                            <br>
+                            <h3>quality of life</h3>
+                            <ul>
+                                <li>added a wider range of width classes (see cheat sheet)</li>
+                                <li>mouse buttons support width classes including scroller</li>
+                            </ul>
+                            <br>
+                            <h1>2025-12-02</h1>
+                            <br>
+                            <h3>bug fixes</h3>
+                            <ul>
+                                <li>fix color pickers not updating when loading settings from url</li>
+                                <li>fix copy button label inconsistency</li>
+                                <li>fix text not being selectable</li>
+                            </ul>
+                            <br>
+                            <h3>quality of life</h3>
+                            <ul>
+                                <li>add url cfg compression to save 50% size, legacy params should continue to work
+                                    fine</li>
+                                <li>add "edit this layout" button inside the overlay mode that shows on mouse hover
+                                </li>
+                                <li>rework how key states are handled to compare against an array of previous
+                                    websocket messages to prevent stuck keys on unfocused or busy (lagging) browser
+                                    src</li>
+                                <li>make sheet flyouts smaller</li>
+                            </ul>
+                            <br>
+                            <h1>2025-12-01</h1>
+                            <br>
+                            <h3>bug fixes</h3>
+                            <ul>
+                                <li>fix scroll label scale for good (?)</li>
+                                <li>fix sheet flyouts</li>
+                                <li>fix cheat sheet not scrolling</li>
+                                <li>fix speed suffix being x instead of %</li>
+                            </ul>
+                            <br>
+                            <h3>quality of life</h3>
+                            <ul>
+                                <li>added settings loading from url to allow sharing and loading of previously
+                                    configured urls</li>
+                                <li>url bar now updates on settings change, this is useful to share unfinished
+                                    configurations (obs url still needs to be obtained through the copy button)</li>
+                            </ul>
+                            <br>
+                            <h1>2025-11-30</h1>
+                            <br>
+                            <h3>bug fixes</h3>
+                            <ul>
+                                <li>fixed mouse label not scaling correctly inside its element.</li>
+                                <li>added a dedicated “dummy” string to remove rows without needing
+                                    <code>invisible</code> tags.
+                                </li>
+                            </ul>
+                            <br>
+
+                            <h3>quality of life</h3>
+                            <ul>
+                                <li>added patch notes viewer.</li>
+                                <li>added glow highlight indicating when the url has been updated.</li>
+                                <li>separated scroll-up and scroll-down into distinct combo options.</li>
+                                <li>mouse preview now works everywhere on the page.</li>
+                                <li>default scroll arrows updated to a thicker style.</li>
+                            </ul>
+                            <br>
+
+                            <h3>custom mouse row</h3>
+                            <ul>
+                                <li>added fully customizable mouse row.</li>
+                                <li>implemented wide left mouse button: <code>mouse_left:"m1":mouse-wide</code>.
+                                </li>
+                                <li>added improved 3-label scroller: <code>scroller:"-":"↑":"↓"</code>.</li>
+                                <li>added right mouse button: <code>mouse_right:"m2"</code>.</li>
+                            </ul>
+                            <br>
+
+                            <h3>cheat sheets</h3>
+                            <ul>
+                                <li>added cheat sheet support for custom configuration elements.</li>
+                            </ul>
+                            <br>
+
+                            <h3>key styling</h3>
+                            <ul>
+                                <li>refactored internal key width styling system.</li>
+                            </ul>
+                        </div>
+                    </details>
                 </div>
             </div>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
-    <script type="module" src="script.js"></script>
+    <script type="module" src="scripts/main.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             let timer;
@@ -722,6 +804,20 @@
                 window.location.href = url.toString();
             });
         });
+
+        const TARGET_WIDTH = 2560;
+        function setDynamicScale() {
+            const currentWidth = window.innerWidth;
+            const configuratorEl = document.getElementById('configurator');
+
+            if (configuratorEl) {
+                let scaleFactor = currentWidth / TARGET_WIDTH;
+                configuratorEl.style.transform = `scale(${scaleFactor})`;
+            }
+        }
+
+        setDynamicScale();
+        window.addEventListener('resize', setDynamicScale);
     </script>
 </body>
 
