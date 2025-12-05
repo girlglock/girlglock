@@ -14,6 +14,7 @@ export class UrlManager {
             const base64 = btoa(String.fromCharCode.apply(null, compressed));
             return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
         } catch (e) {
+            console.error("compression error:", e);
             return null;
         }
     }
