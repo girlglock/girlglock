@@ -31,7 +31,7 @@
             <span class="weather-temp">--°</span>
             <span class="weather-condition">loading...</span>
         </div>
-         <div class="menu-item" style="display: flex; justify-content: center; gap: 2vw;">
+        <!--         <div class="menu-item" style="display: flex; justify-content: center; gap: 2vw;">
             <a href="steam://nav/games">
                 <img src="Images/steam.png" class="icon-img launcher-icon" />
             </a>
@@ -41,6 +41,10 @@
             <a href="spotify:home">
                 <img src="Images/spotify.png" class="icon-img launcher-icon" />
             </a>
+        </div> -->
+        <div class="battery-display" id="battery-display" title="Click to connect headset">
+            <div class="battery-icon" id="battery-icon"></div>
+            <span class="battery-percent">--</span>
         </div>
     </div>
     <div class="location-modal" id="location-modal">
@@ -106,6 +110,7 @@
     <script src="scripts/weatherManager.js"></script>
     <script src="scripts/onScreenKeyboard.js"></script>
     <script src="scripts/sillyDots.js"></script>
+    <script src="scripts/headsetManager.js"></script>
     <script src="scripts/main.js"></script>
 </body>
 

@@ -9,6 +9,7 @@ new SillyDots(canvas);
 new TimeManager();
 new WeatherManager();
 new OnScreenKeyboard();
+new HeadsetManager();
 const soundManager = new SoundManager();
 
 const menuItems = document.querySelectorAll('.menu-item');
