@@ -4,7 +4,8 @@ class TimeManager {
             { name: '24-hour', format: { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' } },
             { name: '12-hour', format: { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' } },
             { name: 'no-seconds', format: { hour12: false, hour: '2-digit', minute: '2-digit' } },
-            { name: '12-hour-no-seconds', format: { hour12: true, hour: '2-digit', minute: '2-digit' } }
+            { name: '12-hour-no-seconds', format: { hour12: true, hour: '2-digit', minute: '2-digit' } },
+            { name: '24-hour-with-ms', format: { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }, includeMs: true }
         ];
 
         this.dateFormats = [
@@ -17,9 +18,11 @@ class TimeManager {
         this.currentTimeFormat = ps2Preferences.timeFormat;
         this.currentDateFormat = ps2Preferences.dateFormat;
 
+        this.timer = null;
+
         this.setupClickHandlers();
+        this.startTimer();
         this.updateTime();
-        setInterval(() => this.updateTime(), 1000);
     }
 
     setupClickHandlers() {
@@ -27,6 +30,8 @@ class TimeManager {
             this.currentTimeFormat = (this.currentTimeFormat + 1) % this.timeFormats.length;
             ps2Preferences.timeFormat = this.currentTimeFormat;
             localStorage.setItem('ps2Preferences', JSON.stringify(window.ps2Preferences));
+
+            this.startTimer();
             this.updateTime();
         });
 
@@ -34,14 +39,38 @@ class TimeManager {
             this.currentDateFormat = (this.currentDateFormat + 1) % this.dateFormats.length;
             ps2Preferences.dateFormat = this.currentDateFormat;
             localStorage.setItem('ps2Preferences', JSON.stringify(window.ps2Preferences));
+
             this.updateTime();
         });
     }
 
+    startTimer() {
+        if (this.timer) {
+            clearInterval(this.timer);
+        }
+
+        const timeFormat = this.timeFormats[this.currentTimeFormat];
+        const interval = timeFormat.includeMs ? 50 : 1000;
+
+        this.timer = setInterval(() => this.updateTime(), interval);
+    }
+
     updateTime() {
         const now = new Date();
-        const timeString = now.toLocaleTimeString('en-US', this.timeFormats[this.currentTimeFormat].format);
-        const dateString = now.toLocaleDateString('en-US', this.dateFormats[this.currentDateFormat].format);
+        const timeFormat = this.timeFormats[this.currentTimeFormat];
+
+        let timeString = now.toLocaleTimeString('en-US', timeFormat.format);
+
+        if (timeFormat.includeMs) {
+            const ms = String(now.getMilliseconds()).padStart(3, '0');
+            timeString += `.${ms}`;
+        }
+
+        const dateString = now.toLocaleDateString(
+            'en-US',
+            this.dateFormats[this.currentDateFormat].format
+        );
+
         document.getElementById('current-time').textContent = timeString;
         document.getElementById('current-date').textContent = dateString;
     }
