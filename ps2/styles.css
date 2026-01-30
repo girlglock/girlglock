@@ -200,57 +200,62 @@ canvas {
     filter: brightness(0) saturate(100%) invert(61%) sepia(27%) saturate(1282%) hue-rotate(176deg) brightness(87%) contrast(84%) drop-shadow(-1px -1px 0 black) drop-shadow(1px -1px 0 black) drop-shadow(-1px 1px 0 black) drop-shadow(1px 1px 0 black);
 }
 
-@media (max-width: 768px) {
-    .menu-item {
-        font-size: 6vw;
-        margin-bottom: 3vh;
-    }
-
-    .weather-temp {
-        font-size: 6vw;
-    }
-
-    .weather-condition {
-        font-size: 4vw;
-    }
-
-    .menu-container {
-        right: 20%;
-    }
-
-    .modal-content {
-        max-width: 95%;
-        padding: 20px;
-    }
-
-    .key {
-        padding: 10px 6px;
-        font-size: 12px;
-    }
-
-    .on-screen-keyboard {
-        gap: 6px;
-    }
+.devices-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5vh;
+    margin-top: 2vh;
+    align-items: center;
 }
 
-.battery-display {
+.device-item {
     display: flex;
+    flex-direction: row;
     align-items: center;
-    gap: 0.5vw;
+    gap: 1vw;
     cursor: pointer;
     transition: all 0.2s ease;
-    padding: 0.5vw 1vw;
-    border-radius: 4px;
+    padding: 0.5vh 1vw;
+}
+
+.device-item:hover .device-icon {
+    color: #6398c2;
+}
+
+.device-item:hover .battery-icon {
+    border-color: #6398c2;
+}
+
+.device-item:hover .battery-icon::before {
+    background: #6398c2;
+}
+
+.device-item:hover .battery-percent {
+    color: #6398c2;
+}
+
+.device-icon {
+    width: 2.5vw;
+    height: 2.5vw;
+    min-width: 32px;
+    min-height: 32px;
+    max-width: 48px;
+    max-height: 48px;
+    color: #6b6a6f;
+    filter: drop-shadow(-1px -1px 0 black) drop-shadow(1px -1px 0 black) drop-shadow(-1px 1px 0 black) drop-shadow(1px 1px 0 black);
+    transition: color 0.3s ease;
+    flex-shrink: 0;
 }
 
 .battery-icon {
     width: 32px;
-    height: 20px;
+    height: 18px;
     border: 2px solid #6b6a6f;
     border-radius: 3px;
     position: relative;
     filter: drop-shadow(-1px -1px 0 black) drop-shadow(1px -1px 0 black) drop-shadow(-1px 1px 0 black) drop-shadow(1px 1px 0 black);
     transition: border-color 0.3s ease;
+    flex-shrink: 0;
 }
 
 .battery-icon::before {
@@ -308,27 +313,84 @@ canvas {
 }
 
 .battery-percent {
-    font-size: 1.5vw;
+    font-size: 1.8vw;
     color: #6b6a6f;
     font-weight: 500;
-    min-width: 3vw;
-    text-align: center;
+    min-width: 3.5vw;
+    text-align: left;
     transition: color 0.2s ease;
-}
-
-.battery-display:hover .battery-percent {
-    color: #6398c2;
-}
-
-.battery-display:hover .battery-icon {
-    border-color: #6398c2;
+    text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black;
+    flex-shrink: 0;
 }
 
 @keyframes battery-blink {
-    0%, 100% {
+
+    0%,
+    100% {
         opacity: 1;
     }
+
     50% {
         opacity: 0.3;
+    }
+}
+
+@media (max-width: 768px) {
+    .menu-item {
+        font-size: 6vw;
+        margin-bottom: 3vh;
+    }
+
+    .weather-temp {
+        font-size: 6vw;
+    }
+
+    .weather-condition {
+        font-size: 4vw;
+    }
+
+    .menu-container {
+        right: 20%;
+    }
+
+    .modal-content {
+        max-width: 95%;
+        padding: 20px;
+    }
+
+    .key {
+        padding: 10px 6px;
+        font-size: 12px;
+    }
+
+    .on-screen-keyboard {
+        gap: 6px;
+    }
+
+    .device-icon {
+        width: 5vw;
+        height: 5vw;
+        min-width: 28px;
+        min-height: 28px;
+        max-width: 40px;
+        max-height: 40px;
+    }
+
+    .devices-container {
+        gap: 2vh;
+    }
+
+    .device-item {
+        gap: 2vw;
+    }
+
+    .battery-percent {
+        font-size: 4vw;
+        min-width: 8vw;
+    }
+
+    .battery-icon {
+        width: 28px;
+        height: 16px;
     }
 }

@@ -10,6 +10,7 @@ new TimeManager();
 new WeatherManager();
 new OnScreenKeyboard();
 new HeadsetManager();
+new MouseManager();
 const soundManager = new SoundManager();
 
 const menuItems = document.querySelectorAll('.menu-item');
