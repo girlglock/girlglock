@@ -5,6 +5,7 @@ window.ps2Preferences = JSON.parse(localStorage.getItem('ps2Preferences')) || {
 };
 
 const canvas = document.getElementById('dotsCanvas');
+new PS2Background();
 new SillyDots(canvas);
 new TimeManager();
 new WeatherManager();

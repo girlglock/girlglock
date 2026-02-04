@@ -172,7 +172,7 @@ class SillyDots {
             this.ctx.fill();
         }
 
-        this.updateMouseTrail();
+        //this.updateMouseTrail();
 
         setTimeout(() => this.animate(), this.frameDelay);
     }
