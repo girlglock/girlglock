@@ -1,0 +1,12 @@
+﻿{
+  "Version": "14.0.1",
+  "Name": "girlglock.com/paste",
+  "DestinationType": "TextUploader",
+  "RequestMethod": "POST",
+  "RequestURL": "https://femboy.beauty/api/upload",
+  "Body": "MultipartFormData",
+  "FileFormName": "file",
+  "URL": "https://girlglock.com/paste?id={json:id}",
+  "DeletionURL": "{json:delete}",
+  "ErrorMessage": "{json:message}"
+}

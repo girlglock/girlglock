@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>perf pacing</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/ekmas/cs16.css@main/css/cs16.min.css">
+    <style>
+        body {
+            margin: 0;
+            background-image: url("https://femboy.beauty/JJ3mBb.png");
+            background-size: cover;
+            background-position: center;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .cs-dialog { position: relative; display: inline-block; }
+        .heading {
+            position: absolute;
+            top: 10px; left: 10px; right: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .converter-section { margin: 35px 0 10px; text-align: center; color: white; }
+        .stats-row { display: flex; gap: 8px; margin: 12px 0 0; }
+        .stat-box {
+            flex: 1;
+            background: var(--secondary-bg);
+            border: 1px solid;
+            border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+            padding: 6px 10px;
+            text-align: center;
+        }
+        .stat-label { font-size: 13px; color: var(--secondary-text); }
+        .stat-value { font-size: 20px; font-weight: bold; margin-top: 2px; }
+        .scroll-zone {
+            background: var(--secondary-bg);
+            border: 1px solid;
+            border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+            padding: 10px;
+            font-size: 14px;
+            color: var(--secondary-text);
+            font-style: italic;
+            margin: 10px 0 4px;
+        }
+        #series-badge { font-size: 13px; color: var(--accent); margin: 4px 0 0; min-height: 16px; }
+        .table-container {
+            border: 1px solid;
+            border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+            overflow: hidden;
+        }
+        .table-head-wrap table { border-bottom: 1px solid var(--border-dark); }
+        .table-body-wrap { height: 155px; overflow-y: scroll; }
+        .table-head-wrap table,
+        .table-body-wrap table {
+            width: 100%;
+            background: var(--secondary-bg);
+            table-layout: fixed;
+        }
+        col { width: 33.33%; }
+        th, td { padding: 6px; text-align: center; font-size: 16px; line-height: 15px; }
+        th:last-child, td:last-child { border-right: none; }
+        td { color: var(--secondary-text); user-select: text; }
+        tr:last-child td { border-bottom: none; }
+        .good-row td:first-child { color: #4ec94e; }
+        .ok-row   td:first-child { color: #f0c040; }
+        .bad-row  td:first-child { color: #e05050; }
+        .empty-row td { opacity: 0.3; }
+        .sep-cell { color: var(--accent); font-style: italic; font-size: 13px; padding: 4px 6px; }
+        .footer-btns { position: relative; }
+    </style>
+</head>
+<body>
+    <div class="cs-dialog">
+        <div class="heading">
+            <div class="wrapper">
+                <div class="icon"></div>
+                <p class="text">CS2 PERF PACING</p>
+            </div>
+            <button class="cs-btn close" onclick="location.reload()"></button>
+        </div>
+        <header>
+            <div class="top">
+                <div class="converter-section">
+                    <h2>scroll timing</h2>
+                    <br>
+                    <hr class="cs-hr">
+                    <br>
+                    <div class="scroll-zone" id="scrollZone">scroll anywhere to measure</div>
+                    <div id="series-badge">&nbsp;</div>
+                    <div class="stats-row">
+                        <div class="stat-box">
+                            <div class="stat-label">avg</div>
+                            <div class="stat-value" id="statAvg" style="color: white;">-</div>
+                            <div class="stat-label">ms</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">scrolls</div>
+                            <div class="stat-value" id="statCount" style="color: white;">0</div>
+                            <div class="stat-label">this series</div>
+                        </div>
+                    </div>
+                    <br>
+                    <div class="table-container">
+                        <div class="table-head-wrap">
+                            <table><colgroup><col><col><col></colgroup>
+                                <thead><tr><th>#</th><th>delay</th><th>rating</th></tr></thead>
+                            </table>
+                        </div>
+                        <div class="table-body-wrap" id="bodyWrap">
+                            <table><colgroup><col><col><col></colgroup>
+                                <tbody id="tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <br>
+            </div>
+            <menu class="footer-btns">
+                <button class="cs-btn" onclick="reset()">Reset</button>
+                <button class="cs-btn" onclick="location.reload()">Cancel</button>
+            </menu>
+        </header>
+    </div>
+    <script>
+        const MAX_MS = 100;
+        const MAX_ROWS = 5;
+        const tbody = document.getElementById("tbody");
+        const bodyWrap = document.getElementById("bodyWrap");
+        const statAvg = document.getElementById("statAvg");
+        const statCount = document.getElementById("statCount");
+        const badge = document.getElementById("series-badge");
+        const zone = document.getElementById("scrollZone");
+
+        let lastTime = null, breakTimer = null;
+        let delays = [], seriesN = 0, totalN = 0;
+
+        const color = ms => ms <= 15 ? "#e05050" : ms === 16 ? "#4ec94e" : ms === 17 ? "#f0c040" : "#e05050";
+        const cls   = ms => ms <= 15 ? "bad-row"  : ms === 16 ? "good-row"  : ms === 17 ? "ok-row"  : "bad-row";
+        const label = ms => ms <= 15 ? "bad"      : ms === 16 ? "good"      : ms === 17 ? "ok"      : "bad";
+
+        function prepend(tr) {
+            tbody.insertBefore(tr, tbody.firstChild);
+            bodyWrap.scrollTop = 0;
+        }
+
+        function fillEmpty() {
+            while (tbody.rows.length < MAX_ROWS) {
+                const tr = document.createElement("tr");
+                tr.className = "empty-row";
+                tr.innerHTML = "<td>-</td><td>- ms</td><td>-</td>";
+                tbody.appendChild(tr);
+            }
+        }
+
+        function newSeries() {
+            seriesN++;
+            delays = [];
+            statAvg.textContent = "-";
+            statAvg.style.color = "white";
+            statCount.textContent = "0";
+            badge.textContent = `series ${seriesN}`;
+            zone.textContent = "scrolling...";
+            if (seriesN > 1) {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `<td class="sep-cell" colspan="3">- series ${seriesN} -</td>`;
+                prepend(tr);
+            }
+        }
+
+        function endSeries() {
+            zone.textContent = "scroll anywhere to measure";
+            badge.innerHTML = "&nbsp;";
+            lastTime = null;
+        }
+
+        function reset() {
+            clearTimeout(breakTimer);
+            lastTime = null; delays = []; seriesN = 0; totalN = 0;
+            tbody.innerHTML = "";
+            fillEmpty();
+            statAvg.textContent = "-"; statAvg.style.color = "white";
+            statCount.textContent = "0";
+            zone.textContent = "scroll anywhere to measure";
+            badge.innerHTML = "&nbsp;";
+        }
+
+        window.addEventListener("wheel", e => {
+            const now = performance.now();
+            clearTimeout(breakTimer);
+            breakTimer = setTimeout(endSeries, MAX_MS);
+
+            if (lastTime === null) { newSeries(); lastTime = now; return; }
+
+            const delta = Math.round(now - lastTime);
+            lastTime = now;
+
+            if (delta > MAX_MS) { newSeries(); return; }
+
+            totalN++;
+            delays.push(delta);
+            const avg = Math.round(delays.reduce((a, b) => a + b, 0) / delays.length);
+
+            statAvg.textContent = avg;
+            statAvg.style.color = color(avg);
+            statCount.textContent = delays.length;
+
+            const tr = document.createElement("tr");
+            tr.className = cls(delta);
+            tr.innerHTML = `<td>#${totalN}</td><td>${delta} ms</td><td>${label(delta)}</td>`;
+            prepend(tr);
+        }, { passive: true });
+
+        fillEmpty();
+    </script>
+</body>
+</html>

@@ -842,7 +842,7 @@
                 try {
                     const e = await fetch("https://free.freeipapi.com/api/json/"),
                         t = await e.json();
-                    return { lat: t.latitude, lng: t.longitude };
+                    return { lat: t.lat, lng: t.lon };
                 } catch (e) {
                     return { lat: 0, lng: 0 };
                 }
