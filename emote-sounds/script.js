@@ -1,30 +1,30 @@
 const _ld = {
     el: null, title: null, msg: null, bar: null, sub: null,
     init() {
-        this.el  = document.getElementById('loadingDialog');
+        this.el = document.getElementById('loadingDialog');
         this.title = document.getElementById('loadingDialogTitle');
-        this.msg  = document.getElementById('loadingDialogMsg');
-        this.bar  = document.getElementById('loadingDialogBar');
-        this.sub  = document.getElementById('loadingDialogSub');
+        this.msg = document.getElementById('loadingDialogMsg');
+        this.bar = document.getElementById('loadingDialogBar');
+        this.sub = document.getElementById('loadingDialogSub');
     }
 };
 function showLoading(title, msg, pct = 0, sub = '') {
     if (!_ld.el) _ld.init();
     _ld.title.textContent = title;
-    _ld.msg.textContent   = msg;
-    _ld.bar.style.width   = pct + '%';
-    _ld.sub.textContent   = sub;
-    _ld.el.style.display  = 'flex';
+    _ld.msg.textContent = msg;
+    _ld.bar.style.width = pct + '%';
+    _ld.sub.textContent = sub;
+    _ld.el.style.display = 'flex';
 }
 function updateLoading(msg, pct, sub = '') {
     if (!_ld.el) return;
-    if (msg  !== undefined) _ld.msg.textContent = msg;
-    if (pct  !== undefined) _ld.bar.style.width = pct + '%';
-    if (sub  !== undefined) _ld.sub.textContent = sub;
+    if (msg !== undefined) _ld.msg.textContent = msg;
+    if (pct !== undefined) _ld.bar.style.width = pct + '%';
+    if (sub !== undefined) _ld.sub.textContent = sub;
 }
 function hideLoading() {
     if (!_ld.el) return;
-    _ld.bar.style.width  = '100%';
+    _ld.bar.style.width = '100%';
     setTimeout(() => { _ld.el.style.display = 'none'; _ld.bar.style.width = '0%'; }, 260);
 }
 
@@ -52,18 +52,18 @@ async function fetchChannelEmotes() {
 
         if (twitchId) {
             updateLoading('loading BetterTTV emotes...', 20, 'channel: ' + channelName);
-            await fetch(proxy + 'https://api.betterttv.net/3/cached/users/twitch/' + twitchId).then(r => r.json()).then(d => { [...(d.channelEmotes || []), ...(d.sharedEmotes || [])].forEach(e => add(e.code, 'https://cdn.betterttv.net/emote/' + e.id + '/2x')); }).catch(() => {});
+            await fetch(proxy + 'https://api.betterttv.net/3/cached/users/twitch/' + twitchId).then(r => r.json()).then(d => { [...(d.channelEmotes || []), ...(d.sharedEmotes || [])].forEach(e => add(e.code, 'https://cdn.betterttv.net/emote/' + e.id + '/2x')); }).catch(() => { });
             updateLoading('loading 7TV emotes...', 38, 'channel: ' + channelName);
-            await fetch(proxy + 'https://7tv.io/v3/users/twitch/' + twitchId).then(r => r.json()).then(d => { const es = d?.emote_set?.emotes || []; es.forEach(e => add(e.name, 'https:' + e.data.host.url + '/' + (e.data.host.files[2]?.name || e.data.host.files[0]?.name))); }).catch(() => {});
+            await fetch(proxy + 'https://7tv.io/v3/users/twitch/' + twitchId).then(r => r.json()).then(d => { const es = d?.emote_set?.emotes || []; es.forEach(e => add(e.name, 'https:' + e.data.host.url + '/' + (e.data.host.files[2]?.name || e.data.host.files[0]?.name))); }).catch(() => { });
             updateLoading('loading FrankerFaceZ emotes...', 54, 'channel: ' + channelName);
-            await fetch(proxy + 'https://api.frankerfacez.com/v1/room/' + channelName).then(r => r.json()).then(d => { for (const k of Object.keys(d.sets || {})) for (const e of d.sets[k].emoticons) add(e.name, 'https://' + (e.urls['2'] || e.urls['1']).split('//').pop()); }).catch(() => {});
+            await fetch(proxy + 'https://api.frankerfacez.com/v1/room/' + channelName).then(r => r.json()).then(d => { for (const k of Object.keys(d.sets || {})) for (const e of d.sets[k].emoticons) add(e.name, 'https://' + (e.urls['2'] || e.urls['1']).split('//').pop()); }).catch(() => { });
         }
         updateLoading('loading global emotes...', 68, 'BTTV globals');
-        await fetch(proxy + 'https://api.betterttv.net/3/cached/emotes/global').then(r => r.json()).then(d => { (d || []).forEach(e => add(e.code, 'https://cdn.betterttv.net/emote/' + e.id + '/2x')); }).catch(() => {});
+        await fetch(proxy + 'https://api.betterttv.net/3/cached/emotes/global').then(r => r.json()).then(d => { (d || []).forEach(e => add(e.code, 'https://cdn.betterttv.net/emote/' + e.id + '/2x')); }).catch(() => { });
         updateLoading('loading global emotes...', 80, '7TV globals');
-        await fetch(proxy + 'https://7tv.io/v3/emote-sets/global').then(r => r.json()).then(d => { (d.emotes || []).forEach(e => add(e.name, 'https://cdn.7tv.app/emote/' + e.id + '/2x.webp')); }).catch(() => {});
+        await fetch(proxy + 'https://7tv.io/v3/emote-sets/global').then(r => r.json()).then(d => { (d.emotes || []).forEach(e => add(e.name, 'https://cdn.7tv.app/emote/' + e.id + '/2x.webp')); }).catch(() => { });
         updateLoading('loading global emotes...', 90, 'FFZ globals');
-        await fetch(proxy + 'https://api.frankerfacez.com/v1/set/global').then(r => r.json()).then(d => { for (const k of Object.keys(d.sets || {})) for (const e of d.sets[k].emoticons) add(e.name, 'https://' + (e.urls['2'] || e.urls['1']).split('//').pop()); }).catch(() => {});
+        await fetch(proxy + 'https://api.frankerfacez.com/v1/set/global').then(r => r.json()).then(d => { for (const k of Object.keys(d.sets || {})) for (const e of d.sets[k].emoticons) add(e.name, 'https://' + (e.urls['2'] || e.urls['1']).split('//').pop()); }).catch(() => { });
     } catch (e) { /* silent */ }
 
     updateLoading('updating previews...', 97, emoteUrlCache.size + ' emotes loaded');
@@ -243,7 +243,7 @@ function renderEmotes() {
             <div class="window-body emote-card-body">
                 <div class="emote-field-row">
                     <label for="name-${index}">emote name</label>
-                    <input id="name-${index}" type="text" value="${emote.name}" onchange="updateEmote(${index}, 'name', this.value); const tbEl=document.getElementById('emote-icon-${index}'); if(tbEl){tbEl.parentNode.childNodes[tbEl.parentNode.childNodes.length-1].textContent=this.value||'emote';} const titleTextNode=document.querySelector('#card-${index} .title-bar-text'); if(titleTextNode){const lastChild=titleTextNode.lastChild; if(lastChild&&lastChild.nodeType===3)lastChild.textContent=this.value||'emote'; else titleTextNode.append(this.value||'emote');} const tbSpan=document.querySelector('#taskbarButtons .cfg-taskbar-btn:nth-child(${index+1}) span'); if(tbSpan){tbSpan.textContent=this.value||'emote';} const tbBtn=document.querySelector('#taskbarButtons .cfg-taskbar-btn:nth-child(${index+1})'); if(tbBtn){tbBtn.title=this.value||'emote';} refreshEmotePreview(${index});">
+                    <input id="name-${index}" type="text" value="${emote.name}" onchange="updateEmote(${index}, 'name', this.value); const tbEl=document.getElementById('emote-icon-${index}'); if(tbEl){tbEl.parentNode.childNodes[tbEl.parentNode.childNodes.length-1].textContent=this.value||'emote';} const titleTextNode=document.querySelector('#card-${index} .title-bar-text'); if(titleTextNode){const lastChild=titleTextNode.lastChild; if(lastChild&&lastChild.nodeType===3)lastChild.textContent=this.value||'emote'; else titleTextNode.append(this.value||'emote');} const tbSpan=document.querySelector('#taskbarButtons .cfg-taskbar-btn:nth-child(${index + 1}) span'); if(tbSpan){tbSpan.textContent=this.value||'emote';} const tbBtn=document.querySelector('#taskbarButtons .cfg-taskbar-btn:nth-child(${index + 1})'); if(tbBtn){tbBtn.title=this.value||'emote';} refreshEmotePreview(${index});">
                 </div>
                 <div class="emote-field-row" style="margin-top:8px;">
                     <label for="streak-${index}">required streak</label>
@@ -451,7 +451,7 @@ async function loadHTML(file) {
                             isPlaying: false
                         }))
                     });
-                    if (i % 3 === 0) updateLoading('loading emotes... (' + (i+1) + '/' + emoteEntries.length + ')', 55 + Math.floor((i / emoteEntries.length) * 35));
+                    if (i % 3 === 0) updateLoading('loading emotes... (' + (i + 1) + '/' + emoteEntries.length + ')', 55 + Math.floor((i / emoteEntries.length) * 35));
                 });
 
                 updateLoading('rendering...', 95, emotes.length + ' emotes loaded');
@@ -502,11 +502,15 @@ async function generateHTML() {
         "none": "",
         "top-left": "top:5vh;left:5vw;",
         "top-right": "top:5vh;right:5vw;",
-        "center-left": "top:50%;left:5vw;transform:translateY(-50%);",
-        "center-right": "top:50%;right:5vw;transform:translateY(-50%);",
+        "center-left": "top:50%;left:5vw;",
+        "center-right": "top:50%;right:5vw;",
         "bottom-left": "bottom:5vh;left:5vw;",
         "bottom-right": "bottom:5vh;right:5vw;",
     };
+
+    const streakBaseTransform = (streakPosition === "center-left" || streakPosition === "center-right")
+        ? "translateY(-50%)"
+        : "";
 
     const streakCSS = streakPositionCSS[streakPosition] || "";
     const streakEnabled = streakPosition !== "none";
@@ -545,32 +549,41 @@ async function generateHTML() {
         "  if(!url)return;",
         "  if(streakDisplay.hideTimer)clearTimeout(streakDisplay.hideTimer);",
         "  overlayEl.innerHTML='';",
+        "  const wrapper=document.createElement('div');",
+        "  wrapper.style.cssText='position:relative;display:inline-block;width:80px;height:80px;';",
         "  const img=document.createElement('img');",
         "  img.src=url;",
-        "  img.style.cssText='width:56px;height:56px;object-fit:contain;image-rendering:pixelated;';",
-        "  const label=document.createElement('span');",
-        "  label.textContent=' x'+count;",
-        "  label.style.cssText='font-size:28px;font-weight:bold;color:#fff;text-shadow:0 0 6px #000,0 0 12px #000;vertical-align:middle;white-space:nowrap;';",
-        "  overlayEl.appendChild(img);",
-        "  overlayEl.appendChild(label);",
+        "  img.style.cssText='width:80px;height:80px;object-fit:contain;image-rendering:pixelated;display:block;';",
+        "  const badge=document.createElement('span');",
+        "  badge.textContent='x'+count;",
+        "  badge.style.cssText='position:absolute;bottom:0;right:0;font-size:24px;font-weight:bold;color:#fff;text-shadow:-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000,0 0 12px #000;transform:rotate(25deg);transform-origin:bottom right;white-space:nowrap;line-height:1;';",
+        "  wrapper.appendChild(img);",
+        "  wrapper.appendChild(badge);",
+        "  overlayEl.appendChild(wrapper);",
+        "  overlayEl.style.transition='none';",
+        "  overlayEl.style.opacity='0';",
+        "  overlayEl.style.transform='" + (streakBaseTransform ? streakBaseTransform + " scale(0.85)" : "scale(0.85)") + "';",
+        "  overlayEl.getBoundingClientRect();",
+        "  overlayEl.style.transition='opacity 0.25s,transform 0.25s';",
         "  overlayEl.style.opacity='1';",
-        "  overlayEl.style.transform='scale(1)';",
+        "  overlayEl.style.transform='" + (streakBaseTransform ? streakBaseTransform + " scale(1)" : "scale(1)") + "';",
         "  streakDisplay.hideTimer=setTimeout(()=>{",
         "    overlayEl.style.opacity='0';",
-        "    overlayEl.style.transform='scale(0.85)';",
+        "    overlayEl.style.transform='" + (streakBaseTransform ? streakBaseTransform + " scale(0.85)" : "scale(0.85)") + "';",
         "  },4000);",
         "}",
     ].join("\n") : [
         "const STREAK_OVERLAY_ENABLED=false;",
         "const STREAK_POSITION=\"none\";",
         "const LIMIT_STREAK_TO_SOUNDS=true;",
+        "let allStreaks={};",
         "async function loadEmotes(){}",
         "function getEmoteUrl(name){return null;}",
         "function showStreakOverlay(){}",
     ].join("\n");
 
     const overlayElementHTML = streakEnabled
-        ? "<div id=\"streak-overlay\" style=\"position:fixed;" + streakCSS + "display:flex;align-items:center;gap:10px;padding:10px 18px;background:rgba(0,0,0,0.55);border-radius:0px;opacity:0;transform:scale(0.85);transition:opacity 0.25s,transform 0.25s;pointer-events:none;\"></div>"
+        ? "<div id=\"streak-overlay\" style=\"position:fixed;" + streakCSS + "display:inline-block;overflow:visible;opacity:0;transform:" + (streakBaseTransform ? streakBaseTransform + " scale(0.85)" : "scale(0.85)") + ";transition:opacity 0.25s,transform 0.25s;pointer-events:none;\"></div>"
         : "";
 
     const handleMessageFn = [
@@ -602,7 +615,7 @@ async function generateHTML() {
         "  if(fetchedMatch){",
         "    for(const k in allStreaks){if(k!==fetchedMatch.name)allStreaks[k]=0;}",
         "    allStreaks[fetchedMatch.name]=(allStreaks[fetchedMatch.name]||0)+1;",
-        "    const minStreak=5;",
+        "    const minStreak=4;",
         "    if(allStreaks[fetchedMatch.name]>=minStreak){",
         "      showStreakOverlay(fetchedMatch.name,allStreaks[fetchedMatch.name],fetchedMatch.url);",
         "    }",
@@ -670,6 +683,85 @@ async function generateHTML() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 }
+
+function openEmotePicker() {
+    const channelName = document.getElementById('channelName').value.trim();
+    if (!channelName) {
+        document.getElementById('noChannelDialog').style.display = 'flex';
+        return;
+    }
+    const picker = document.getElementById('emotePicker');
+    picker.style.display = 'flex';
+    const search = document.getElementById('emotePickerSearch');
+    search.value = '';
+    renderEmotePickerGrid('');
+    setTimeout(() => search.focus(), 50);
+}
+
+function closeEmotePicker() {
+    document.getElementById('emotePicker').style.display = 'none';
+}
+
+function renderEmotePickerGrid(query) {
+    const grid = document.getElementById('emotePickerGrid');
+    grid.innerHTML = '';
+
+    const emptyCell = document.createElement('div');
+    emptyCell.className = 'emote-picker-cell';
+    emptyCell.title = 'blank emote';
+    emptyCell.innerHTML = '<div class="emote-picker-empty-icon">+</div><div class="emote-picker-name">blank</div>';
+    emptyCell.addEventListener('click', () => {
+        addEmote();
+        closeEmotePicker();
+    });
+    grid.appendChild(emptyCell);
+
+    const q = query.toLowerCase().trim();
+    const filtered = q ? channelEmoteList.filter(e => e.name.toLowerCase().includes(q)) : channelEmoteList;
+
+    for (const emote of filtered) {
+        const cell = document.createElement('div');
+        cell.className = 'emote-picker-cell';
+        cell.title = emote.name;
+        cell.innerHTML = '<img class="emote-picker-img" src="' + emote.url + '" alt="' + emote.name + '"><div class="emote-picker-name">' + emote.name + '</div>';
+        cell.addEventListener('click', () => {
+            addEmoteWithName(emote.name);
+            closeEmotePicker();
+        });
+        grid.appendChild(cell);
+    }
+
+    if (filtered.length === 0 && channelEmoteList.length === 0) {
+        const hint = document.createElement('div');
+        hint.style.cssText = 'grid-column:1/-1;color:#666;font-size:11px;padding:8px 4px;';
+        hint.textContent = 'enter a channel name to load emotes';
+        grid.appendChild(hint);
+    }
+}
+
+function filterEmotePicker(value) {
+    renderEmotePickerGrid(value);
+}
+
+function addEmoteWithName(name) {
+    emotes.push({
+        name: name,
+        minStreak: 4,
+        volume: 1.0,
+        speedMin: 0.5,
+        speedMax: 2.0,
+        sounds: []
+    });
+    renderEmotes();
+    const cards = document.querySelectorAll('.emote-card');
+    if (cards.length > 0) {
+        cards[cards.length - 1].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+}
+
+document.getElementById('emotePicker').addEventListener('click', function (e) {
+    if (e.target === this) closeEmotePicker();
+});
 
 function removeAllSounds() {
     if (emotes.length === 0) return;

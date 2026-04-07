@@ -43,22 +43,18 @@
                             <option value="bottom-right">bottom right</option>
                         </select>
                     </div>
-<!--                     <div class="cfg-field" style="margin-top:8px;">
+                    <div class="cfg-field" style="margin-top:8px;">
                         <label class="cfg-checkbox-label">
                             <input type="checkbox" id="limitStreakToSounds" checked>
                             limit streak popups to emote sounds
                         </label>
-                    </div> -->
-                    <div class="cfg-row cfg-row--2col cfg-btn-grid" style="margin-top:10px;">
-                        <button class="cfg-taskbar-start" onclick="generateHTML()">⬇ download</button>
-                        <label class="cfg-taskbar-start">⟳ load<input type="file" accept=".html"
+                    </div>
+                    <div style="margin-top:10px; display:flex; flex-direction:column; gap:4px;">
+                        <button style="min-width:0; width:100%;" onclick="generateHTML()">⬇ download</button>
+                        <label class="cfg-label-btn">⟳ load<input type="file" accept=".html"
                                 onchange="loadHTML(this.files[0])" hidden></label>
-                        <button class="cfg-taskbar-start" onclick="addEmote()">
-                            <span class="cfg-start-icon">+</span>
-                            <span>add new emote</span>
-                        </button>
-                        <button class="cfg-taskbar-start cfg-btn--danger" onclick="removeAllSounds()">✕ remove
-                            all</button>
+                        <button style="min-width:0; width:100%;" onclick="openEmotePicker()">+ add new emote</button>
+                        <button style="min-width:0; width:100%;" class="cfg-btn--danger" onclick="removeAllSounds()">✕ remove all</button>
                     </div>
 
                     <div class="cfg-divider"></div>
@@ -94,9 +90,9 @@
 
 
         <div class="cfg-taskbar">
-            <button class="cfg-taskbar-start" onclick="window.open('https://girlglock.com', '_blank')">
+            <button class="cfg-taskbar-btn-layout" onclick="window.open('https://girlglock.com', '_blank')">
                 <img src="https://raw.githubusercontent.com/girlglock/input-overlay/refs/heads/main/media/favicon.png"
-                    width="20px">
+                    width="16px">
                 <span>girlglock</span>
             </button>
             <div class="cfg-taskbar-divider"></div>
@@ -112,6 +108,43 @@
         </div>
 
     </div>
+
+    <div id="noChannelDialog" style="display:none; position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,0.15); align-items:center; justify-content:center;">
+        <div class="window" style="width:280px;">
+            <div class="title-bar">
+                <div class="title-bar-text">no channel name</div>
+                <div class="title-bar-controls">
+                    <button aria-label="Close" onclick="document.getElementById('noChannelDialog').style.display='none'"></button>
+                </div>
+            </div>
+            <div class="window-body" style="padding:12px 12px 10px; display:flex; flex-direction:column; gap:10px;">
+                <p style="font-size:11px; margin:0;">please enter a channel name before adding emotes.</p>
+                <div style="display:flex; justify-content:flex-end;">
+                    <button style="min-width:75px;" onclick="document.getElementById('noChannelDialog').style.display='none'; document.getElementById('channelName').focus()">ok</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="emotePicker" style="display:none; position:fixed; inset:0; z-index:9998; background:rgba(0,0,0,0.15); align-items:center; justify-content:center;">
+        <div class="window" style="width:420px; max-width:95vw; display:flex; flex-direction:column; height:70vh; max-height:70vh;">
+            <div class="title-bar">
+                <div class="title-bar-text">add emote</div>
+                <div class="title-bar-controls">
+                    <button aria-label="Close" onclick="closeEmotePicker()"></button>
+                </div>
+            </div>
+            <div class="window-body" style="padding:8px; display:flex; flex-direction:column; gap:6px; flex:1; min-height:0; overflow:hidden;">
+                <div class="cfg-field">
+                    <input class="cfg-input" type="text" id="emotePickerSearch" placeholder="search emotes..." oninput="filterEmotePicker(this.value)" autocomplete="off">
+                </div>
+                <div class="sunken-panel" style="flex:1; min-height:0;">
+                    <div id="emotePickerGrid" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(72px,1fr)); gap:4px; align-content:start; padding:2px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <div id="loadingDialog"
         style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.15); display:none; align-items:center; justify-content:center;">

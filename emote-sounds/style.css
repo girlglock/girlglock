@@ -19,7 +19,6 @@ body {
     background: teal;
     color: #222;
     font-family: "Pixelated MS Sans Serif", Arial;
-    font-size: 11px;
     -webkit-font-smoothing: none;
     font-smooth: never;
     text-rendering: optimizeSpeed;
@@ -73,7 +72,6 @@ body {
 }
 
 .cfg-panel-title {
-    font-size: 11px;
     font-weight: 700;
     color: #222;
     margin-bottom: 5px;
@@ -81,7 +79,6 @@ body {
 
 .cfg-label {
     display: block;
-    font-size: 11px;
     color: #222;
     margin-bottom: 3px;
     user-select: none;
@@ -101,14 +98,8 @@ body {
     min-width: 0;
 }
 
-.cfg-btn-grid {
-    flex-wrap: wrap;
-}
 
-.cfg-btn-grid>* {
-    flex: 1 1 calc(50% - 2px);
-    min-width: 0;
-}
+
 
 .cfg-divider {
     border: none;
@@ -125,7 +116,6 @@ body {
     border: none;
     padding: 3px 4px;
     font-family: "Pixelated MS Sans Serif", Arial;
-    font-size: 11px;
     color: #222;
     height: 21px;
     outline: none;
@@ -139,7 +129,6 @@ body {
     border: none;
     padding: 2px 28px 2px 4px;
     font-family: "Pixelated MS Sans Serif", Arial;
-    font-size: 11px;
     color: #222;
     height: 21px;
     outline: none;
@@ -152,30 +141,28 @@ body {
     cursor: pointer;
 }
 
-.cfg-btn {
+.cfg-btn--danger {
+    color: #800000;
+}
+
+label.cfg-label-btn {
     background: silver;
     box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff,
         inset -2px -2px grey, inset 2px 2px #dfdfdf;
-    border: none;
     color: #222;
     font-family: "Pixelated MS Sans Serif", Arial;
-    font-size: 11px;
-    padding: 3px 8px;
-    cursor: pointer;
-    white-space: nowrap;
-    height: 23px;
-    min-width: 0;
     user-select: none;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 23px;
+    padding: 0 12px;
+    cursor: pointer;
 }
 
-.cfg-btn:active {
+label.cfg-label-btn:active {
     box-shadow: inset -1px -1px #fff, inset 1px 1px #0a0a0a,
         inset -2px -2px #dfdfdf, inset 2px 2px grey;
-}
-
-.cfg-btn--danger {
-    color: #800000;
 }
 
 .cfg-instructions-list {
@@ -196,7 +183,6 @@ body {
     background: #d4d0c8;
     border-left: 2px solid navy;
     padding: 4px 6px;
-    font-size: 11px;
     line-height: 1.5;
     color: #222;
 }
@@ -244,11 +230,9 @@ body {
 }
 
 .cfg-empty-icon {
-    font-size: 28px;
 }
 
 .cfg-empty-text {
-    font-size: 11px;
     text-align: center;
 }
 
@@ -266,34 +250,16 @@ body {
     z-index: 100;
 }
 
-.cfg-taskbar-start {
+.cfg-taskbar-btn-layout {
     display: flex;
     align-items: center;
     gap: 4px;
-    padding: 2px 8px 2px 4px;
-    height: 24px;
-    background: silver;
-    box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff,
-        inset -2px -2px grey, inset 2px 2px #dfdfdf;
-    border: none;
-    font-family: "Pixelated MS Sans Serif", Arial;
-    font-size: 11px;
     font-weight: 700;
-    color: #222;
-    cursor: pointer;
     white-space: nowrap;
-    user-select: none;
     flex-shrink: 0;
-}
-
-.cfg-taskbar-start:active {
-    box-shadow: inset -1px -1px #fff, inset 1px 1px #0a0a0a,
-        inset -2px -2px #dfdfdf, inset 2px 2px grey;
-}
-
-.cfg-start-icon {
-    font-size: 14px;
-    line-height: 1;
+    min-width: 0;
+    height: 24px;
+    padding: 2px 8px 2px 6px;
 }
 
 .cfg-taskbar-divider {
@@ -320,6 +286,13 @@ body {
     display: none;
 }
 
+::-webkit-scrollbar-button:vertical:start:increment,
+::-webkit-scrollbar-button:vertical:end:decrement,
+::-webkit-scrollbar-button:horizontal:start:increment,
+::-webkit-scrollbar-button:horizontal:end:decrement {
+    display: none;
+}
+
 .cfg-taskbar-btn {
     display: flex;
     align-items: center;
@@ -332,7 +305,6 @@ body {
         inset -2px -2px grey, inset 2px 2px #dfdfdf;
     border: none;
     font-family: "Pixelated MS Sans Serif", Arial;
-    font-size: 11px;
     color: #222;
     cursor: pointer;
     white-space: nowrap;
@@ -368,7 +340,6 @@ body {
 }
 
 .cfg-tray-clock {
-    font-size: 11px;
     color: #222;
     white-space: nowrap;
     min-width: 36px;
@@ -444,7 +415,6 @@ body {
 .emote-field-row label {
     white-space: nowrap;
     min-width: 86px;
-    font-size: 11px;
     color: #222;
 }
 
@@ -467,7 +437,6 @@ body {
 .emote-slider-row label {
     display: flex;
     justify-content: space-between;
-    font-size: 11px;
     color: #222;
     user-select: none;
 }
@@ -479,7 +448,6 @@ body {
 .win98-val {
     color: navy;
     font-weight: 700;
-    font-size: 11px;
     min-width: 28px;
     text-align: right;
 }
@@ -500,13 +468,11 @@ body {
     min-width: unset;
     padding: 0 6px;
     height: 21px;
-    font-size: 11px;
     white-space: nowrap;
 }
 
 .cfg-sound-name {
     flex: 1;
-    font-size: 11px;
     color: #444;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -521,7 +487,6 @@ body {
     padding: 2px 10px;
     background: navy;
     color: #fff;
-    font-size: 11px;
     font-family: "Pixelated MS Sans Serif", Arial;
     user-select: none;
     flex-shrink: 0;
@@ -531,33 +496,13 @@ body {
     color: rgba(255, 255, 255, 0.7);
 }
 
-.cfg-emote-grid::-webkit-scrollbar,
-.cfg-sidebar-body::-webkit-scrollbar {
-    width: 16px;
-}
 
-.cfg-emote-grid::-webkit-scrollbar-corner,
-.cfg-sidebar-body::-webkit-scrollbar-corner {
-    background: #dfdfdf;
-}
 
-.cfg-emote-grid::-webkit-scrollbar-track,
-.cfg-sidebar-body::-webkit-scrollbar-track {
-    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg width='2' height='2' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M1 0H0v1h1v1h1V1H1V0z' fill='silver'/%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M2 0H1v1H0v1h1V1h1V0z' fill='%23fff'/%3E%3C/svg%3E");
-}
-
-.cfg-emote-grid::-webkit-scrollbar-thumb,
-.cfg-sidebar-body::-webkit-scrollbar-thumb {
-    background-color: #dfdfdf;
-    box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff,
-        inset -2px -2px grey, inset 2px 2px #dfdfdf;
-}
 
 .cfg-checkbox-label {
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 11px;
     color: #222;
     cursor: pointer;
     user-select: none;
@@ -574,4 +519,57 @@ body {
     cursor: pointer;
     opacity: 1;
     position: static;
+}
+.emote-picker-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 3px;
+    padding: 5px 3px 4px;
+    cursor: pointer;
+    background: silver;
+    box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff,
+        inset -2px -2px grey, inset 2px 2px #dfdfdf;
+    user-select: none;
+    min-height: 64px;
+}
+
+.emote-picker-cell:active {
+    box-shadow: inset -1px -1px #fff, inset 1px 1px #0a0a0a,
+        inset -2px -2px #dfdfdf, inset 2px 2px grey;
+}
+
+.emote-picker-cell:hover {
+    background: #d4d0c8;
+}
+
+.emote-picker-img {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+    image-rendering: pixelated;
+    flex-shrink: 0;
+}
+
+.emote-picker-empty-icon {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #444;
+    flex-shrink: 0;
+}
+
+.emote-picker-name {
+    color: #222;
+    text-align: center;
+    word-break: break-all;
+    line-height: 1.2;
+    max-width: 100%;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
