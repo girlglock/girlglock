@@ -4,80 +4,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>twitch emote sounds configurator</title>
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/ekmas/cs16.css@main/css/cs16.min.css">
+    <title>emote sounds configurator</title>
+    <link rel="stylesheet" href="https://unpkg.com/98.css">
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-    <div class="centered">
-        <div class="cs-dialog">
-            <div class="section-title">
-                <div class="form-group" style="width: 97%; margin-left: -15px;">
-                    <label>channel name</label>
-                    <input class="cs-input" ype="text" id="channelName" placeholder="enter channel name">
-                </div>
+    <div id="configurator">
 
-                <h3 style="margin-top: 20px;">
-                    emotes
-                </h3>
-                <div class="progress-bar">
-                    <label>loading...</label>
-                    <div class="cs-progress-bar">
-                        <div style="width: 0%" class="bars"></div>
+
+        <div class="cfg-desktop">
+
+
+            <aside class="cfg-sidebar window">
+                <div class="title-bar">
+                    <div class="title-bar-text">emote sounds configurator</div>
+                    <div class="title-bar-controls">
+                        <button aria-label="Minimize"></button>
+                        <button aria-label="Maximize"></button>
                     </div>
                 </div>
-            </div>
-            <div class="heading">
-                <div class="wrapper">
-                    <div class="icon"></div>
-                    <p class="text">EMOTE SOUNDS CONFIGURATOR</p>
-                </div>
-                <div class="cs-tooltip">
-                    <button disabled class="cs-btn help" style="margin-top: 3px; right: 5px; width: 18px;"
-                        onclick="window.location.href='/'"></button>
-                    <span style="display: block; text-align: left; right: 125%;" class="text">
-                        1. enter your channel name<br>
-                        2. add sounds with sound files <br>
-                        3. download html file <br>
-                        4. add downloaded html file as local browser source into your obs <br>
-                        5. (optional) to change something afterwards click load and select previously downloaded html
-                        file
-                    </span>
+                <div class="window-body cfg-sidebar-body">
+                    <div class="cfg-panel-title">setup</div>
+                    <div class="cfg-field">
+                        <label class="cfg-label" for="channelName">channel name</label>
+                        <input class="cfg-input" type="text" id="channelName" placeholder="enter channel name"
+                            oninput="clearTimeout(window._channelFetchTimer); window._channelFetchTimer = setTimeout(fetchChannelEmotes, 800);">
+                    </div>
+                    <div class="cfg-field" style="margin-top:8px;">
+                        <label class="cfg-label" for="streakPosition">show emote streaks</label>
+                        <select class="cfg-select" id="streakPosition">
+                            <option value="none">none</option>
+                            <option value="top-left">top left</option>
+                            <option value="top-right">top right</option>
+                            <option value="center-left">center left</option>
+                            <option value="center-right">center right</option>
+                            <option value="bottom-left">bottom left</option>
+                            <option value="bottom-right">bottom right</option>
+                        </select>
+                    </div>
+<!--                     <div class="cfg-field" style="margin-top:8px;">
+                        <label class="cfg-checkbox-label">
+                            <input type="checkbox" id="limitStreakToSounds" checked>
+                            limit streak popups to emote sounds
+                        </label>
+                    </div> -->
+                    <div class="cfg-row cfg-row--2col cfg-btn-grid" style="margin-top:10px;">
+                        <button class="cfg-taskbar-start" onclick="generateHTML()">⬇ download</button>
+                        <label class="cfg-taskbar-start">⟳ load<input type="file" accept=".html"
+                                onchange="loadHTML(this.files[0])" hidden></label>
+                        <button class="cfg-taskbar-start" onclick="addEmote()">
+                            <span class="cfg-start-icon">+</span>
+                            <span>add new emote</span>
+                        </button>
+                        <button class="cfg-taskbar-start cfg-btn--danger" onclick="removeAllSounds()">✕ remove
+                            all</button>
+                    </div>
 
-                </div>
+                    <div class="cfg-divider"></div>
 
-            </div>
-
-            <header id="header">
-                <div class="content-wrapper">
-                    <div class="emote-list-container">
-                        <div id="emoteList"></div>
+                    <div class="cfg-panel-title">instructions</div>
+                    <ol class="cfg-instructions-list">
+                        <li>enter your channel name above</li>
+                        <li>add emotes &amp; attach sound files</li>
+                        <li>click <strong>download</strong> to get the html file</li>
+                        <li>add html as a local browser source in OBS</li>
+                        <li>use <strong>load</strong> to edit a saved file later</li>
+                    </ol>
+                    <div class="cfg-note" style="margin-top:8px;">
+                        "show emote streaks" displays the emote image + count in your OBS overlay when a streak fires
+                    </div>
+                    <div class="cfg-divider"></div>
+                    <div class="cfg-sidebar-footer">
+                        default sounds by OhnePixel, ArrowCS, PSP1G, Fire2k &amp; FTK789
                     </div>
                 </div>
-                <menu class="footer-btns">
-                    <button class="cs-btn" onclick="removeAllSounds()">remove all</button>
-                    <label class="cs-btn">
-                        load
-                        <input type="file" accept=".html" onchange="loadHTML(this.files[0])" hidden>
-                    </label>
-                    <button class="cs-btn" onclick="generateHTML()">download</button>
-                </menu>
-                <br>
-                <menu class="footer-btns" style="position: static;">
-                    <button class="cs-btn" onclick="addEmote()"
-                        style="max-width: 120px;min-width: 120px; background-color: #709b4b;">
-                        + add new emote
-                    </button>
-                </menu>
+            </aside>
 
-            </header>
-            <label style="left:8px; bottom: 0;position: absolute; color: var(--secondary-bg);">default sounds by
-                OhnePixel, ArrowCS, PSP1G, Fire2k & FTK789</label>
+
+            <main class="cfg-main">
+                <div class="cfg-emote-grid" id="emoteList"></div>
+                <div class="cfg-empty" id="emptyState">
+                    <div class="cfg-empty-icon">♪</div>
+                    <div class="cfg-empty-text">no emotes... click "+ add emote"</div>
+                </div>
+            </main>
+
+        </div>
+
+
+        <div class="cfg-taskbar">
+            <button class="cfg-taskbar-start" onclick="window.open('https://girlglock.com', '_blank')">
+                <img src="https://raw.githubusercontent.com/girlglock/input-overlay/refs/heads/main/media/favicon.png"
+                    width="20px">
+                <span>girlglock</span>
+            </button>
+            <div class="cfg-taskbar-divider"></div>
+            <div class="cfg-taskbar-buttons" id="taskbarButtons"></div>
+            <div class="cfg-taskbar-tray">
+                <div class="cfg-loading" id="loadingBar">
+                    <div class="cfg-progress">
+                        <div class="cfg-progress-fill bars" style="width:0%"></div>
+                    </div>
+                </div>
+                <span class="cfg-tray-clock" id="trayClock"></span>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="loadingDialog"
+        style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.15); display:none; align-items:center; justify-content:center;">
+        <div class="window" style="width:320px; min-width:240px;">
+            <div class="title-bar">
+                <div class="title-bar-text" id="loadingDialogTitle">loading...</div>
+            </div>
+            <div class="window-body" style="padding:16px 16px 12px;">
+                <div id="loadingDialogMsg" style="font-size:11px; color:#222; margin-bottom:10px; min-height:14px;">
+                    please wait</div>
+                <div class="progress-indicator segmented" style="width:100%; height:22px;">
+                    <div class="progress-indicator-bar" id="loadingDialogBar"
+                        style="width:0%; transition:width 0.2s linear;"></div>
+                </div>
+                <div id="loadingDialogSub" style="font-size:11px; color:#666; margin-top:6px; min-height:14px;"></div>
+            </div>
         </div>
     </div>
+
     <script defer src="emotes.js"></script>
     <script defer src="script.js"></script>
+    <script>
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('trayClock').textContent =
+                now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+        updateClock();
+        setInterval(updateClock, 10000);
+    </script>
 </body>
 
 </html>
