@@ -37,7 +37,7 @@ const CONFIG = {
         discordId: '1167069721162686528',
         avatarHash: '25214ab1ddc0e2ae8f9c32daa77b63a9',
         name: 'dea',
-        pronouns: 'she/her', 
+        pronouns: 'she/her',
         bio: 'I like movement FPS games, writing bad code, and making CS2 and Apex Legends R5R maps.',
         socials: [
             { label: 'BlueSky', url: 'https://bsky.app/profile/girlglock.com', icon: 'https://web-cdn.bsky.app/static/favicon-32x32.png' },
@@ -273,18 +273,44 @@ function buildRepos() {
 function bindDrag(win) {
     let drag = false, ox = 0, oy = 0;
     const bar = win.querySelector('.title-bar');
+
+    function startDrag(clientX, clientY) {
+        drag = true;
+        ox = clientX - win.offsetLeft;
+        oy = clientY - win.offsetTop;
+        focusWin(win.id);
+    }
+
+    function moveDrag(clientX, clientY) {
+        if (!drag) return;
+        win.style.left = (clientX - ox) + 'px';
+        win.style.top = Math.max(0, clientY - oy) + 'px';
+    }
+
     bar.addEventListener('mousedown', e => {
         if (e.target.closest('.title-bar-controls')) return;
-        drag = true; ox = e.clientX - win.offsetLeft; oy = e.clientY - win.offsetTop;
-        focusWin(win.id); e.preventDefault();
+        startDrag(e.clientX, e.clientY);
+        e.preventDefault();
     });
-    win.addEventListener('mousedown', () => focusWin(win.id));
-    document.addEventListener('mousemove', e => {
-        if (!drag) return;
-        win.style.left = (e.clientX - ox) + 'px';
-        win.style.top = Math.max(0, e.clientY - oy) + 'px';
-    });
+    document.addEventListener('mousemove', e => moveDrag(e.clientX, e.clientY));
     document.addEventListener('mouseup', () => { drag = false; });
+
+    bar.addEventListener('touchstart', e => {
+        if (e.target.closest('.title-bar-controls')) return;
+        const t = e.touches[0];
+        startDrag(t.clientX, t.clientY);
+        focusWin(win.id);
+        e.preventDefault();
+    }, { passive: false });
+    document.addEventListener('touchmove', e => {
+        if (!drag) return;
+        moveDrag(e.touches[0].clientX, e.touches[0].clientY);
+        e.preventDefault();
+    }, { passive: false });
+    document.addEventListener('touchend', () => { drag = false; });
+
+    win.addEventListener('mousedown', () => focusWin(win.id));
+    win.addEventListener('touchstart', () => focusWin(win.id), { passive: true });
 }
 
 let resizeState = null;
