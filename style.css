@@ -1,0 +1,693 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+input,
+button,
+textarea,
+select {
+    font: inherit;
+}
+
+:root {
+    --aero-blur: 8px;
+    --aero-saturate: 180%;
+    --start-sprite: none;
+}
+
+body {
+    height: 100vh;
+    overflow: hidden;
+    font-family: "Segoe UI", "Noto Sans", sans-serif;
+    font-size: 9pt;
+}
+
+#desktop {
+    display: flex;
+    flex-direction: column;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+#desktop-area {
+    position: fixed;
+    inset: 0;
+    background: url('https://raw.githubusercontent.com/bartekl1/windows-ui-assets/refs/heads/main/Wallpapers/Windows%207/Desktop/Windows/img0.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+#desktop-icons {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 1;
+}
+
+.desktop-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    width: 64px;
+    cursor: pointer;
+    text-decoration: none;
+    user-select: none;
+}
+
+.desktop-icon:focus {
+    outline: none;
+}
+
+.desktop-icon img {
+    width: 32px;
+    height: 32px;
+}
+
+.desktop-icon span {
+    color: #fff;
+    font-size: 11px;
+    text-align: center;
+    text-shadow: 1px 1px 2px #000, 0 0 6px #000;
+    line-height: 1.3;
+    word-break: break-word;
+}
+
+.desktop-icon:hover span,
+.desktop-icon:focus span {
+    background: rgba(49, 106, 197, 0.6);
+    text-shadow: none;
+}
+
+.win {
+    position: absolute;
+    user-select: none;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.win>.window-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.win>.window-body.no-scroll {
+    overflow: hidden;
+}
+
+.win.glass:after {
+    backdrop-filter: blur(var(--aero-blur)) saturate(var(--aero-saturate));
+    -webkit-backdrop-filter: blur(var(--aero-blur)) saturate(var(--aero-saturate));
+}
+
+.rh {
+    position: absolute;
+    z-index: 10;
+}
+
+.rh-n {
+    top: 0;
+    left: 4px;
+    right: 4px;
+    height: 4px;
+    cursor: n-resize;
+}
+
+.rh-s {
+    bottom: 0;
+    left: 4px;
+    right: 4px;
+    height: 4px;
+    cursor: s-resize;
+}
+
+.rh-w {
+    left: 0;
+    top: 4px;
+    bottom: 4px;
+    width: 4px;
+    cursor: w-resize;
+}
+
+.rh-e {
+    right: 0;
+    top: 4px;
+    bottom: 4px;
+    width: 4px;
+    cursor: e-resize;
+}
+
+.rh-nw {
+    top: 0;
+    left: 0;
+    width: 8px;
+    height: 8px;
+    cursor: nw-resize;
+}
+
+.rh-ne {
+    top: 0;
+    right: 0;
+    width: 8px;
+    height: 8px;
+    cursor: ne-resize;
+}
+
+.rh-sw {
+    bottom: 0;
+    left: 0;
+    width: 8px;
+    height: 8px;
+    cursor: sw-resize;
+}
+
+.rh-se {
+    bottom: 0;
+    right: 0;
+    width: 8px;
+    height: 8px;
+    cursor: se-resize;
+}
+
+#taskbar {
+    --w7-w-bg: rgba(255, 255, 255, 0.55);
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    padding: 0 4px;
+    z-index: 9000;
+    background: var(--w7-w-glass), var(--w7-w-grad);
+    background-color: #00000031;
+    border-top: 1px solid #ffffff67 !important;
+    box-shadow: rgba(0, 0, 0, 0.466) 0px 0px 1px 1px;
+}
+
+#taskbar::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    backdrop-filter: blur(var(--aero-blur)) saturate(var(--aero-saturate));
+    -webkit-backdrop-filter: blur(var(--aero-blur)) saturate(var(--aero-saturate));
+    z-index: -1;
+}
+
+.taskbar-start {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 100%;
+    padding: 0;
+    background: none;
+    border: none;
+    box-shadow: none;
+    cursor: pointer;
+    flex-shrink: 0;
+    min-height: unset;
+    min-width: unset;
+    position: relative;
+    overflow: visible;
+    z-index: 1;
+    margin-left: -15px;
+    margin-right: 15px;
+}
+
+.taskbar-start::before,
+.taskbar-start::after {
+    content: "";
+    position: absolute;
+    width: var(--start-size, 80px);
+    height: var(--start-size, 80px);
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+    background-image: url('https://femboy.beauty/poL3Q9.png');
+    background-size: var(--start-size, 80px) var(--start-size-3x, 240px);
+    background-repeat: no-repeat;
+    transition: opacity 0.2s ease !important;
+    pointer-events: none;
+}
+
+.taskbar-start::before {
+    background-position: 0 0;
+    opacity: 1 !important;
+}
+
+.taskbar-start::after {
+    background-position: 0 calc(-1 * var(--start-size, 80px));
+    opacity: 0 !important;
+}
+
+.taskbar-start:hover::before {
+    opacity: 0 !important;
+}
+
+.taskbar-start:hover::after {
+    opacity: 1 !important;
+}
+
+.taskbar-start:active::after {
+    background-position: 0 calc(-2 * var(--start-size, 80px));
+}
+
+.taskbar-divider {
+    width: 1px;
+    height: 24px;
+    align-self: center;
+    background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    margin: 0 2px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+}
+
+#taskbar-buttons {
+    flex: 1;
+    display: flex;
+    align-items: stretch;
+    gap: 1px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    height: 100%;
+    scrollbar-width: none;
+    position: relative;
+    z-index: 1;
+}
+
+#taskbar-buttons::-webkit-scrollbar {
+    display: none;
+}
+
+.tb-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 100%;
+    padding: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0.08) 45%, rgba(255, 255, 255, 0.04) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.514) !important;
+    box-shadow: rgba(0, 0, 0, 0.466) 0px 0px 1px 1px;
+    cursor: pointer;
+    flex-shrink: 0;
+    min-height: unset;
+    min-width: unset;
+}
+
+.tb-btn img {
+    width: 24px;
+    height: 24px;
+}
+
+.tb-btn:hover {
+    border-color: rgba(180, 230, 255, 0.45) !important;
+}
+
+.tb-btn:hover::before {
+    opacity: 1 !important;
+}
+
+.tb-btn.active {
+    border-color: #7ad6f8 !important;
+    box-shadow: 0 0 11px 4px #29d0ff, 0 0 3px 1px #29d0ff, var(--w7-el-sd);
+}
+
+.tb-btn.active::after {
+    opacity: 0 !important;
+}
+
+.tb-btn.active::before {
+    opacity: 1 !important;
+}
+
+.taskbar-tray {
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    height: 100%;
+    border: none;
+    background: none;
+    box-shadow: none;
+    flex-shrink: 0;
+    margin-left: 2px;
+    gap: 6px;
+    position: relative;
+    z-index: 1;
+}
+
+.tray-clock {
+    color: #000;
+    font-size: 11px;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+    white-space: nowrap;
+    min-width: 36px;
+    text-align: center;
+}
+
+.sdot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #888;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+.s-online {
+    background: #3ba55c;
+}
+
+.s-idle {
+    background: #faa61a;
+}
+
+.s-dnd {
+    background: #ed4245;
+}
+
+.s-offline {
+    background: #888;
+}
+
+.avatar-wrap {
+    position: relative;
+    display: inline-block;
+}
+
+.avatar-badge {
+    position: absolute;
+    bottom: 1px;
+    right: 1px;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    border: 2px solid var(--w7-surface, #f0f0f0);
+    background: #888;
+}
+
+.social-btn-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.social-btn-grid button {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+    padding: 0 8px;
+    height: 22px;
+    min-width: 108px;
+    flex: 1 1 auto;
+}
+
+.social-btn-grid button img {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+}
+
+#win-spotify>.window-body {
+    padding: 0;
+    background: transparent;
+    border: none;
+    margin: 0;
+    box-shadow: none;
+}
+
+.mp-outer {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    background-color: #0000009f;
+}
+
+.mp-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+#mp-idle {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: rgba(0, 0, 0, 0.35);
+    font-size: 11px;
+}
+
+#mp-idle img {
+    width: 72px;
+    height: 72px;
+    opacity: 0.2;
+}
+
+#mp-active {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.mp-center {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    min-height: 0;
+}
+
+.mp-art {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    border-radius: 4px;
+    object-fit: contain;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.mp-bottom {
+    flex-shrink: 0;
+    padding: 7px 10px 9px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.mp-meta {
+    min-width: 0;
+}
+
+.mp-song {
+    font-weight: 600;
+    color: #888;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.mp-artist {
+    font-size: 10px;
+    color: #555;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 1px;
+}
+
+.mp-album {
+    font-size: 10px;
+    color: #888;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.mp-seek-track {
+    height: 4px;
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 3px;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.mp-seek-fill {
+    height: 100%;
+    background: var(--w7-el-bd-h);
+    width: 0%;
+    transition: width 1s linear;
+    border-radius: 2px;
+}
+
+.mp-time-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 9px;
+    color: #888;
+}
+
+.mp-btn-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+}
+
+.mp-btn-row button {
+    min-width: unset;
+    min-height: unset;
+    height: 20px;
+    padding: 0 8px;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.mp-btn-row button img {
+    width: 11px;
+    height: 11px;
+}
+
+.mp-status {
+    flex: 1;
+    color: #888;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: right;
+    font-size: 9px;
+}
+
+.win .status-bar {
+    background: rgba(235, 240, 248, 0.75);
+    backdrop-filter: blur(var(--aero-blur));
+    -webkit-backdrop-filter: blur(var(--aero-blur));
+    border: none;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    margin: 0;
+    box-shadow: none;
+    flex-shrink: 0;
+}
+
+.win .status-bar-field {
+    border-right-color: rgba(0, 0, 0, 0.1);
+    font-size: 10px;
+    color: #444;
+}
+
+.gh-wrap {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(var(--aero-blur));
+    -webkit-backdrop-filter: blur(var(--aero-blur));
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.repo-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(var(--aero-blur));
+    -webkit-backdrop-filter: blur(var(--aero-blur));
+}
+
+.repo-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    background: rgba(255, 255, 255, 0.4);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    flex-shrink: 0;
+}
+
+.repo-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px 8px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+    cursor: pointer;
+}
+
+.repo-item:last-child {
+    border-bottom: none;
+}
+
+.repo-item:hover {
+    background: rgba(30, 90, 200, 0.1);
+}
+
+.repo-name {
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+}
+
+.repo-desc {
+    color: #555;
+    font-size: 11px;
+}
+
+.repo-meta {
+    color: #888;
+    display: flex;
+    gap: 10px;
+    font-size: 11px;
+}
+
+.repo-lang-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    vertical-align: middle;
+    margin-right: 3px;
+}
+
+.repo-tag {
+    background: rgba(0, 0, 0, 0.07);
+    padding: 1px 6px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 10px;
+    font-size: 10px;
+}
