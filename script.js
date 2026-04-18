@@ -30,7 +30,7 @@ const CONFIG = {
         { id: 'win-gaming', title: 'Currently Playing', icon: ic('joystick-4'), width: 260, minWidth: 200, minHeight: 80, controls: ['minimize', 'close'], type: 'gaming', hidden: true },
         { id: 'win-spotify', title: 'Windows Media Player', icon: `https://github.com/bartekl1/windows-ui-assets/raw/main/Icons/Windows%207/ico/imageres.dll/ICON137_1.ico`, width: 340, minWidth: 200, minHeight: 200, height: 340, controls: ['minimize', 'maximize', 'close'], type: 'mediaplayer' },
         { id: 'win-gear', title: 'What I Use', icon: `https://github.com/bartekl1/windows-ui-assets/raw/main/Icons/Windows%207/ico/imageres.dll/ICON109_1.ico`, width: 270, minWidth: 200, minHeight: 140, controls: ['minimize', 'maximize', 'close'], type: 'gear' },
-        /* { id: 'win-github', title: 'GitHub Contributions', icon: ic('directory_open_file_mydocs-4'), width: 680, minWidth: 400, minHeight: 160, controls: ['minimize', 'maximize', 'close'], type: 'github' }, */
+        { id: 'win-github', title: 'GitHub Contributions', icon: ic('directory_open_file_mydocs-4'), width: 680, minWidth: 400, minHeight: 160, controls: ['minimize', 'maximize', 'close'], type: 'github' },
         { id: 'win-repos', title: 'Repos', icon: `https://github.com/bartekl1/windows-ui-assets/raw/main/Icons/Windows%207/ico/imageres.dll/ICON69_1.ico`, width: 380, minWidth: 300, minHeight: 200, maxHeight: 400, controls: ['minimize', 'maximize', 'close'], type: 'repos' },
     ],
     about: {
