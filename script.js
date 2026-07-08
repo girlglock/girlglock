@@ -16,7 +16,7 @@ const CONFIG = {
     desktopIcons: [
         { label: 'OBS Input Overlay', url: 'https://girlglock.com/input-overlay/', icon: `https://github.com/bartekl1/windows-ui-assets/raw/main/Icons/Windows%207/ico/shell32.dll/ICON283_1.ico` },
         { label: 'Emote Combo Sounds', url: 'https://girlglock.com/emote-sounds/', icon: `https://github.com/bartekl1/windows-ui-assets/raw/main/Icons/Windows%207/ico/shell32.dll/ICON277_1.ico` },
-        { label: 'PNG-Tuber Tool', url: 'https://girlglock.com/speaking-cat/', icon: `https://github.com/bartekl1/windows-ui-assets/raw/main/Icons/Windows%207/ico/imageres.dll/ICON70_1.ico` },
+        { label: 'PNGTooba (PNGTuber OBS Plugin)', url: 'https://github.com/girlglock/pngtooba', icon: `https://github.com/bartekl1/windows-ui-assets/raw/main/Icons/Windows%207/ico/imageres.dll/ICON70_1.ico` },
         { label: 'PS2 Wallpaper', url: 'https://girlglock.com/ps2/', icon: `https://raw.githubusercontent.com/bartekl1/windows-ui-assets/main/Icons/Windows%207/ico/imageres.dll/ICON72_1.ico` },
         { label: 'Voice Freq Monitor', url: 'https://girlglock.com/voicefreq/', icon: `https://github.com/bartekl1/windows-ui-assets/raw/main/Icons/Windows%207/ico/imageres.dll/ICON150_1.ico` },
     ],
